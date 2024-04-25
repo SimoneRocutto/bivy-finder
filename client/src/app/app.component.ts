@@ -1,6 +1,6 @@
 import { Component } from "@angular/core";
 import { RouterOutlet } from "@angular/router";
-import { EmployeesListComponent } from "./employees-list/employees-list.component";
+import { EmployeesListComponent } from "./features/employees/employees-list/employees-list.component";
 
 @Component({
   selector: "app-root",
@@ -17,13 +17,11 @@ import { EmployeesListComponent } from "./employees-list/employees-list.componen
   ],
   template: `
     <div>
-      <span>Employees Management System</span>
+      <span>BivyFinder</span>
     </div>
     <main>
       <router-outlet />
     </main>
   `,
 })
-export class AppComponent {
-  title = "client";
-}
+export class AppComponent {}

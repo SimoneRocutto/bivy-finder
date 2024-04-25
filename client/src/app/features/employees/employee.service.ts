@@ -1,6 +1,6 @@
 import { Injectable, signal } from "@angular/core";
 import { Employee } from "./employee";
-import { ApiService } from "../api.service";
+import { ApiService } from "../../../api.service";
 
 @Injectable({
   providedIn: "root",

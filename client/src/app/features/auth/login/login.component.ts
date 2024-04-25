@@ -1,7 +1,7 @@
 import { CommonModule } from "@angular/common";
 import { Component } from "@angular/core";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
-import { ApiService } from "../../api.service";
+import { ApiService } from "../../../../api.service";
 
 @Component({
   selector: "app-login",
