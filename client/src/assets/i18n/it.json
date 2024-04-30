@@ -1,0 +1,10 @@
+{
+  "app": { "name": "Bivy Finder" },
+  "common": { "submit": "conferma", "languages": "lingue" },
+  "auth": {
+    "login": "login",
+    "logout": "logout",
+    "password": "password",
+    "username": "username"
+  }
+}

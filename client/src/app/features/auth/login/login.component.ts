@@ -2,42 +2,47 @@ import { CommonModule } from "@angular/common";
 import { Component } from "@angular/core";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { ApiService } from "../../../../api.service";
+import { TranslocoDirective } from "@jsverse/transloco";
 
 @Component({
   selector: "app-login",
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, TranslocoDirective],
   template: `
-    <div class="bg-red-400">Login</div>
-    <form
-      [formGroup]="loginForm"
-      (ngSubmit)="onLoginFormSubmit()"
-      class="flex flex-col gap-2"
-    >
-      <label for="username">Username</label>
-      <input
-        id="username"
-        formControlName="username"
-        type="text"
-        class="bg-gray-200"
-      />
-      <label for="password">Password</label>
-      <input
-        id="password"
-        formControlName="password"
-        type="password"
-        class="bg-gray-200"
-      />
-      <button
-        type="submit"
-        [disabled]="!loginForm.valid"
-        class="disabled:text-gray-500 disabled:bg-gray-200"
+    <ng-container *transloco="let t">
+      <div class="bg-red-400">{{ t("auth.login") | titlecase }}</div>
+      <form
+        [formGroup]="loginForm"
+        (ngSubmit)="onLoginFormSubmit()"
+        class="flex flex-col gap-2"
       >
-        Submit
+        <label for="username">{{ t("auth.username") | titlecase }}</label>
+        <input
+          id="username"
+          formControlName="username"
+          type="text"
+          class="bg-gray-200"
+        />
+        <label for="password">{{ t("auth.password") | titlecase }}</label>
+        <input
+          id="password"
+          formControlName="password"
+          type="password"
+          class="bg-gray-200"
+        />
+        <button
+          type="submit"
+          [disabled]="!loginForm.valid"
+          class="disabled:text-gray-500 disabled:bg-gray-200"
+        >
+          {{ t("common.submit") | titlecase }}
+        </button>
+      </form>
+      <button (click)="logout()" class="bg-red-300">
+        {{ t("auth.logout") | titlecase }}
       </button>
-    </form>
-    <button (click)="logout()" class="bg-red-300">Logout</button>
-    <button (click)="checkAuth()" class="bg-green-300">CheckAuth</button>
+      <button (click)="checkAuth()" class="bg-green-300">CheckAuth</button>
+    </ng-container>
   `,
   styles: ``,
 })
