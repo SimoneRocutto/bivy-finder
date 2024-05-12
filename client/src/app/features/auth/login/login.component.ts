@@ -1,7 +1,7 @@
 import { CommonModule } from "@angular/common";
 import { Component } from "@angular/core";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
-import { ApiService } from "../../../../api.service";
+import { AuthService } from "../../../auth.service";
 import { TranslocoDirective } from "@jsverse/transloco";
 
 @Component({
@@ -53,7 +53,7 @@ export class LoginComponent {
   });
   constructor(
     private formBuilder: FormBuilder,
-    private apiService: ApiService
+    private authService: AuthService
   ) {}
 
   onLoginFormSubmit = () => {
@@ -62,13 +62,13 @@ export class LoginComponent {
       console.error("Invalid username or password");
       return;
     }
-    this.apiService.post("/auth/login", { username, password }).subscribe();
+    this.authService.login(username, password).subscribe();
   };
 
   logout = () => {
-    this.apiService.post("/auth/logout").subscribe();
+    this.authService.logout().subscribe();
   };
   checkAuth = () => {
-    this.apiService.post("/auth/check-login").subscribe();
+    this.authService.checkAuth().subscribe();
   };
 }

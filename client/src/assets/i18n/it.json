@@ -1,6 +1,10 @@
 {
   "app": { "name": "Bivy Finder" },
   "common": { "submit": "conferma", "languages": "lingue" },
+  "navbar": {
+    "user_area": "area utente",
+    "logout": "logout"
+  },
   "auth": {
     "login": "login",
     "logout": "logout",

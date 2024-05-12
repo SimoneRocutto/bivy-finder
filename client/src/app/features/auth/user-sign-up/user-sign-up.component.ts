@@ -1,6 +1,7 @@
 import { Component } from "@angular/core";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
-import { ApiService } from "../../../../api.service";
+import { ApiService } from "../../../api.service";
+import { AuthService } from "../../../auth.service";
 
 @Component({
   selector: "app-user-sign-up",
@@ -45,7 +46,7 @@ export class UserSignUpComponent {
   });
   constructor(
     private formBuilder: FormBuilder,
-    private apiService: ApiService
+    private authService: AuthService
   ) {}
 
   onSignUpFormSubmit = () => {
@@ -54,6 +55,6 @@ export class UserSignUpComponent {
       console.error("Invalid username or password");
       return;
     }
-    this.apiService.post("/auth/sign-up", { username, password }).subscribe();
+    this.authService.signUp(username, password).subscribe();
   };
 }
