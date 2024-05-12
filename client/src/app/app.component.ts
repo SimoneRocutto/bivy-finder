@@ -7,6 +7,10 @@ import {
   TranslocoService,
 } from "@jsverse/transloco";
 import { CommonModule } from "@angular/common";
+import {
+  DropdownBodyContentDirective,
+  DropdownComponent,
+} from "./ui-components/dropdown/dropdown.component";
 
 @Component({
   selector: "app-root",
@@ -16,6 +20,8 @@ import { CommonModule } from "@angular/common";
     CommonModule,
     EmployeesListComponent,
     TranslocoDirective,
+    DropdownBodyContentDirective,
+    DropdownComponent,
   ],
   styles: [
     `
@@ -30,9 +36,15 @@ import { CommonModule } from "@angular/common";
     <ng-container *transloco="let t">
       <div class="flex flex-row justify-between">
         <div>{{ t("app.name") }}</div>
-        <div>
-          <div>{{ t("common.languages") | titlecase }}</div>
-          <div class="flex flex-col gap-1">
+        <ui-dropdown>
+          <button
+            head
+            [attr.aria-label]="t('common.languages') | titlecase"
+            [attr.title]="t('common.languages') | titlecase"
+          >
+            <span class="material-icons"> language </span>
+          </button>
+          <ng-template body>
             <button
               *ngFor="let lang of availableLanguages"
               (click)="changeLanguage(lang)"
@@ -40,8 +52,8 @@ import { CommonModule } from "@angular/common";
             >
               {{ lang | titlecase }}
             </button>
-          </div>
-        </div>
+          </ng-template>
+        </ui-dropdown>
       </div>
     </ng-container>
     <main>
