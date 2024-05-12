@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import session from "express-session";
 import bodyParser from "body-parser";
 import { collections } from "./database";
+import { sendError, sendFail, sendSuccess } from "./utils/http";
 
 interface SessionCustomData {
   userData?: {
@@ -17,16 +18,42 @@ authRouter.use(express.json());
 authRouter.post("/login", bodyParser.json(), async (_req, res, next) => {
   const usersCollection = await collections?.users;
   const { username, password } = _req.body;
+  if (!username || !password) {
+    sendFail(
+      res,
+      {
+        ...(username ? {} : { username: "username is required" }),
+        ...(password ? {} : { password: "password is required" }),
+      },
+      400
+    );
+    return;
+  }
+
   const user = await usersCollection?.findOne({ username });
 
   if (!user) {
-    res.status(401).send("Invalid username or password");
+    sendFail(
+      res,
+      {
+        username: "invalid username or password",
+        password: "invalid username or password",
+      },
+      401
+    );
   } else {
     // Compare the provided password with the hashed password stored in the database
     bcrypt.compare(password, user.password, (err: any, result: any) => {
       if (err) throw err;
       if (!result) {
-        res.status(401).send("Invalid username or password");
+        sendFail(
+          res,
+          {
+            username: "invalid username or password",
+            password: "invalid username or password",
+          },
+          401
+        );
       } else {
         // regenerate the session, which is good practice to help
         // guard against forms of session fixation
@@ -42,11 +69,11 @@ authRouter.post("/login", bodyParser.json(), async (_req, res, next) => {
           };
           _req.session.save(function (err) {
             if (err) {
-              res.status(400).send("Unknown error");
+              sendError(res, "Unknown error.", 500);
               return next(err);
             }
           });
-          res.status(200).send("Login successful");
+          sendSuccess(res, { user: { username: username } });
         });
       }
     });
@@ -70,7 +97,7 @@ authRouter.post("/logout", bodyParser.json(), async (_req, res, next) => {
       if (err) {
         next(err);
       }
-      res.status(200).send("Logout successful");
+      sendSuccess(res, null);
     });
   });
 });
@@ -81,13 +108,7 @@ authRouter.post("/logout", bodyParser.json(), async (_req, res, next) => {
 authRouter.post("/check-login", bodyParser.json(), async (_req, res) => {
   const { session }: { session: session.Session & Partial<SessionCustomData> } =
     _req;
-  if (!session.userData) {
-    console.log("user unauthenticated");
-    res.status(200).send("user unauthenticated");
-  } else {
-    console.log("user authenticated");
-    res.status(200).send("user authenticated");
-  }
+  sendSuccess(res, { userAuthenticated: !!session.userData });
 });
 
 authRouter.post("/sign-up", bodyParser.json(), async (_req, res) => {
@@ -96,7 +117,14 @@ authRouter.post("/sign-up", bodyParser.json(), async (_req, res) => {
   console.log(_req.body);
 
   if (!username || !password) {
-    res.status(400).send("Username or password missing.");
+    sendFail(
+      res,
+      {
+        ...(username ? {} : { username: "username is required" }),
+        ...(password ? {} : { password: "password is required" }),
+      },
+      400
+    );
     return;
   }
 
@@ -109,13 +137,12 @@ authRouter.post("/sign-up", bodyParser.json(), async (_req, res) => {
     });
 
     if (result?.acknowledged) {
-      res.status(201).send(`Created a new user: ID ${result.insertedId}.`);
+      sendSuccess(res, { user: { id: result.insertedId } }, 201);
     } else {
-      console.log({ result });
-      res.status(500).send("Failed to create a new user.");
+      sendError(res, "Failed to create a new user.", 500);
     }
   } catch (error) {
     console.error(error);
-    res.status(400).contentType("text/plain").send("Unknown error.");
+    sendError(res, "Unknown error.", 500);
   }
 });

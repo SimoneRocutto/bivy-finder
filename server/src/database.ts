@@ -1,10 +1,10 @@
 import * as mongodb from "mongodb";
 import { Employee } from "./employee";
-import { User } from "./user";
+import { UserInterface } from "./user";
 
 export const collections: {
   employees?: mongodb.Collection<Employee>;
-  users?: mongodb.Collection<User>;
+  users?: mongodb.Collection<UserInterface>;
 } = {};
 
 export async function connectToDatabase(uri: string) {
@@ -16,7 +16,7 @@ export async function connectToDatabase(uri: string) {
 
   const employeesCollection = db.collection<Employee>("employees");
   collections.employees = employeesCollection;
-  const usersCollection = db.collection<User>("users");
+  const usersCollection = db.collection<UserInterface>("users");
   usersCollection?.createIndex({ username: 1 }, { unique: true });
   collections.users = usersCollection;
 }
