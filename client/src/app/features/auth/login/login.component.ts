@@ -38,10 +38,6 @@ import { TranslocoDirective } from "@jsverse/transloco";
           {{ t("common.submit") | titlecase }}
         </button>
       </form>
-      <button (click)="logout()" class="bg-red-300">
-        {{ t("auth.logout") | titlecase }}
-      </button>
-      <button (click)="checkAuth()" class="bg-green-300">CheckAuth</button>
     </ng-container>
   `,
   styles: ``,
@@ -67,8 +63,5 @@ export class LoginComponent {
 
   logout = () => {
     this.authService.logout().subscribe();
-  };
-  checkAuth = () => {
-    this.authService.checkAuth().subscribe();
   };
 }

@@ -1,5 +1,6 @@
 import { Injectable } from "@angular/core";
 import { ApiService } from "./api.service";
+import { ResponseObservableInterface } from "./types/response.type";
 
 @Injectable({
   providedIn: "root",
@@ -7,13 +8,25 @@ import { ApiService } from "./api.service";
 export class AuthService {
   constructor(private apiService: ApiService) {}
 
-  login = (username: string, password: string) =>
-    this.apiService.post("/auth/login", { username, password });
+  login = (
+    username: string,
+    password: string
+  ): ResponseObservableInterface<
+    { user: { username: string } },
+    { username: string; password: string }
+  > => this.apiService.post("/auth/login", { username, password });
 
-  logout = () => this.apiService.post("/auth/logout");
+  logout = (): ResponseObservableInterface<null> =>
+    this.apiService.post("/auth/logout");
 
-  signUp = (username: string, password: string) =>
-    this.apiService.post("/auth/sign-up", { username, password });
+  signUp = (
+    username: string,
+    password: string
+  ): ResponseObservableInterface<
+    { user: { id: number } },
+    { username: string; password: string }
+  > => this.apiService.post("/auth/sign-up", { username, password });
 
-  checkAuth = () => this.apiService.post("/auth/check-login");
+  checkAuth = (): ResponseObservableInterface<{ userAuthenticated: boolean }> =>
+    this.apiService.post("/auth/check-login");
 }

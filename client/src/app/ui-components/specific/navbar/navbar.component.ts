@@ -6,6 +6,7 @@ import {
   DropdownComponent,
 } from "../../generic/dropdown/dropdown.component";
 import { AuthService } from "../../../auth.service";
+import { RouterModule } from "@angular/router";
 
 @Component({
   selector: "app-navbar",
@@ -15,11 +16,14 @@ import { AuthService } from "../../../auth.service";
     TranslocoDirective,
     DropdownBodyContentDirective,
     DropdownComponent,
+    RouterModule,
   ],
   template: `
     <ng-container *transloco="let t">
       <div class="flex flex-row justify-between bg-blue-300">
-        <div>{{ t("app.name") }}</div>
+        <a routerLink="/">
+          <div>{{ t("app.name") }}</div>
+        </a>
         <div class="flex flex-row">
           <ui-dropdown>
             <button
@@ -48,9 +52,12 @@ import { AuthService } from "../../../auth.service";
               <span class="material-icons"> account_circle </span>
             </button>
             <ng-template body>
-              <button (click)="logout()">
-                {{ t("navbar.logout") | titlecase }}
+              <button (click)="logout()" *ngIf="">
+                {{ t("auth.logout") | titlecase }}
               </button>
+              <a routerLink="/login">
+                {{ t("auth.login") | titlecase }}
+              </a>
             </ng-template>
           </ui-dropdown>
         </div>
@@ -61,7 +68,11 @@ import { AuthService } from "../../../auth.service";
 })
 export class NavbarComponent {
   constructor(private authService: AuthService) {}
+
   translocoService = inject(TranslocoService);
+
+  loggedIn = false;
+
   availableLanguages: string[] = this.translocoService
     .getAvailableLangs()
     .map((lang) => lang);
@@ -74,5 +85,13 @@ export class NavbarComponent {
 
   logout = () => {
     this.authService.logout().subscribe();
+  };
+
+  checkAuth = () => {
+    this.authService.checkAuth().subscribe((res) => {
+      if (res.status === "success") {
+        this.loggedIn = res.data?.userAuthenticated;
+      }
+    });
   };
 }

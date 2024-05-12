@@ -2,6 +2,7 @@ import { Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { environment } from "../environments/environment";
 import { Observable, take } from "rxjs";
+import { ResponseType } from "./types/response.type";
 
 interface ExtraOptions {
   responseType?: any;
@@ -13,41 +14,55 @@ interface ExtraOptions {
 export class ApiService {
   constructor(private http: HttpClient) {}
 
-  post = <T>(
+  post = <SuccessType, FailType = any>(
     route: string,
     params: any = {},
     extraOptions?: ExtraOptions
-  ): Observable<T> =>
+  ): Observable<ResponseType<SuccessType, FailType>> =>
     this.http
-      .post<T>(environment.apiUrl + route, params, {
+      .post<ResponseType<SuccessType, FailType>>(
+        environment.apiUrl + route,
+        params,
+        {
+          withCredentials: true,
+          ...extraOptions,
+        }
+      )
+      .pipe(take(1));
+
+  get = <SuccessType, FailType = any>(
+    route: string,
+    extraOptions?: ExtraOptions
+  ): Observable<ResponseType<SuccessType, FailType>> =>
+    this.http
+      .get<ResponseType<SuccessType, FailType>>(environment.apiUrl + route, {
         withCredentials: true,
         ...extraOptions,
       })
       .pipe(take(1));
 
-  get = <T>(route: string, extraOptions?: ExtraOptions): Observable<T> =>
-    this.http
-      .get<T>(environment.apiUrl + route, {
-        withCredentials: true,
-        ...extraOptions,
-      })
-      .pipe(take(1));
-
-  put = <T>(
+  put = <SuccessType, FailType = any>(
     route: string,
     params: any = {},
     extraOptions?: ExtraOptions
-  ): Observable<T> =>
+  ): Observable<ResponseType<SuccessType, FailType>> =>
     this.http
-      .put<T>(environment.apiUrl + route, params, {
-        withCredentials: true,
-        ...extraOptions,
-      })
+      .put<ResponseType<SuccessType, FailType>>(
+        environment.apiUrl + route,
+        params,
+        {
+          withCredentials: true,
+          ...extraOptions,
+        }
+      )
       .pipe(take(1));
 
-  delete = <T>(route: string, extraOptions?: ExtraOptions): Observable<T> =>
+  delete = <SuccessType, FailType = any>(
+    route: string,
+    extraOptions?: ExtraOptions
+  ): Observable<ResponseType<SuccessType, FailType>> =>
     this.http
-      .delete<T>(environment.apiUrl + route, {
+      .delete<ResponseType<SuccessType, FailType>>(environment.apiUrl + route, {
         withCredentials: true,
         ...extraOptions,
       })
