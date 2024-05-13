@@ -12,7 +12,7 @@ export class EmployeeService {
   constructor(private apiService: ApiService) {}
 
   private refreshEmployees() {
-    this.apiService.get<Employee[]>("/employees").subscribe((employees) => {
+    this.apiService.oldGet<Employee[]>("/employees").subscribe((employees) => {
       this.employees$.set(employees);
     });
   }
@@ -23,10 +23,12 @@ export class EmployeeService {
   }
 
   getEmployee(id: string) {
-    this.apiService.get<Employee>(`/employees/${id}`).subscribe((employee) => {
-      this.employee$.set(employee);
-      return this.employee$();
-    });
+    this.apiService
+      .oldGet<Employee>(`/employees/${id}`)
+      .subscribe((employee) => {
+        this.employee$.set(employee);
+        return this.employee$();
+      });
   }
 
   createEmployee(employee: Employee) {

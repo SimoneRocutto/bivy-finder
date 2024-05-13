@@ -67,4 +67,15 @@ export class ApiService {
         ...extraOptions,
       })
       .pipe(take(1));
+
+  // This is here just to avoid errors in the employee page.
+  // Since employee page is there only as an example, this
+  // will be deleted in the future.
+  oldGet = <T>(route: string, extraOptions?: ExtraOptions): Observable<T> =>
+    this.http
+      .get<T>(environment.apiUrl + route, {
+        withCredentials: true,
+        ...extraOptions,
+      })
+      .pipe(take(1));
 }
