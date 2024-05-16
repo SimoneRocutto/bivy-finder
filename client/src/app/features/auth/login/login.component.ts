@@ -3,6 +3,8 @@ import { Component } from "@angular/core";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { AuthService } from "../../../auth.service";
 import { TranslocoDirective } from "@jsverse/transloco";
+import { tap } from "rxjs";
+import { Router } from "@angular/router";
 
 @Component({
   selector: "app-login",
@@ -49,7 +51,8 @@ export class LoginComponent {
   });
   constructor(
     private formBuilder: FormBuilder,
-    private authService: AuthService
+    private authService: AuthService,
+    private router: Router
   ) {}
 
   onLoginFormSubmit = () => {
@@ -58,10 +61,15 @@ export class LoginComponent {
       console.error("Invalid username or password");
       return;
     }
-    this.authService.login(username, password).subscribe();
-  };
-
-  logout = () => {
-    this.authService.logout().subscribe();
+    this.authService
+      .login(username, password)
+      .pipe(
+        tap((res) => {
+          if (res.status === "success") {
+            this.router.navigate(["/"]);
+          }
+        })
+      )
+      .subscribe();
   };
 }

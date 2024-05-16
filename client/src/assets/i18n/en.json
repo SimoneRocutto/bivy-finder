@@ -6,6 +6,7 @@
   },
   "auth": {
     "login": "login",
+    "sign_up": "sign up",
     "logout": "logout",
     "password": "password",
     "username": "username"

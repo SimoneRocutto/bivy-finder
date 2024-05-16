@@ -1,5 +1,3 @@
-import { Observable } from "rxjs";
-
 interface SuccessResponseInterface<T> {
   status: "success";
   data: T;
@@ -17,6 +15,3 @@ export type ResponseType<SuccessType = any, FailType = any> =
   | SuccessResponseInterface<SuccessType>
   | FailResponseInterface<FailType>
   | ErrorResponseInterface;
-
-export interface ResponseObservableInterface<SuccessType = any, FailType = any>
-  extends Observable<ResponseType<SuccessType, FailType>> {}

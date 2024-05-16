@@ -2,11 +2,12 @@ import { Component } from "@angular/core";
 import { RouterOutlet } from "@angular/router";
 import { CommonModule } from "@angular/common";
 import { NavbarComponent } from "./ui-components/specific/navbar/navbar.component";
+import { SidebarComponent } from "./ui-components/specific/sidebar/sidebar.component";
 
 @Component({
   selector: "app-root",
   standalone: true,
-  imports: [RouterOutlet, CommonModule, NavbarComponent],
+  imports: [RouterOutlet, CommonModule, NavbarComponent, SidebarComponent],
   styles: [
     `
       main {
@@ -18,10 +19,11 @@ import { NavbarComponent } from "./ui-components/specific/navbar/navbar.componen
   ],
   template: `
     <div class="min-h-screen bg-gray-100">
-      <app-navbar></app-navbar>
-      <main>
-        <router-outlet />
-      </main>
+      <app-sidebar>
+        <app-navbar></app-navbar>
+        <main>
+          <router-outlet /></main
+      ></app-sidebar>
     </div>
   `,
 })

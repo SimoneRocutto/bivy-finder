@@ -73,7 +73,9 @@ authRouter.post("/login", bodyParser.json(), async (_req, res, next) => {
               return next(err);
             }
           });
-          sendSuccess(res, { user: { username: username } });
+          sendSuccess(res, {
+            user: { id: user._id.toString(), username: username },
+          });
         });
       }
     });
@@ -108,7 +110,10 @@ authRouter.post("/logout", bodyParser.json(), async (_req, res, next) => {
 authRouter.post("/check-login", bodyParser.json(), async (_req, res) => {
   const { session }: { session: session.Session & Partial<SessionCustomData> } =
     _req;
-  sendSuccess(res, { userAuthenticated: !!session.userData });
+  sendSuccess(res, {
+    userAuthenticated: !!session.userData,
+    user: { username: session.userData?.username, id: session.userData?.id },
+  });
 });
 
 authRouter.post("/sign-up", bodyParser.json(), async (_req, res) => {
