@@ -1,3 +1,4 @@
+import { BivouacsMapComponent } from "./features/bivouacs-map/bivouacs-map.component";
 import { Routes } from "@angular/router";
 import { EmployeesListComponent } from "./features/employees/employees-list/employees-list.component";
 import { AddEmployeeComponent } from "./features/employees/add-employee/add-employee.component"; // <-- add this line
@@ -8,6 +9,7 @@ import { UserSignUpComponent } from "./features/auth/user-sign-up/user-sign-up.c
 
 export const routes: Routes = [
   { path: "", component: HomeComponent },
+  { path: "bivouacs-map", component: BivouacsMapComponent },
   {
     path: "employees",
     component: EmployeesListComponent,
