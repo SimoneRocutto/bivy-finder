@@ -25,7 +25,13 @@ import { CommonModule } from "@angular/common";
           </div>
           <div class="p-4">
             <h3 class="text-lg font-semibold">{{ bivouac?.name }}</h3>
-            <p>{{ bivouac?.description }}</p>
+            <a
+              [href]="bivouac?.description"
+              class="text-blue-700 hover:underline"
+              >{{ bivouac?.description }}</a
+            >
+            <p>Type: {{ bivouac?.type }}</p>
+            <p>Material: {{ bivouac?.material }}</p>
           </div>
         </div>
       </div>
