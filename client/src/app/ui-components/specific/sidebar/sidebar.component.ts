@@ -14,7 +14,7 @@ import { RouterModule } from "@angular/router";
         type="checkbox"
         class="drawer-toggle"
       />
-      <div class="drawer-content flex flex-col">
+      <div class="drawer-content min-h-screen flex flex-col">
         <!-- Main website content is projected in here -->
         <ng-content></ng-content>
       </div>
