@@ -1,7 +1,7 @@
 import { BivouacDetailSidebarComponent } from "./bivouac-detail-sidebar/bivouac-detail-sidebar.component";
 import { DataService } from "../../data.service";
 import { ChangeDetectorRef, Component } from "@angular/core";
-import { LeafletModule } from "@asymmetrik/ngx-leaflet";
+import { LeafletModule } from "@bluehalo/ngx-leaflet";
 import {
   Icon,
   LayerGroup,
