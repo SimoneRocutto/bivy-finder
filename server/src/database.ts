@@ -119,7 +119,7 @@ async function applySchemaValidation(db: mongodb.Db) {
           minItems: 3,
           maxItems: 3,
           items: {
-            bsonType: "double",
+            bsonType: "decimal128",
           },
         },
       },

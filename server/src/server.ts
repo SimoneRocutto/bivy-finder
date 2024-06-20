@@ -6,6 +6,7 @@ import cors from "cors";
 import { connectToDatabase } from "./database";
 import { employeeRouter } from "./employee.routes";
 import { authRouter } from "./auth.routes";
+import { bivouacRouter } from "./bivouac.routes";
 
 dotenv.config({ path: __dirname + "/.env" });
 
@@ -56,6 +57,7 @@ connectToDatabase(ATLAS_URI)
     app.use(a_middleware_function);
     app.use("/employees", employeeRouter);
     app.use("/auth", authRouter);
+    app.use("/bivouacs", bivouacRouter);
 
     // start the Express server
     app.listen(5200, () => {
