@@ -2,8 +2,8 @@ import * as express from "express";
 import bcrypt from "bcrypt";
 import session from "express-session";
 import bodyParser from "body-parser";
-import { collections } from "./database";
-import { sendError, sendFail, sendSuccess } from "./utils/http";
+import { collections } from "../database";
+import { sendError, sendFail, sendSuccess } from "../utils/http";
 
 interface SessionCustomData {
   userData?: {
@@ -133,21 +133,16 @@ authRouter.post("/sign-up", bodyParser.json(), async (_req, res) => {
     return;
   }
 
-  try {
-    const salt = await bcrypt.genSalt();
-    const hash = await bcrypt.hash(password, salt);
-    const result = await usersCollection?.insertOne({
-      username,
-      password: hash,
-    });
+  const salt = await bcrypt.genSalt();
+  const hash = await bcrypt.hash(password, salt);
+  const result = await usersCollection?.insertOne({
+    username,
+    password: hash,
+  });
 
-    if (result?.acknowledged) {
-      sendSuccess(res, { user: { id: result.insertedId } }, 201);
-    } else {
-      sendError(res, "Failed to create a new user.", 500);
-    }
-  } catch (error) {
-    console.error(error);
-    sendError(res, "Unknown error.", 500);
+  if (result?.acknowledged) {
+    sendSuccess(res, { user: { id: result.insertedId } }, 201);
+  } else {
+    sendError(res, "Failed to create a new user.", 500);
   }
 });

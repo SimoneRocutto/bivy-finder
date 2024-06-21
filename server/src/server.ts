@@ -1,16 +1,20 @@
 import * as dotenv from "dotenv";
 import express from "express";
+// Don't know yet if it's possible to use import syntax here.
+// This module allows to handle async errors without having to
+// use try-catch block everytime (express 5 would allow the same,
+// but it's still in beta to this day (21-06-2024))
+require("express-async-errors");
 import session from "express-session";
 
 import cors from "cors";
 import { connectToDatabase } from "./database";
-import { employeeRouter } from "./employee.routes";
-import { authRouter } from "./auth.routes";
-import { bivouacRouter } from "./bivouac.routes";
+import { errorMiddlewares, middlewares } from "./middlewares";
+import { routers } from "./routes";
 
 dotenv.config({ path: __dirname + "/.env" });
 
-// load env vars from .env
+// Load env vars from .env
 
 const { ATLAS_URI, SESSION_SECRET } = process.env;
 if (!ATLAS_URI) {
@@ -50,16 +54,23 @@ connectToDatabase(ATLAS_URI)
       console.log("DEBUG SESSION", _req.session);
       next();
     });
-    const a_middleware_function = function (req: any, res: any, next: any) {
-      // Perform some operations
-      next(); // Call next() so Express will call the next middleware function in the chain.
-    };
-    app.use(a_middleware_function);
-    app.use("/employees", employeeRouter);
-    app.use("/auth", authRouter);
-    app.use("/bivouacs", bivouacRouter);
 
-    // start the Express server
+    // Load middlewares
+    for (const middleware of middlewares) {
+      app.use(middleware);
+    }
+
+    // Load routes
+    for (const router of routers) {
+      app.use("/" + router[0], router[1]);
+    }
+
+    // Load error middlewares (must be after everything else)
+    for (const middleware of errorMiddlewares) {
+      app.use(middleware);
+    }
+
+    // Start the Express server
     app.listen(5200, () => {
       console.log(`Server running at http://localhost:5200...`);
     });
