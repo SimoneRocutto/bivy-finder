@@ -1,6 +1,6 @@
 import * as mongodb from "mongodb";
-import { Employee } from "./employee";
-import { UserInterface } from "./user";
+import { Employee } from "./models/employee";
+import { UserInterface } from "./models/user";
 import { BivouacInterface } from "./models/bivouac";
 
 export const collections: {
