@@ -1,5 +1,5 @@
 import { BivouacDetailSidebarComponent } from "./bivouac-detail-sidebar/bivouac-detail-sidebar.component";
-import { DataService } from "../../data.service";
+import { BivouacService } from "../../bivouac.service";
 import { ChangeDetectorRef, Component } from "@angular/core";
 import { LeafletModule } from "@bluehalo/ngx-leaflet";
 import {
@@ -83,7 +83,7 @@ export class BivouacsMapComponent {
   };
 
   constructor(
-    private dataService: DataService,
+    private bivouacService: BivouacService,
     private changeDetector: ChangeDetectorRef
   ) {
     this.loadData();
@@ -105,10 +105,18 @@ export class BivouacsMapComponent {
   };
 
   private loadData = () => {
-    this.dataService.getData().subscribe((bivouacs) => {
-      this.bivouacs = bivouacs;
+    this.bivouacService.getBivouacs().subscribe((bivouacs) => {
+      if (bivouacs.status !== "success") {
+        console.error("Unknown error");
+        return;
+      }
+      this.bivouacs = bivouacs.data;
       const markerCluster = markerClusterGroup({ maxClusterRadius: 45 });
       for (const bivouac of this.bivouacs) {
+        // No latLng data => no marker on the map
+        if (!bivouac?.latLng) {
+          continue;
+        }
         const marker = new Marker(bivouac.latLng, {
           icon: this.markerIcon,
         }).addEventListener("click", () => {
