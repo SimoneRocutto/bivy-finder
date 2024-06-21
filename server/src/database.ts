@@ -1,7 +1,7 @@
 import * as mongodb from "mongodb";
-import { Employee } from "./models/employee";
-import { UserInterface } from "./models/user";
-import { BivouacInterface } from "./models/bivouac";
+import { Employee } from "./models/data/employee";
+import { UserInterface } from "./models/data/user";
+import { BivouacInterface } from "./models/data/bivouac";
 
 export const collections: {
   employees?: mongodb.Collection<Employee>;

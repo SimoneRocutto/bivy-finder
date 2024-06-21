@@ -3,7 +3,7 @@ import {
   ErrorResponseInterface,
   FailResponseInterface,
   SuccessResponseInterface,
-} from "../types/response";
+} from "../models/application/response";
 export const sendSuccess = (
   res: express.Response<any, Record<string, any>>,
   data: any,
