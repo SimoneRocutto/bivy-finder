@@ -1,6 +1,6 @@
 import * as express from "express";
 import { ObjectId } from "mongodb";
-import { collections } from "../database";
+import { collections } from "../database/database";
 import { sendFail, sendSuccess } from "../utils/http";
 
 export const bivouacRouter = express.Router();

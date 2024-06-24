@@ -8,11 +8,11 @@ require("express-async-errors");
 import session from "express-session";
 
 import cors from "cors";
-import { connectToDatabase } from "./database";
+import { connectToDatabase } from "./database/database";
 import { errorMiddlewares, middlewares } from "./middlewares";
 import { routers } from "./routes";
 
-dotenv.config({ path: __dirname + "/.env" });
+dotenv.config({ path: __dirname + "/config/.env" });
 
 // Load env vars from .env
 
