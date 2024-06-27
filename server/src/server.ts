@@ -1,5 +1,6 @@
 import * as dotenv from "dotenv";
 import express from "express";
+const { specs, swaggerUi } = require("./config/swagger");
 // Don't know yet if it's possible to use import syntax here.
 // This module allows to handle async errors without having to
 // use try-catch block everytime (express 5 would allow the same,
@@ -59,6 +60,8 @@ connectToDatabase(ATLAS_URI)
     for (const middleware of middlewares) {
       app.use(middleware);
     }
+
+    app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 
     // Load routes
     for (const router of routers) {

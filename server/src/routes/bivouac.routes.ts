@@ -6,6 +6,15 @@ import { sendFail, sendSuccess } from "../utils/http";
 export const bivouacRouter = express.Router();
 bivouacRouter.use(express.json());
 
+/**
+ * @openapi
+ * /bivouacs/:
+ *   get:
+ *     description: Welcome to swagger-jsdoc!
+ *     responses:
+ *       200:
+ *         description: Returns a mysterious string.
+ */
 bivouacRouter.get("/", async (_req, res) => {
   const bivouacs = await collections?.bivouacs?.find({}).toArray();
   sendSuccess(res, bivouacs);
@@ -23,6 +32,64 @@ bivouacRouter.get("/:id", async (req, res) => {
   }
 });
 
+/**
+ * @openapi
+ * /bivouacs/:
+ *   post:
+ *     description: Creates a bivouac
+ *     requestBody:
+ *       description: Bivouac object that needs to be added to the database
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               name
+ *             properties:
+ *               name:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               imageUrl:
+ *                 type: string
+ *               type:
+ *                 type: string
+ *                 default: "managed"
+ *                 enum:
+ *                   - managed
+ *                   - require-keys
+ *                   - private
+ *                   - open
+ *                   - out-of-lombardy
+ *                   - incomplete
+ *                   - abandoned
+ *               material:
+ *                 type: string
+ *                 enum:
+ *                   - stone
+ *                   - wood
+ *                   - metal
+ *                   - rock
+ *               latLng:
+ *                 type: array
+ *                 items:
+ *                   type: number
+ *                 minItems: 3
+ *                 maxItems: 3
+ *     responses:
+ *       201:
+ *         description: Creation successful
+ *         content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *       400:
+ *         description: Creation failed
+ */
 bivouacRouter.post("/", async (req, res) => {
   {
     const bivouac = req.body;
@@ -31,7 +98,7 @@ bivouacRouter.post("/", async (req, res) => {
     if (result?.acknowledged) {
       sendSuccess(res, { id: result.insertedId }, 201);
     } else {
-      res.status(500).send("Failed to create a new bivouac.");
+      sendFail(res, null, 400);
     }
   }
 });
