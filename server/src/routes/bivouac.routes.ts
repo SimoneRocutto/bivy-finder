@@ -14,12 +14,12 @@ bivouacRouter.get("/", async (_req, res) => {
 bivouacRouter.get("/:id", async (req, res) => {
   const id = req?.params?.id;
   const query = { _id: new ObjectId(id) };
-  const bivouac = await collections?.employees?.findOne(query);
+  const bivouac = await collections?.bivouacs?.findOne(query);
 
   if (bivouac) {
     sendSuccess(res, bivouac);
   } else {
-    sendFail(res, { data: null }, 404);
+    sendFail(res, null, 404);
   }
 });
 
@@ -29,7 +29,7 @@ bivouacRouter.post("/", async (req, res) => {
     const result = await collections?.bivouacs?.insertOne(bivouac);
 
     if (result?.acknowledged) {
-      sendSuccess(res, { data: { id: result.insertedId } }, 201);
+      sendSuccess(res, { id: result.insertedId }, 201);
     } else {
       res.status(500).send("Failed to create a new bivouac.");
     }
@@ -45,12 +45,12 @@ bivouacRouter.put("/:id", async (req, res) => {
   });
 
   if (result && result.matchedCount) {
-    sendSuccess(res, { data: null }, 204);
+    sendSuccess(res, null, 204);
   } else if (!result?.matchedCount) {
-    sendFail(res, { data: null }, 404);
+    sendFail(res, null, 404);
   } else {
     // Failed to update
-    sendFail(res, { data: null }, 304);
+    sendFail(res, null, 304);
   }
 });
 
@@ -61,10 +61,10 @@ bivouacRouter.delete("/:id", async (req, res) => {
 
   if (!result) {
     // Failed to remove the bivouac
-    sendFail(res, { data: null }, 400);
+    sendFail(res, null, 400);
   } else if (!result.deletedCount) {
-    sendFail(res, { data: null }, 404);
+    sendFail(res, null, 404);
   } else {
-    sendSuccess(res, { data: null }, 204);
+    sendSuccess(res, null, 204);
   }
 });

@@ -16,7 +16,7 @@ dotenv.config({ path: __dirname + "/config/.env" });
 
 // Load env vars from .env
 
-const { ATLAS_URI, SESSION_SECRET } = process.env;
+const { ATLAS_URI, SESSION_SECRET, PORT } = process.env;
 if (!ATLAS_URI) {
   console.error(
     "No ATLAS_URI environment variable has been defined in config.env"
@@ -71,8 +71,8 @@ connectToDatabase(ATLAS_URI)
     }
 
     // Start the Express server
-    app.listen(5200, () => {
-      console.log(`Server running at http://localhost:5200...`);
+    app.listen(PORT, () => {
+      console.log(`Server running at http://localhost:${PORT}...`);
     });
   })
   .catch((error) => console.error(error));

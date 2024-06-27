@@ -1,0 +1,37 @@
+## File to use with REST Client on VSCode
+
+@baseUrl = http://127.0.0.1:5200
+@contentType = application/json
+
+### Get bivouacs list
+
+GET {{baseUrl}}/bivouacs
+
+### Get bivouac by id
+
+#@prompt bivouacId
+GET {{baseUrl}}/bivouacs/{{bivouacId}}
+
+### Post bivouac
+
+POST {{baseUrl}}/bivouacs
+Content-Type: {{contentType}}
+
+{
+    "name": "sample bivouac"
+}
+
+### Update bivouac
+
+#@prompt bivouacId
+PUT {{baseUrl}}/bivouacs/{{bivouacId}}
+Content-Type: {{contentType}}
+
+{
+    "name": "updated name"
+}
+
+### Delete bivouac
+
+#@prompt bivouacId
+DELETE {{baseUrl}}/bivouacs/{{bivouacId}}
