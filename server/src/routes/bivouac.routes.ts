@@ -8,18 +8,94 @@ bivouacRouter.use(express.json());
 
 /**
  * @openapi
+ * components:
+ *   schemas:
+ *     NewBivouac:
+ *       type: object
+ *       required:
+ *         name
+ *       properties:
+ *         name:
+ *           type: string
+ *         description:
+ *           type: string
+ *         imageUrl:
+ *           type: string
+ *         type:
+ *           type: string
+ *           default: "managed"
+ *           enum:
+ *             - managed
+ *             - require-keys
+ *             - private
+ *             - open
+ *             - out-of-lombardy
+ *             - incomplete
+ *             - abandoned
+ *         material:
+ *           type: string
+ *           enum:
+ *             - stone
+ *             - wood
+ *             - metal
+ *             - rock
+ *         latLng:
+ *           type: array
+ *           items:
+ *             type: number
+ *           minItems: 3
+ *           maxItems: 3
+ *     Bivouac:
+ *       allOf:
+ *         - type: object
+ *           properties:
+ *             _id:
+ *               type: string
+ *         - $ref: '#/components/schemas/NewBivouac'
+ */
+
+/**
+ * @openapi
  * /bivouacs/:
  *   get:
- *     description: Welcome to swagger-jsdoc!
+ *     description: Gets all bivouacs
  *     responses:
  *       200:
- *         description: Returns a mysterious string.
+ *         description: Operation successful
+ *         content:
+ *             application/json:
+ *               schema:
+ *                 type: array
+ *                 items:
+ *                   $ref: '#/components/schemas/Bivouac'
  */
 bivouacRouter.get("/", async (_req, res) => {
   const bivouacs = await collections?.bivouacs?.find({}).toArray();
   sendSuccess(res, bivouacs);
 });
 
+/**
+ * @openapi
+ * /bivouacs/{id}:
+ *   get:
+ *     description: Gets a bivouac by id
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         description: Bivouac id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Operation successful
+ *         content:
+ *             application/json:
+ *               schema:
+ *                 $ref: '#/components/schemas/Bivouac'
+ *       404:
+ *         description: Resource not found
+ */
 bivouacRouter.get("/:id", async (req, res) => {
   const id = req?.params?.id;
   const query = { _id: new ObjectId(id) };
@@ -43,43 +119,10 @@ bivouacRouter.get("/:id", async (req, res) => {
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required:
- *               name
- *             properties:
- *               name:
- *                 type: string
- *               description:
- *                 type: string
- *               imageUrl:
- *                 type: string
- *               type:
- *                 type: string
- *                 default: "managed"
- *                 enum:
- *                   - managed
- *                   - require-keys
- *                   - private
- *                   - open
- *                   - out-of-lombardy
- *                   - incomplete
- *                   - abandoned
- *               material:
- *                 type: string
- *                 enum:
- *                   - stone
- *                   - wood
- *                   - metal
- *                   - rock
- *               latLng:
- *                 type: array
- *                 items:
- *                   type: number
- *                 minItems: 3
- *                 maxItems: 3
+ *             $ref: '#/components/schemas/Bivouac'
  *     responses:
  *       201:
- *         description: Creation successful
+ *         description: Operation successful
  *         content:
  *             application/json:
  *               schema:
@@ -88,7 +131,7 @@ bivouacRouter.get("/:id", async (req, res) => {
  *                   id:
  *                     type: string
  *       400:
- *         description: Creation failed
+ *         description: Operation failed
  */
 bivouacRouter.post("/", async (req, res) => {
   {
@@ -103,6 +146,26 @@ bivouacRouter.post("/", async (req, res) => {
   }
 });
 
+/**
+ * @openapi
+ * /bivouacs/{id}:
+ *   put:
+ *     description: Updates a bivouac
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         description: Bivouac id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       204:
+ *         description: Operation successful
+ *       304:
+ *         description: Resource was found, but operation failed
+ *       404:
+ *         description: Resource not found
+ */
 bivouacRouter.put("/:id", async (req, res) => {
   const id = req?.params?.id;
   const bivouac = req.body;
@@ -116,11 +179,30 @@ bivouacRouter.put("/:id", async (req, res) => {
   } else if (!result?.matchedCount) {
     sendFail(res, null, 404);
   } else {
-    // Failed to update
     sendFail(res, null, 304);
   }
 });
 
+/**
+ * @openapi
+ * /bivouacs/{id}:
+ *   delete:
+ *     description: Deletes a bivouac
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         description: Bivouac id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       204:
+ *         description: Operation successful
+ *       400:
+ *         description: Resource was found, but operation failed
+ *       404:
+ *         description: Resource not found
+ */
 bivouacRouter.delete("/:id", async (req, res) => {
   const id = req?.params?.id;
   const query = { _id: new ObjectId(id) };
