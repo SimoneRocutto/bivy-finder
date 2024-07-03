@@ -9,10 +9,10 @@ import { CommonModule } from "@angular/common";
   template: `
     <div
       [ngClass]="!hidden && bivouac ? 'drawer-open' : ''"
-      class="drawer z-10 absolute top-0 left-0 w-auto h-full"
+      class="drawer z-10 absolute top-0 left-0 w-auto h-full pointer-events-none"
     >
       <input id="detail-drawer" type="checkbox" class="drawer-toggle" />
-      <div class="drawer-side h-full sticky">
+      <div class="drawer-side h-full sticky pointer-events-none">
         <div
           class="menu relative p-0 w-96 min-h-full bg-base-200 text-base-content"
         >
