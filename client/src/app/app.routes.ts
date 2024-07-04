@@ -6,10 +6,12 @@ import { EditEmployeeComponent } from "./features/employees/edit-employee/edit-e
 import { LoginComponent } from "./features/auth/login/login.component";
 import { HomeComponent } from "./features/home/home.component";
 import { UserSignUpComponent } from "./features/auth/user-sign-up/user-sign-up.component";
+import { AdminDashboardComponent } from "./features/admin-dashboard/admin-dashboard.component";
 
 export const routes: Routes = [
   { path: "", component: HomeComponent },
   { path: "bivouacs-map", component: BivouacsMapComponent },
+  { path: "admin-dashboard", component: AdminDashboardComponent },
   {
     path: "employees",
     component: EmployeesListComponent,

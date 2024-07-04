@@ -1,6 +1,6 @@
 import { LatLngExpression } from "leaflet";
 
-export interface Bivouac {
+export interface NewBivouac {
   name: string;
   description?: string;
   imageUrl?: string;
@@ -14,4 +14,8 @@ export interface Bivouac {
     | "incomplete"
     | "abandoned";
   latLng?: LatLngExpression;
+}
+
+export interface Bivouac extends NewBivouac {
+  _id: string;
 }

@@ -150,7 +150,7 @@ export class NavbarComponent {
       .logout()
       .pipe(
         tap((res) => {
-          if (res.status === "success") {
+          if (res.body?.status === "success") {
             this.router.navigate(["/"]);
           }
         })
@@ -160,8 +160,8 @@ export class NavbarComponent {
 
   checkAuth = () => {
     this.authService.checkAuth().subscribe((res) => {
-      if (res.status === "success") {
-        this.loggedIn = res.data?.userAuthenticated;
+      if (res.body?.status === "success") {
+        this.loggedIn = res.body.data?.userAuthenticated;
       }
     });
   };

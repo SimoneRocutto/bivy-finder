@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { HttpClient } from "@angular/common/http";
+import { HttpClient, HttpResponse } from "@angular/common/http";
 import { environment } from "../environments/environment";
 import { Observable, take } from "rxjs";
 import { ResponseType } from "./types/response.type";
@@ -18,13 +18,14 @@ export class ApiService {
     route: string,
     params: any = {},
     extraOptions?: ExtraOptions
-  ): Observable<ResponseType<SuccessType, FailType>> =>
+  ): Observable<HttpResponse<ResponseType<SuccessType, FailType>>> =>
     this.http
       .post<ResponseType<SuccessType, FailType>>(
         environment.apiUrl + route,
         params,
         {
           withCredentials: true,
+          observe: "response",
           ...extraOptions,
         }
       )
@@ -33,10 +34,11 @@ export class ApiService {
   get = <SuccessType, FailType = any>(
     route: string,
     extraOptions?: ExtraOptions
-  ): Observable<ResponseType<SuccessType, FailType>> =>
+  ): Observable<HttpResponse<ResponseType<SuccessType, FailType>>> =>
     this.http
       .get<ResponseType<SuccessType, FailType>>(environment.apiUrl + route, {
         withCredentials: true,
+        observe: "response",
         ...extraOptions,
       })
       .pipe(take(1));
@@ -45,13 +47,14 @@ export class ApiService {
     route: string,
     params: any = {},
     extraOptions?: ExtraOptions
-  ): Observable<ResponseType<SuccessType, FailType>> =>
+  ): Observable<HttpResponse<ResponseType<SuccessType, FailType>>> =>
     this.http
       .put<ResponseType<SuccessType, FailType>>(
         environment.apiUrl + route,
         params,
         {
           withCredentials: true,
+          observe: "response",
           ...extraOptions,
         }
       )
@@ -60,10 +63,11 @@ export class ApiService {
   delete = <SuccessType, FailType = any>(
     route: string,
     extraOptions?: ExtraOptions
-  ): Observable<ResponseType<SuccessType, FailType>> =>
+  ): Observable<HttpResponse<ResponseType<SuccessType, FailType>>> =>
     this.http
       .delete<ResponseType<SuccessType, FailType>>(environment.apiUrl + route, {
         withCredentials: true,
+        observe: "response",
         ...extraOptions,
       })
       .pipe(take(1));

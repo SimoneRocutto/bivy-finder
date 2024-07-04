@@ -65,7 +65,7 @@ export class LoginComponent {
       .login(username, password)
       .pipe(
         tap((res) => {
-          if (res.status === "success") {
+          if (res.body?.status === "success") {
             this.router.navigate(["/"]);
           }
         })

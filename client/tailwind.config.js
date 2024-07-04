@@ -4,7 +4,11 @@ module.exports = {
     "./src/**/*.{html,ts}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      spacing: {
+        256: '64rem',
+      }
+    },
   },
   plugins: [
     require('daisyui'),

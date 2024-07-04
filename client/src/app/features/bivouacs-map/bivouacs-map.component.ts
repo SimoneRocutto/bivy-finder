@@ -105,12 +105,12 @@ export class BivouacsMapComponent {
   };
 
   private loadData = () => {
-    this.bivouacService.getBivouacs().subscribe((bivouacs) => {
-      if (bivouacs.status !== "success") {
+    this.bivouacService.getBivouacs().subscribe((res) => {
+      if (res.body?.status !== "success") {
         console.error("Unknown error");
         return;
       }
-      this.bivouacs = bivouacs.data;
+      this.bivouacs = res.body.data;
       const markerCluster = markerClusterGroup({ maxClusterRadius: 45 });
       for (const bivouac of this.bivouacs) {
         // No latLng data => no marker on the map

@@ -42,8 +42,7 @@ export class SidebarComponent {
   menuItems: { title: string; url: string }[] = [
     { title: "Home", url: "/" },
     { title: "Map", url: "/bivouacs-map" },
-    { title: "Employees", url: "/employees" },
-    { title: "Add employee", url: "/new-employee" },
+    { title: "Admin Dashboard", url: "/admin-dashboard" },
   ];
 
   closeSidebar = () => {

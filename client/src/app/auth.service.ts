@@ -22,9 +22,9 @@ export class AuthService {
 
   constructor(private apiService: ApiService) {
     this.checkAuth().subscribe((res) => {
-      if (res.status === "success") {
-        if (res.data.userAuthenticated) {
-          const { id, username } = res.data.user;
+      if (res.body?.status === "success") {
+        if (res.body.data.userAuthenticated) {
+          const { id, username } = res.body.data.user;
           this.setUser(id, username);
         }
       } else {
@@ -42,8 +42,8 @@ export class AuthService {
       >("/auth/login", { username, password })
       .pipe(
         tap((res) => {
-          if (res.status === "success") {
-            this.setUser(res.data.user.id, res.data.user.username);
+          if (res.body?.status === "success") {
+            this.setUser(res.body.data.user.id, res.body.data.user.username);
           } else {
             console.error("Unknown error while authenticating.");
           }
@@ -53,7 +53,7 @@ export class AuthService {
   logout = () =>
     this.apiService.post<null>("/auth/logout").pipe(
       tap((res) => {
-        if (res.status === "success") {
+        if (res.body?.status === "success") {
           this.clearUser();
         } else {
           console.error("Unknown error while logging out.");
