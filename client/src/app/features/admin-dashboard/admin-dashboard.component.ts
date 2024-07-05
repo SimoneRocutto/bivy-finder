@@ -6,6 +6,7 @@ import { PaginationComponent } from "../../ui-components/generic/pagination/pagi
 import { ToastService } from "../../ui-components/generic/toast-box/toast.service";
 import { HttpErrorResponse } from "@angular/common/http";
 import { ModalService } from "../../ui-components/generic/modal/modal.service";
+import { catchError, forkJoin, map, tap } from "rxjs";
 
 @Component({
   selector: "app-admin-dashboard",
@@ -13,6 +14,16 @@ import { ModalService } from "../../ui-components/generic/modal/modal.service";
   imports: [CommonModule, PaginationComponent],
   template: `
     <div class="min-w-96 overflow-x-auto pt-4 pb-16">
+      <div class="flex justify-end gap-4 mb-4">
+        <button class="btn btn-primary">Add bivouac</button>
+        <button
+          (click)="openBulkDeleteModal()"
+          class="btn btn-error"
+          [disabled]="selectedBivouacsIds.size < 1"
+        >
+          Delete bulk
+        </button>
+      </div>
       <app-pagination
         [items]="bivouacs"
         [pageSize]="pageSize"
@@ -30,14 +41,19 @@ import { ModalService } from "../../ui-components/generic/modal/modal.service";
         <tbody>
           <tr *ngFor="let bivouac of shownBivouacs" class="flex flex-row">
             <td class="w-16 flex justify-center items-center">
-              <input type="checkbox" class="checkbox" />
+              <input
+                type="checkbox"
+                class="checkbox"
+                [checked]="bivouacIsSelected(bivouac)"
+                (change)="toggleBivouacSelection(bivouac)"
+              />
             </td>
             <td *ngFor="let col of columns" class="flex-1">
               {{ bivouac[col.prop] }}
             </td>
             <td>
               <button><i class="material-icons">edit</i></button
-              ><button (click)="openDeleteModal(bivouac._id)">
+              ><button (click)="openDeleteModal(bivouac)">
                 <i class="material-icons">delete</i>
               </button>
             </td>
@@ -67,6 +83,8 @@ export class AdminDashboardComponent implements OnInit {
   defaultSortProp: keyof Bivouac = "name";
   currentSortProp?: keyof Bivouac;
   reverseSort = false;
+
+  selectedBivouacsIds: Set<Bivouac> = new Set();
 
   constructor(
     private bivouacService: BivouacService,
@@ -103,25 +121,27 @@ export class AdminDashboardComponent implements OnInit {
     }, 0);
   };
 
-  deleteBivouac = (bivouacId: string) => {
-    this.bivouacService.deleteBivouac(bivouacId).subscribe(
-      (res) => {
+  private deleteBivouac = (bivouac: Bivouac) =>
+    this.bivouacService.deleteBivouac(bivouac._id).pipe(
+      map((res) => {
         if (res.status !== 204) {
           const errorMessage = "Unknown error while deleting bivouac.";
           console.error(errorMessage);
           this.toastService.createToast(errorMessage, "error");
-          return;
+          return res;
         }
         this.toastService.createToast(
           "Bivouac deleted successfully.",
           "success"
         );
-        this.bivouacs = this.bivouacs.filter((b) => b._id !== bivouacId);
+        this.bivouacs = this.bivouacs.filter((b) => b !== bivouac);
+        this.deselectBivouac(bivouac);
         setTimeout(() => {
           this.pagination.setPage(this.pagination.pageNumber);
         }, 0);
-      },
-      (err) => {
+        return res;
+      }),
+      catchError((err) => {
         let errorMessage = "Unknown error while deleting bivouac.";
         if (err instanceof HttpErrorResponse && err.status === 404) {
           errorMessage =
@@ -129,18 +149,83 @@ export class AdminDashboardComponent implements OnInit {
         }
         console.error(err);
         this.toastService.createToast(errorMessage, "error", 5000);
-      }
+        return err;
+      })
+    );
+
+  openDeleteModal = (bivouac: Bivouac) => {
+    this.modalService.openConfirmModal({
+      title: "Are you sure you want to delete this bivouac?",
+      content: bivouac.name,
+      confirmLabel: "Delete",
+      cancelLabel: "Cancel",
+      onConfirm: () => this.deleteBivouac(bivouac).subscribe(),
+    });
+  };
+
+  openBulkDeleteModal = () => {
+    const bivouacsList = Array.from(this.selectedBivouacsIds).reduce(
+      (acc, bivouac, i) => {
+        return acc.concat(i > 0 ? "\n" : "", bivouac.name);
+      },
+      ""
+    );
+    this.modalService.openConfirmModal({
+      title: "Are you sure you want to delete these bivouacs?",
+      content: bivouacsList,
+      confirmLabel: "Delete",
+      cancelLabel: "Cancel",
+      onConfirm: () => {
+        this.deleteSelectedBivouacs().subscribe();
+      },
+    });
+  };
+
+  private deleteSelectedBivouacs = () => {
+    return forkJoin(
+      Array.from(this.selectedBivouacsIds).map((bivouac) =>
+        this.bivouacService.deleteBivouac(bivouac._id).pipe(
+          catchError((err) => {
+            // Todo handle errors, maybe save info about which bivouacs failed to be deleted
+            return err;
+          })
+        )
+      )
+    ).pipe(
+      tap(() => {
+        this.bivouacs = this.bivouacs.filter(
+          (b) => !this.selectedBivouacsIds.has(b)
+        );
+        this.deselectAllBivouacs();
+        setTimeout(() => {
+          this.pagination.setPage(this.pagination.pageNumber);
+        }, 0);
+      })
     );
   };
 
-  openDeleteModal = (bivouacId: string) => {
-    this.modalService.openConfirmModal({
-      title: "Are you sure you want to delete this bivouac?",
-      content: "This action cannot be undone.",
-      confirmLabel: "Delete",
-      cancelLabel: "Cancel",
-      onConfirm: () => this.deleteBivouac(bivouacId),
-    });
+  bivouacIsSelected = (bivouac: Bivouac) => {
+    return this.selectedBivouacsIds.has(bivouac);
+  };
+
+  selectBivouac = (bivouac: Bivouac) => {
+    this.selectedBivouacsIds.add(bivouac);
+  };
+
+  deselectBivouac = (bivouac: Bivouac) => {
+    this.selectedBivouacsIds.delete(bivouac);
+  };
+
+  deselectAllBivouacs = () => {
+    this.selectedBivouacsIds.clear();
+  };
+
+  toggleBivouacSelection = (bivouac: Bivouac) => {
+    if (this.bivouacIsSelected(bivouac)) {
+      this.deselectBivouac(bivouac);
+    } else {
+      this.selectBivouac(bivouac);
+    }
   };
 
   private sortItems = <T>(items: T[], prop: string, reverse: boolean = false) =>

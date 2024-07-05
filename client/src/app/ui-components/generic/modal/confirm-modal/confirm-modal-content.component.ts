@@ -12,20 +12,24 @@ export interface ConfirmModalProps {
   standalone: true,
   imports: [],
   template: `
-    <h3 class="text-lg font-bold">{{ title }}</h3>
-    <p class="py-4">{{ content }}</p>
-    <div class="modal-action">
-      <form method="dialog">
-        <!-- if there is a button in form, it will close the modal -->
-        <div class="flex gap-4">
-          <button class="btn btn-success" (click)="onConfirm()">
-            {{ confirmLabel }}
-          </button>
-          <button class="btn btn-error">
-            {{ cancelLabel }}
-          </button>
-        </div>
-      </form>
+    <div style="max-height: calc(100vh - 5em - 3rem)" class="flex flex-col">
+      <h3 class="text-lg font-bold">{{ title }}</h3>
+      <!-- White space: pre makes it so that we can add line breaks in the content with \\n
+       (only one slash) -->
+      <p class="py-4 whitespace-pre overflow-auto">{{ content }}</p>
+      <div class="modal-action">
+        <form method="dialog">
+          <!-- if there is a button in form, it will close the modal -->
+          <div class="flex gap-4">
+            <button class="btn btn-success" (click)="onConfirm()">
+              {{ confirmLabel }}
+            </button>
+            <button class="btn btn-error">
+              {{ cancelLabel }}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   `,
   styles: ``,
