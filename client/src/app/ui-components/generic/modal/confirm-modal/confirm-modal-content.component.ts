@@ -13,16 +13,16 @@ export interface ConfirmModalProps {
   imports: [],
   template: `
     <h3 class="text-lg font-bold">{{ title }}</h3>
-    <p class="py-4">{{ message }}</p>
+    <p class="py-4">{{ content }}</p>
     <div class="modal-action">
       <form method="dialog">
         <!-- if there is a button in form, it will close the modal -->
         <div class="flex gap-4">
           <button class="btn btn-success" (click)="onConfirm()">
-            {{ confirmMessage }}
+            {{ confirmLabel }}
           </button>
           <button class="btn btn-error">
-            {{ cancelMessage }}
+            {{ cancelLabel }}
           </button>
         </div>
       </form>
@@ -32,8 +32,8 @@ export interface ConfirmModalProps {
 })
 export class ConfirmModalContentComponent {
   @Input() title: string = "Default title";
-  @Input() message?: string;
-  @Input() confirmMessage?: string = "Confirm";
-  @Input() cancelMessage?: string = "Cancel";
+  @Input() content?: string;
+  @Input() confirmLabel?: string = "Confirm";
+  @Input() cancelLabel?: string = "Cancel";
   @Input() onConfirm: () => void = () => {};
 }
