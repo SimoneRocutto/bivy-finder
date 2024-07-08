@@ -31,9 +31,9 @@ export class ModalService {
     this.appRef.attachView(this.modalComponent.hostView);
   }
 
-  openModal = (component: Type<unknown>, inputProps: any = {}) => {
+  openModal = <T>(component: Type<T>, inputProps: any = {}) => {
     // create the desired component, the content of the modal box
-    const newComponent = createComponent(component, {
+    const newComponent: ComponentRef<T> = createComponent(component, {
       environmentInjector: this.injector,
     });
 
@@ -52,6 +52,7 @@ export class ModalService {
     // Attach views to the changeDetection cycle
     this.appRef.attachView(newComponent.hostView);
     this.appRef.attachView(this.modalComponent.hostView);
+    return newComponent;
   };
 
   close() {

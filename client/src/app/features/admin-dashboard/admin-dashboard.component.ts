@@ -6,7 +6,8 @@ import { PaginationComponent } from "../../ui-components/generic/pagination/pagi
 import { ToastService } from "../../ui-components/generic/toast-box/toast.service";
 import { HttpErrorResponse } from "@angular/common/http";
 import { ModalService } from "../../ui-components/generic/modal/modal.service";
-import { catchError, forkJoin, map, tap } from "rxjs";
+import { catchError, forkJoin, map, take, tap } from "rxjs";
+import { BivouacFormComponent } from "./bivouac-form/bivouac-form.component";
 
 @Component({
   selector: "app-admin-dashboard",
@@ -15,7 +16,9 @@ import { catchError, forkJoin, map, tap } from "rxjs";
   template: `
     <div class="min-w-96 overflow-x-auto pt-4 pb-16">
       <div class="flex justify-end gap-4 mb-4">
-        <button class="btn btn-primary">Add bivouac</button>
+        <button class="btn btn-primary" (click)="openCreateModal()">
+          Add bivouac
+        </button>
         <button
           (click)="openBulkDeleteModal()"
           class="btn btn-error"
@@ -52,7 +55,8 @@ import { catchError, forkJoin, map, tap } from "rxjs";
               {{ bivouac[col.prop] }}
             </td>
             <td>
-              <button><i class="material-icons">edit</i></button
+              <button (click)="openEditModal(bivouac)">
+                <i class="material-icons">edit</i></button
               ><button (click)="openDeleteModal(bivouac)">
                 <i class="material-icons">delete</i>
               </button>
@@ -152,6 +156,22 @@ export class AdminDashboardComponent implements OnInit {
         return err;
       })
     );
+
+  openCreateModal = () => {
+    const newComponent = this.modalService.openModal(BivouacFormComponent);
+    newComponent.instance.onCreate.pipe(take(1)).subscribe((bivouacId) => {
+      this.modalService.close();
+    });
+  };
+
+  openEditModal = (bivouac: Bivouac) => {
+    const newComponent = this.modalService.openModal(BivouacFormComponent, {
+      bivouac,
+    });
+    newComponent.instance.onUpdate.pipe(take(1)).subscribe(() => {
+      this.modalService.close();
+    });
+  };
 
   openDeleteModal = (bivouac: Bivouac) => {
     this.modalService.openConfirmModal({
