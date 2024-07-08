@@ -2,6 +2,7 @@ import * as express from "express";
 import { ObjectId } from "mongodb";
 import { collections } from "../database/database";
 import { sendFail, sendSuccess } from "../utils/http";
+import { objectFalsyFilter } from "../utils/misc";
 
 export const bivouacRouter = express.Router();
 bivouacRouter.use(express.json());
@@ -119,7 +120,7 @@ bivouacRouter.get("/:id", async (req, res) => {
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Bivouac'
+ *             $ref: '#/components/schemas/NewBivouac'
  *     responses:
  *       201:
  *         description: Operation successful
@@ -169,10 +170,15 @@ bivouacRouter.post("/", async (req, res) => {
 bivouacRouter.put("/:id", async (req, res) => {
   const id = req?.params?.id;
   const bivouac = req.body;
+  // Each prop that is null gets unset. To avoid
+  // removing props, simply do not pass that prop.
+  const [cleanBivouac, filteredProps] = objectFalsyFilter(bivouac);
+  console.log({ bivouac, cleanBivouac, filteredProps });
   const query = { _id: new ObjectId(id) };
-  const result = await collections?.bivouacs?.updateOne(query, {
-    $set: bivouac,
-  });
+  const result = await collections?.bivouacs?.updateOne(query, [
+    { $set: cleanBivouac },
+    ...(filteredProps.length < 1 ? [] : [{ $unset: filteredProps }]),
+  ]);
 
   if (result && result.matchedCount) {
     sendSuccess(res, null, 204);
