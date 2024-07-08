@@ -137,7 +137,8 @@ bivouacRouter.get("/:id", async (req, res) => {
 bivouacRouter.post("/", async (req, res) => {
   {
     const bivouac = req.body;
-    const result = await collections?.bivouacs?.insertOne(bivouac);
+    const cleanBivouac = objectFalsyFilter(bivouac)[0];
+    const result = await collections?.bivouacs?.insertOne(cleanBivouac);
 
     if (result?.acknowledged) {
       sendSuccess(res, { id: result.insertedId }, 201);
@@ -173,7 +174,6 @@ bivouacRouter.put("/:id", async (req, res) => {
   // Each prop that is null gets unset. To avoid
   // removing props, simply do not pass that prop.
   const [cleanBivouac, filteredProps] = objectFalsyFilter(bivouac);
-  console.log({ bivouac, cleanBivouac, filteredProps });
   const query = { _id: new ObjectId(id) };
   const result = await collections?.bivouacs?.updateOne(query, [
     { $set: cleanBivouac },
