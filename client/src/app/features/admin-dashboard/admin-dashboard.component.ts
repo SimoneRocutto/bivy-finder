@@ -6,8 +6,18 @@ import { PaginationComponent } from "../../ui-components/generic/pagination/pagi
 import { ToastService } from "../../ui-components/generic/toast-box/toast.service";
 import { HttpErrorResponse } from "@angular/common/http";
 import { ModalService } from "../../ui-components/generic/modal/modal.service";
-import { catchError, forkJoin, map, take, tap } from "rxjs";
+import {
+  Observable,
+  catchError,
+  concatMap,
+  filter,
+  forkJoin,
+  map,
+  take,
+  tap,
+} from "rxjs";
 import { BivouacFormComponent } from "./bivouac-form/bivouac-form.component";
+import { ErrorService } from "../../error.service";
 
 @Component({
   selector: "app-admin-dashboard",
@@ -29,6 +39,7 @@ import { BivouacFormComponent } from "./bivouac-form/bivouac-form.component";
       </div>
       <app-pagination
         [items]="bivouacs"
+        [(pageNumber)]="pageNumber"
         [pageSize]="pageSize"
         (onPageChange)="setShownBivouacs($event)"
       ></app-pagination>
@@ -55,7 +66,7 @@ import { BivouacFormComponent } from "./bivouac-form/bivouac-form.component";
               {{ bivouac[col.prop] }}
             </td>
             <td>
-              <button (click)="openEditModal(bivouac)">
+              <button (click)="openUpdateModal(bivouac)">
                 <i class="material-icons">edit</i></button
               ><button (click)="openDeleteModal(bivouac)">
                 <i class="material-icons">delete</i>
@@ -67,6 +78,7 @@ import { BivouacFormComponent } from "./bivouac-form/bivouac-form.component";
       <app-pagination
         [items]="bivouacs"
         [pageSize]="pageSize"
+        [(pageNumber)]="pageNumber"
         (onPageChange)="setShownBivouacs($event)"
       ></app-pagination>
     </div>
@@ -77,6 +89,7 @@ export class AdminDashboardComponent implements OnInit {
   bivouacs: Bivouac[] = [];
   shownBivouacs: Bivouac[] = [];
 
+  pageNumber = 1;
   pageSize = 50;
 
   columns: { name: string; prop: keyof Bivouac }[] = [
@@ -93,7 +106,8 @@ export class AdminDashboardComponent implements OnInit {
   constructor(
     private bivouacService: BivouacService,
     private toastService: ToastService,
-    private modalService: ModalService
+    private modalService: ModalService,
+    private errorService: ErrorService
   ) {}
 
   @ViewChild(PaginationComponent) pagination!: PaginationComponent;
@@ -114,9 +128,11 @@ export class AdminDashboardComponent implements OnInit {
     this.shownBivouacs = bivouacs;
   };
 
-  sortBivouacs = (prop: keyof Bivouac) => {
-    const reverseSort = this.currentSortProp === prop && !this.reverseSort;
-    this.sortItems(this.bivouacs, prop, reverseSort);
+  sortBivouacs = (prop: keyof Bivouac, ignoreReverse = false) => {
+    const reverseSort = ignoreReverse
+      ? this.reverseSort
+      : this.currentSortProp === prop && !this.reverseSort;
+    this.sortTableItems(prop, reverseSort);
     this.currentSortProp = prop;
     this.reverseSort = reverseSort;
     // 0s timeout makes sure items property of pagination component is populated with bivouacs.
@@ -125,52 +141,30 @@ export class AdminDashboardComponent implements OnInit {
     }, 0);
   };
 
-  private deleteBivouac = (bivouac: Bivouac) =>
-    this.bivouacService.deleteBivouac(bivouac._id).pipe(
-      map((res) => {
-        if (res.status !== 204) {
-          const errorMessage = "Unknown error while deleting bivouac.";
-          console.error(errorMessage);
-          this.toastService.createToast(errorMessage, "error");
-          return res;
-        }
-        this.toastService.createToast(
-          "Bivouac deleted successfully.",
-          "success"
-        );
-        this.bivouacs = this.bivouacs.filter((b) => b !== bivouac);
-        this.deselectBivouac(bivouac);
-        setTimeout(() => {
-          this.pagination.setPage(this.pagination.pageNumber);
-        }, 0);
-        return res;
-      }),
-      catchError((err) => {
-        let errorMessage = "Unknown error while deleting bivouac.";
-        if (err instanceof HttpErrorResponse && err.status === 404) {
-          errorMessage =
-            "Oops, bivouac has already been deleted. Refresh the page to sync table data.";
-        }
-        console.error(err);
-        this.toastService.createToast(errorMessage, "error", 5000);
-        return err;
-      })
-    );
-
   openCreateModal = () => {
     const newComponent = this.modalService.openModal(BivouacFormComponent);
-    newComponent.instance.onCreate.pipe(take(1)).subscribe((bivouacId) => {
-      this.modalService.close();
-    });
+    newComponent.instance.onCreate
+      .pipe(
+        concatMap((bivouacId) => this.refreshAfterCreateOrUpdate(bivouacId)),
+        take(1)
+      )
+      .subscribe(() => {
+        this.modalService.close();
+      });
   };
 
-  openEditModal = (bivouac: Bivouac) => {
+  openUpdateModal = (bivouac: Bivouac) => {
     const newComponent = this.modalService.openModal(BivouacFormComponent, {
       bivouac,
     });
-    newComponent.instance.onUpdate.pipe(take(1)).subscribe(() => {
-      this.modalService.close();
-    });
+    newComponent.instance.onUpdate
+      .pipe(
+        concatMap(() => this.refreshAfterCreateOrUpdate(bivouac._id, bivouac)),
+        take(1)
+      )
+      .subscribe(() => {
+        this.modalService.close();
+      });
   };
 
   openDeleteModal = (bivouac: Bivouac) => {
@@ -201,6 +195,107 @@ export class AdminDashboardComponent implements OnInit {
     });
   };
 
+  toggleBivouacSelection = (bivouac: Bivouac) => {
+    if (this.bivouacIsSelected(bivouac)) {
+      this.deselectBivouac(bivouac);
+    } else {
+      this.selectBivouac(bivouac);
+    }
+  };
+
+  bivouacIsSelected = (bivouac: Bivouac) => {
+    return this.selectedBivouacsIds.has(bivouac);
+  };
+
+  /**
+   * Refresh bivouacs list after create or update. The new/updated bivouac
+   * is fetched from the server and added to the list, to avoid refreshing
+   * the whole list data.
+   * @param bivouacId
+   * @param bivouac Pass this only for update. Leave undefined for create.
+   * @returns Observable
+   */
+  private refreshAfterCreateOrUpdate = (
+    bivouacId: string,
+    bivouac?: Bivouac
+  ): Observable<any> =>
+    this.bivouacService.getBivouacById(bivouacId).pipe(
+      catchError((res) => this.errorService.catchNonHttpError(res)),
+      filter((res) => this.errorService.filterHttpError(res)),
+      tap((res) => {
+        // ? This doesn't throw error in typescript version 5.5.2. (in fact it
+        // shouldn't throw - see the same case in updateBivouac)
+        // Todo remove ts-ignore comments after updating angular to a version
+        // that allows using typescript 5.5.2 or more.
+        // @ts-ignore
+        if (res.status !== 200 || res.body?.status !== "success") {
+          const errorMessage = "Unknown error while getting bivouac.";
+          console.error(errorMessage);
+          this.toastService.createToast(errorMessage, "error");
+          return;
+        }
+        // Todo use ngZone to avoid refreshing view in the middle of an update
+        if (bivouac) {
+          this.removeBivouacFromList(bivouac);
+        }
+        // @ts-ignore
+        this.bivouacs.push(res.body.data);
+        this.softRefreshPage(true);
+      })
+    );
+
+  private deleteBivouac = (bivouac: Bivouac) =>
+    this.bivouacService.deleteBivouac(bivouac._id).pipe(
+      map((res) => {
+        if (res.status !== 204) {
+          const errorMessage = "Unknown error while deleting bivouac.";
+          console.error(errorMessage);
+          this.toastService.createToast(errorMessage, "error");
+          return res;
+        }
+        this.toastService.createToast(
+          "Bivouac deleted successfully.",
+          "success"
+        );
+        this.removeBivouacFromList(bivouac);
+        this.softRefreshPage();
+        return res;
+      }),
+      catchError((err) => {
+        let errorMessage = "Unknown error while deleting bivouac.";
+        if (err instanceof HttpErrorResponse && err.status === 404) {
+          errorMessage =
+            "Oops, bivouac has already been deleted. Refresh the page to sync table data.";
+        }
+        console.error(err);
+        this.toastService.createToast(errorMessage, "error", 5000);
+        return err;
+      })
+    );
+
+  /**
+   * Removes bivouac from the client's bivouacs list.
+   * @param bivouac - bivouac to remove
+   */
+  private removeBivouacFromList = (bivouac: Bivouac) => {
+    this.bivouacs = this.bivouacs.filter((b) => b !== bivouac);
+    this.deselectBivouac(bivouac);
+  };
+
+  /**
+   * Refreshes the current pagination page. "Soft" means
+   * that we are not refetching the list of items from the backend.
+   * @param sort - whether to sort the bivouacs
+   */
+  private softRefreshPage = (sort: boolean = false) => {
+    setTimeout(() => {
+      if (sort) {
+        this.sortTableItems();
+      }
+      this.pagination.setPage(this.pagination.pageNumber);
+    }, 0);
+  };
+
   private deleteSelectedBivouacs = () => {
     return forkJoin(
       Array.from(this.selectedBivouacsIds).map((bivouac) =>
@@ -224,28 +319,23 @@ export class AdminDashboardComponent implements OnInit {
     );
   };
 
-  bivouacIsSelected = (bivouac: Bivouac) => {
-    return this.selectedBivouacsIds.has(bivouac);
-  };
-
-  selectBivouac = (bivouac: Bivouac) => {
+  private selectBivouac = (bivouac: Bivouac) => {
     this.selectedBivouacsIds.add(bivouac);
   };
 
-  deselectBivouac = (bivouac: Bivouac) => {
+  private deselectBivouac = (bivouac: Bivouac) => {
     this.selectedBivouacsIds.delete(bivouac);
   };
 
-  deselectAllBivouacs = () => {
+  private deselectAllBivouacs = () => {
     this.selectedBivouacsIds.clear();
   };
 
-  toggleBivouacSelection = (bivouac: Bivouac) => {
-    if (this.bivouacIsSelected(bivouac)) {
-      this.deselectBivouac(bivouac);
-    } else {
-      this.selectBivouac(bivouac);
-    }
+  private sortTableItems = (
+    prop: string = this.currentSortProp ?? this.defaultSortProp,
+    reverse: boolean = this.reverseSort
+  ) => {
+    this.sortItems(this.bivouacs, prop, reverse);
   };
 
   private sortItems = <T>(items: T[], prop: string, reverse: boolean = false) =>

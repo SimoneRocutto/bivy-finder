@@ -15,10 +15,10 @@ import {
   bivouacTypes,
 } from "../../../types/bivouac.type";
 import { CommonModule } from "@angular/common";
-import { catchError, filter, of, tap } from "rxjs";
-import { HttpErrorResponse, HttpResponse } from "@angular/common/http";
+import { catchError, filter, tap } from "rxjs";
 import { ToastService } from "../../../ui-components/generic/toast-box/toast.service";
 import { LatLngExpression } from "leaflet";
+import { ErrorService } from "../../../error.service";
 
 @Component({
   selector: "app-bivouac-form",
@@ -139,7 +139,7 @@ export class BivouacFormComponent implements OnInit {
 
     const { latitude, longitude, altitude, ...partialData } = optionalProps;
 
-    let latLng: LatLngExpression | undefined;
+    let latLng: LatLngExpression | null = null;
     // If at least one value has been set, we give a default to all other values,
     // to avoid losing data. Keep in mind that we are preventing this case by
     // validating user input form.
@@ -157,7 +157,8 @@ export class BivouacFormComponent implements OnInit {
 
   constructor(
     private bivouacsService: BivouacService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private errorService: ErrorService
   ) {}
 
   ngOnInit(): void {
@@ -179,8 +180,8 @@ export class BivouacFormComponent implements OnInit {
 
   createBivouac = (bivouac: NewBivouac) =>
     this.bivouacsService.createBivouac(bivouac).pipe(
-      catchError((res) => this.catchNonHttpError(res)),
-      filter((res) => this.filterHttpError(res)),
+      catchError((res) => this.errorService.catchNonHttpError(res)),
+      filter((res) => this.errorService.filterHttpError(res)),
       tap((res) => {
         // ? This doesn't throw error in typescript version 5.5.2. (in fact it
         // shouldn't throw - see the same case in updateBivouac)
@@ -199,8 +200,8 @@ export class BivouacFormComponent implements OnInit {
 
   updateBivouac = (bivouacId: string, bivouac: NewBivouac) =>
     this.bivouacsService.updateBivouac(bivouacId, bivouac).pipe(
-      catchError((res) => this.catchNonHttpError(res)),
-      filter((res) => this.filterHttpError(res)),
+      catchError((res) => this.errorService.catchNonHttpError(res)),
+      filter((res) => this.errorService.filterHttpError(res)),
       tap((res) => {
         if (res.status === 204) {
           this.toastService.createToast("Bivouac updated", "success");
@@ -213,23 +214,6 @@ export class BivouacFormComponent implements OnInit {
   private isEdit(): this is { bivouac: Bivouac & { _id: string } } {
     return !!this.bivouac?._id;
   }
-
-  private catchNonHttpError = (error: any) => {
-    if (error instanceof HttpErrorResponse) {
-      return of(error);
-    }
-    throw error;
-  };
-
-  private filterHttpError = (
-    res: HttpResponse<any> | HttpErrorResponse
-  ): res is Exclude<typeof res, HttpErrorResponse> => {
-    const isError = res instanceof HttpErrorResponse;
-    if (isError) {
-      this.toastService.createToast("Unknown server error", "error");
-    }
-    return !isError;
-  };
 
   /**
    * If this is an update form, prefills the form with bivouac data.

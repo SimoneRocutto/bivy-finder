@@ -99,7 +99,8 @@ export class PaginationComponent {
   @Input() items: any[] = [];
   @Input() shownItems: any[] = [];
   @Output() onPageChange = new EventEmitter<any[]>();
-  pageNumber = 1;
+  @Output() pageNumberChange = new EventEmitter<number>();
+  @Input() pageNumber = 1;
 
   /**  Width of each button (rem) */
   buttonWidth = 3;
@@ -127,6 +128,7 @@ export class PaginationComponent {
       return;
     }
     this.pageNumber = pageNumber;
+    this.pageNumberChange.emit(pageNumber);
     this.onPageChange.emit(
       this.items.slice(
         (pageNumber - 1) * this.pageSize,
