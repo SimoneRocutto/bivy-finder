@@ -19,6 +19,7 @@ import { catchError, filter, tap } from "rxjs";
 import { ToastService } from "../../../ui-components/generic/toast-box/toast.service";
 import { LatLngExpression } from "leaflet";
 import { ErrorService } from "../../../error.service";
+import { ModalService } from "../../../ui-components/generic/modal/modal.service";
 
 @Component({
   selector: "app-bivouac-form",
@@ -30,7 +31,12 @@ import { ErrorService } from "../../../error.service";
     class="flex flex-col"
   >
     <div class="flex flex-col gap-4 mb-6">
-      <label class="input input-bordered flex items-center gap-2">
+      <label
+        class="input input-bordered flex items-center gap-2"
+        [ngClass]="{
+          'input-error': name.invalid && (name.dirty || name.touched)
+        }"
+      >
         Name
         <input formControlName="name" type="text" class="grow" />
       </label>
@@ -84,7 +90,20 @@ import { ErrorService } from "../../../error.service";
         />
       </label>
     </div>
-    <button type="submit" class="btn btn-primary self-end">Submit</button>
+    <div class="flex flex-row self-end gap-4">
+      <!-- todo: handle this outside this component. Ideally this form shouldn't know
+      whether it's called from a modal or not. -->
+      <button type="button" class="btn btn-error" (click)="closeModal()">
+        Cancel
+      </button>
+      <button
+        type="submit"
+        [disabled]="!bivouacForm.valid"
+        class="btn btn-primary"
+      >
+        Submit
+      </button>
+    </div>
   </form>`,
   styles: ``,
 })
@@ -93,6 +112,10 @@ export class BivouacFormComponent implements OnInit {
   @Output() onSubmit = new EventEmitter();
   @Output() onCreate = new EventEmitter<string>();
   @Output() onUpdate = new EventEmitter<string>();
+
+  get name() {
+    return this.bivouacForm.get("name")!;
+  }
 
   latLngPrecision = 0.0001;
 
@@ -140,10 +163,7 @@ export class BivouacFormComponent implements OnInit {
     const { latitude, longitude, altitude, ...partialData } = optionalProps;
 
     let latLng: LatLngExpression | null = null;
-    // If at least one value has been set, we give a default to all other values,
-    // to avoid losing data. Keep in mind that we are preventing this case by
-    // validating user input form.
-    // Todo validate latlng: if lat is set, then lng must be set and vice versa.
+    // If lat is set, we give a default value to lng to avoid losing data and vice versa.
     // If altitude is set, both lat and lng must be set.
     if (latitude || longitude || altitude) {
       latLng = [latitude ?? 0, longitude ?? 0, altitude ?? undefined];
@@ -158,7 +178,8 @@ export class BivouacFormComponent implements OnInit {
   constructor(
     private bivouacsService: BivouacService,
     private toastService: ToastService,
-    private errorService: ErrorService
+    private errorService: ErrorService,
+    private modalService: ModalService
   ) {}
 
   ngOnInit(): void {
@@ -210,6 +231,10 @@ export class BivouacFormComponent implements OnInit {
         }
       })
     );
+
+  closeModal = () => {
+    this.modalService.close();
+  };
 
   private isEdit(): this is { bivouac: Bivouac & { _id: string } } {
     return !!this.bivouac?._id;
