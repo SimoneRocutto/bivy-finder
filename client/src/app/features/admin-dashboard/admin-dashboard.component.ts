@@ -18,11 +18,12 @@ import {
 } from "rxjs";
 import { BivouacFormComponent } from "./bivouac-form/bivouac-form.component";
 import { ErrorService } from "../../error.service";
+import { FormsModule } from "@angular/forms";
 
 @Component({
   selector: "app-admin-dashboard",
   standalone: true,
-  imports: [CommonModule, PaginationComponent],
+  imports: [CommonModule, FormsModule, PaginationComponent],
   template: `
     <div class="min-w-96 overflow-x-auto pt-4 pb-16">
       <div class="flex justify-end gap-4 mb-4">
@@ -37,8 +38,18 @@ import { ErrorService } from "../../error.service";
           Delete bulk
         </button>
       </div>
+      <label class="input input-bordered flex items-center gap-2 mb-4">
+        <input
+          type="text"
+          class="grow"
+          placeholder="Search"
+          [(ngModel)]="filterString"
+          (input)="filterItems()"
+        />
+        <i class="material-icons">search</i>
+      </label>
       <app-pagination
-        [items]="bivouacs"
+        [items]="filteredBivouacs"
         [(pageNumber)]="pageNumber"
         [pageSize]="pageSize"
         (onPageChange)="setShownBivouacs($event)"
@@ -76,7 +87,7 @@ import { ErrorService } from "../../error.service";
         </tbody>
       </table>
       <app-pagination
-        [items]="bivouacs"
+        [items]="filteredBivouacs"
         [pageSize]="pageSize"
         [(pageNumber)]="pageNumber"
         (onPageChange)="setShownBivouacs($event)"
@@ -87,6 +98,7 @@ import { ErrorService } from "../../error.service";
 })
 export class AdminDashboardComponent implements OnInit {
   bivouacs: Bivouac[] = [];
+  filteredBivouacs: Bivouac[] = [];
   shownBivouacs: Bivouac[] = [];
 
   pageNumber = 1;
@@ -100,6 +112,9 @@ export class AdminDashboardComponent implements OnInit {
   defaultSortProp: keyof Bivouac = "name";
   currentSortProp?: keyof Bivouac;
   reverseSort = false;
+
+  filterString = "";
+  filterFields = ["name", "description", "type", "material"];
 
   selectedBivouacsIds: Set<Bivouac> = new Set();
 
@@ -120,6 +135,7 @@ export class AdminDashboardComponent implements OnInit {
         return;
       }
       this.bivouacs = res.body.data;
+      this.filteredBivouacs = res.body.data;
       this.sortBivouacs(this.defaultSortProp);
     });
   }
@@ -240,9 +256,40 @@ export class AdminDashboardComponent implements OnInit {
         }
         // @ts-ignore
         this.bivouacs.push(res.body.data);
+        this.filterItems(false);
         this.softRefreshPage(true);
       })
     );
+
+  filterItems = (refresh = true) => {
+    if (this.filterString === "") {
+      this.filteredBivouacs = this.bivouacs;
+    } else {
+      this.filteredBivouacs = this.bivouacs.filter((item) =>
+        this.filterFields.some((field) =>
+          this.toStringForFilter(item[field])
+            .toLowerCase()
+            .includes(this.filterString.toLowerCase())
+        )
+      );
+    }
+    if (refresh) {
+      this.softRefreshPage(false, true);
+    }
+  };
+
+  // Todo move this to a service or helper file
+  private toStringForFilter = (item: any): string => {
+    switch (typeof item) {
+      case "string":
+        return item;
+      case "number" || "object":
+        return item + "";
+      // Ignore symbol | function | undefined | null
+      default:
+        return "";
+    }
+  };
 
   private deleteBivouac = (bivouac: Bivouac) =>
     this.bivouacService.deleteBivouac(bivouac._id).pipe(
@@ -287,12 +334,18 @@ export class AdminDashboardComponent implements OnInit {
    * that we are not refetching the list of items from the backend.
    * @param sort - whether to sort the bivouacs
    */
-  private softRefreshPage = (sort: boolean = false) => {
+  private softRefreshPage = (
+    sort: boolean = false,
+    resetPage: boolean = false
+  ) => {
     setTimeout(() => {
       if (sort) {
         this.sortTableItems();
       }
-      this.pagination.setPage(this.pagination.pageNumber);
+      if (resetPage) {
+        this.pageNumber = 1;
+      }
+      this.pagination.setPage(this.pageNumber);
     }, 0);
   };
 
@@ -312,9 +365,7 @@ export class AdminDashboardComponent implements OnInit {
           (b) => !this.selectedBivouacsIds.has(b)
         );
         this.deselectAllBivouacs();
-        setTimeout(() => {
-          this.pagination.setPage(this.pagination.pageNumber);
-        }, 0);
+        this.softRefreshPage();
       })
     );
   };

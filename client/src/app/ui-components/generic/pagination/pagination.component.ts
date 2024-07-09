@@ -120,7 +120,9 @@ export class PaginationComponent {
   }
 
   get pagesCount() {
-    return Math.ceil(this.items.length / this.pageSize);
+    const count = Math.ceil(this.items.length / this.pageSize);
+    // We need at least one page
+    return count > 0 ? count : 1;
   }
 
   setPage = (pageNumber: number) => {
