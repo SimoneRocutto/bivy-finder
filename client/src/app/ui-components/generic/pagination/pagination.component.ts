@@ -113,22 +113,24 @@ export class PaginationComponent {
       : this.pageNumber - this.extraPageButtons;
   }
 
-  get maxPageNumber() {
-    return this.pageNumber + this.extraPageButtons > this.pagesCount
-      ? this.pagesCount
-      : this.pageNumber + this.extraPageButtons;
-  }
-
   get pagesCount() {
     const count = Math.ceil(this.items.length / this.pageSize);
     // We need at least one page
     return count > 0 ? count : 1;
   }
 
-  setPage = (pageNumber: number) => {
-    if (pageNumber < 1 || pageNumber > this.pagesCount) {
-      return;
+  private fixPageNumber = (pageNumber: number): number => {
+    if (pageNumber > this.pagesCount) {
+      return this.pagesCount;
     }
+    if (pageNumber < 1) {
+      return 1;
+    }
+    return pageNumber;
+  };
+
+  setPage = (inputPageNumber: number) => {
+    const pageNumber = this.fixPageNumber(inputPageNumber);
     this.pageNumber = pageNumber;
     this.pageNumberChange.emit(pageNumber);
     this.onPageChange.emit(

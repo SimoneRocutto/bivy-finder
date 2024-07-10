@@ -10,5 +10,22 @@
     "logout": "logout",
     "password": "password",
     "username": "username"
+  },
+  "bivouacs": {
+    "materials": {
+      "stone": "stone",
+      "wood": "wood",
+      "metal": "metal",
+      "rock": "rock"
+    },
+    "types": {
+      "managed": "managed",
+      "require-keys": "requires keys",
+      "private": "private",
+      "open": "open",
+      "out-of-lombardy": "out of lombardy",
+      "incomplete": "incomplete",
+      "abandoned": "abandoned"
+    }
   }
 }

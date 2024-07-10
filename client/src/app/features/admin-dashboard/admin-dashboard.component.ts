@@ -19,11 +19,14 @@ import {
 import { BivouacFormComponent } from "./bivouac-form/bivouac-form.component";
 import { ErrorService } from "../../error.service";
 import { FormsModule } from "@angular/forms";
+import { TableComponent } from "../../ui-components/generic/table/table.component";
+import { TableColumn } from "../../ui-components/generic/table/table.type";
+import { TranslocoService } from "@jsverse/transloco";
 
 @Component({
   selector: "app-admin-dashboard",
   standalone: true,
-  imports: [CommonModule, FormsModule, PaginationComponent],
+  imports: [CommonModule, FormsModule, PaginationComponent, TableComponent],
   template: `
     <div class="min-w-96 overflow-x-auto pt-4 pb-16">
       <div class="flex justify-end gap-4 mb-4">
@@ -38,83 +41,60 @@ import { FormsModule } from "@angular/forms";
           Delete bulk
         </button>
       </div>
-      <label class="input input-bordered flex items-center gap-2 mb-4">
-        <input
-          type="text"
-          class="grow"
-          placeholder="Search"
-          [(ngModel)]="filterString"
-          (input)="filterItems()"
-        />
-        <i class="material-icons">search</i>
-      </label>
-      <app-pagination
-        [items]="filteredBivouacs"
-        [(pageNumber)]="pageNumber"
+      <app-table
+        [items]="bivouacs"
+        [beforeCell]="beforeCell"
+        [afterCell]="afterCell"
         [pageSize]="pageSize"
-        (onPageChange)="setShownBivouacs($event)"
-      ></app-pagination>
-      <table class="table table-zebra-zebra my-6">
-        <thead>
-          <tr class="flex flex-row">
-            <th class="w-16"></th>
-            <th *ngFor="let col of columns" class="flex-1">
-              <button (click)="sortBivouacs(col.prop)">{{ col.name }}</button>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let bivouac of shownBivouacs" class="flex flex-row">
-            <td class="w-16 flex justify-center items-center">
-              <input
-                type="checkbox"
-                class="checkbox"
-                [checked]="bivouacIsSelected(bivouac)"
-                (change)="toggleBivouacSelection(bivouac)"
-              />
-            </td>
-            <td *ngFor="let col of columns" class="flex-1">
-              {{ bivouac[col.prop] }}
-            </td>
-            <td>
-              <button (click)="openUpdateModal(bivouac)">
-                <i class="material-icons">edit</i></button
-              ><button (click)="openDeleteModal(bivouac)">
-                <i class="material-icons">delete</i>
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <app-pagination
-        [items]="filteredBivouacs"
-        [pageSize]="pageSize"
-        [(pageNumber)]="pageNumber"
-        (onPageChange)="setShownBivouacs($event)"
-      ></app-pagination>
+        [columns]="columns"
+      >
+        <ng-template #beforeCell let-bivouac>
+          <td before class="w-16 flex justify-center items-center">
+            <input
+              type="checkbox"
+              class="checkbox"
+              [checked]="bivouacIsSelected(bivouac)"
+              (change)="toggleBivouacSelection(bivouac)"
+            /></td
+        ></ng-template>
+        <ng-template #afterCell let-bivouac>
+          <td after>
+            <button (click)="openUpdateModal(bivouac)">
+              <i class="material-icons">edit</i></button
+            ><button (click)="openDeleteModal(bivouac)">
+              <i class="material-icons">delete</i>
+            </button>
+          </td></ng-template
+        ></app-table
+      >
     </div>
   `,
   styles: ``,
 })
 export class AdminDashboardComponent implements OnInit {
   bivouacs: Bivouac[] = [];
-  filteredBivouacs: Bivouac[] = [];
-  shownBivouacs: Bivouac[] = [];
-
-  pageNumber = 1;
   pageSize = 50;
 
-  columns: { name: string; prop: keyof Bivouac }[] = [
-    { name: "Name", prop: "name" },
-    { name: "Type", prop: "type" },
+  columns: TableColumn<Bivouac>[] = [
+    { prop: "name", name: "Name", filter: true, defaultSort: true },
+    {
+      prop: "type",
+      name: "Type",
+      filter: true,
+      style: { textTransform: "capitalize" },
+      transform: (type) =>
+        this.translationTransform(type as string, "bivouacs.types"),
+    },
+    {
+      prop: "material",
+      name: "Material",
+      hidden: false,
+      filter: true,
+      style: { textTransform: "capitalize" },
+      transform: (material) =>
+        this.translationTransform(material as string, "bivouacs.materials"),
+    },
   ];
-
-  defaultSortProp: keyof Bivouac = "name";
-  currentSortProp?: keyof Bivouac;
-  reverseSort = false;
-
-  filterString = "";
-  filterFields = ["name", "description", "type", "material"];
 
   selectedBivouacsIds: Set<Bivouac> = new Set();
 
@@ -122,7 +102,8 @@ export class AdminDashboardComponent implements OnInit {
     private bivouacService: BivouacService,
     private toastService: ToastService,
     private modalService: ModalService,
-    private errorService: ErrorService
+    private errorService: ErrorService,
+    private translocoService: TranslocoService
   ) {}
 
   @ViewChild(PaginationComponent) pagination!: PaginationComponent;
@@ -135,27 +116,8 @@ export class AdminDashboardComponent implements OnInit {
         return;
       }
       this.bivouacs = res.body.data;
-      this.filteredBivouacs = res.body.data;
-      this.sortBivouacs(this.defaultSortProp);
     });
   }
-
-  setShownBivouacs = (bivouacs: Bivouac[]) => {
-    this.shownBivouacs = bivouacs;
-  };
-
-  sortBivouacs = (prop: keyof Bivouac, ignoreReverse = false) => {
-    const reverseSort = ignoreReverse
-      ? this.reverseSort
-      : this.currentSortProp === prop && !this.reverseSort;
-    this.sortTableItems(prop, reverseSort);
-    this.currentSortProp = prop;
-    this.reverseSort = reverseSort;
-    // 0s timeout makes sure items property of pagination component is populated with bivouacs.
-    setTimeout(() => {
-      this.pagination.setPage(1);
-    }, 0);
-  };
 
   openCreateModal = () => {
     const newComponent = this.modalService.openModal(BivouacFormComponent);
@@ -256,40 +218,9 @@ export class AdminDashboardComponent implements OnInit {
         }
         // @ts-ignore
         this.bivouacs.push(res.body.data);
-        this.filterItems(false);
-        this.softRefreshPage(true);
+        this.refreshPagination();
       })
     );
-
-  filterItems = (refresh = true) => {
-    if (this.filterString === "") {
-      this.filteredBivouacs = this.bivouacs;
-    } else {
-      this.filteredBivouacs = this.bivouacs.filter((item) =>
-        this.filterFields.some((field) =>
-          this.toStringForFilter(item[field])
-            .toLowerCase()
-            .includes(this.filterString.toLowerCase())
-        )
-      );
-    }
-    if (refresh) {
-      this.softRefreshPage(false, true);
-    }
-  };
-
-  // Todo move this to a service or helper file
-  private toStringForFilter = (item: any): string => {
-    switch (typeof item) {
-      case "string":
-        return item;
-      case "number" || "object":
-        return item + "";
-      // Ignore symbol | function | undefined | null
-      default:
-        return "";
-    }
-  };
 
   private deleteBivouac = (bivouac: Bivouac) =>
     this.bivouacService.deleteBivouac(bivouac._id).pipe(
@@ -305,7 +236,6 @@ export class AdminDashboardComponent implements OnInit {
           "success"
         );
         this.removeBivouacFromList(bivouac);
-        this.softRefreshPage();
         return res;
       }),
       catchError((err) => {
@@ -321,32 +251,20 @@ export class AdminDashboardComponent implements OnInit {
     );
 
   /**
+   * Triggers items setter. Sometimes we have to trigger it manually (e.g. when
+   * altering the items array with .push).
+   */
+  private refreshPagination = () => {
+    this.bivouacs = this.bivouacs.slice();
+  };
+
+  /**
    * Removes bivouac from the client's bivouacs list.
    * @param bivouac - bivouac to remove
    */
   private removeBivouacFromList = (bivouac: Bivouac) => {
     this.bivouacs = this.bivouacs.filter((b) => b !== bivouac);
     this.deselectBivouac(bivouac);
-  };
-
-  /**
-   * Refreshes the current pagination page. "Soft" means
-   * that we are not refetching the list of items from the backend.
-   * @param sort - whether to sort the bivouacs
-   */
-  private softRefreshPage = (
-    sort: boolean = false,
-    resetPage: boolean = false
-  ) => {
-    setTimeout(() => {
-      if (sort) {
-        this.sortTableItems();
-      }
-      if (resetPage) {
-        this.pageNumber = 1;
-      }
-      this.pagination.setPage(this.pageNumber);
-    }, 0);
   };
 
   private deleteSelectedBivouacs = () => {
@@ -365,7 +283,6 @@ export class AdminDashboardComponent implements OnInit {
           (b) => !this.selectedBivouacsIds.has(b)
         );
         this.deselectAllBivouacs();
-        this.softRefreshPage();
       })
     );
   };
@@ -382,22 +299,6 @@ export class AdminDashboardComponent implements OnInit {
     this.selectedBivouacsIds.clear();
   };
 
-  private sortTableItems = (
-    prop: string = this.currentSortProp ?? this.defaultSortProp,
-    reverse: boolean = this.reverseSort
-  ) => {
-    this.sortItems(this.bivouacs, prop, reverse);
-  };
-
-  private sortItems = <T>(items: T[], prop: string, reverse: boolean = false) =>
-    items.sort((a, b) => {
-      let propA = a[prop];
-      let propB = b[prop];
-      if ([propA, propB].every((item) => typeof item !== "number")) {
-        [propA, propB] = [propA, propB].map((item) =>
-          (item ?? "").toString().toLowerCase()
-        );
-      }
-      return ((propA ?? "") < (propB ?? "") ? -1 : 1) * (reverse ? -1 : 1);
-    });
+  private translationTransform = (item: string, translationPrefix: string) =>
+    item ? this.translocoService.translate(translationPrefix + "." + item) : "";
 }

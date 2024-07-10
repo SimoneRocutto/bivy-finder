@@ -10,5 +10,22 @@
     "logout": "logout",
     "password": "password",
     "username": "username"
+  },
+  "bivouacs": {
+    "materials": {
+      "stone": "pietra",
+      "wood": "legno",
+      "metal": "metallo",
+      "rock": "roccia"
+    },
+    "types": {
+      "managed": "gestito",
+      "require-keys": "richiede chiavi",
+      "private": "privato",
+      "open": "aperto",
+      "out-of-lombardy": "fuori lombardia",
+      "incomplete": "incompleto",
+      "abandoned": "abbandonato"
+    }
   }
 }
