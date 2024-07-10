@@ -62,22 +62,28 @@ import { ModalService } from "../../../ui-components/generic/modal/modal.service
           {{ material }}
         </option>
       </select>
-      <label class="input input-bordered flex items-center gap-2">
-        Latitude
-        <input
-          formControlName="latitude"
-          type="number"
-          [step]="latLngPrecision"
-          class="grow"
-        />
-      </label>
+      <div
+        class="tooltip"
+        data-tip="Try pasting comma-separated coordinates here"
+      >
+        <label class="input input-bordered flex items-center gap-2">
+          Latitude
+          <input
+            formControlName="latitude"
+            type="number"
+            [step]="latLngPrecision"
+            class="grow hide-arrows"
+            (paste)="fillCoordinates($event)"
+          />
+        </label>
+      </div>
       <label class="input input-bordered flex items-center gap-2">
         Longitude
         <input
           formControlName="longitude"
           type="number"
           [step]="latLngPrecision"
-          class="grow"
+          class="grow hide-arrows"
         />
       </label>
       <label class="input input-bordered flex items-center gap-2">
@@ -86,7 +92,7 @@ import { ModalService } from "../../../ui-components/generic/modal/modal.service
           formControlName="altitude"
           type="number"
           [step]="latLngPrecision"
-          class="grow"
+          class="grow hide-arrows"
         />
       </label>
     </div>
@@ -231,6 +237,36 @@ export class BivouacFormComponent implements OnInit {
         }
       })
     );
+
+  /**
+   * Pasting a comma-separated list of coordinates in the latitude input
+   * will fill the coordinates form inputs. Altitude is filled only if
+   * 3 coordinates are provided.
+   * @param event Paste event
+   */
+  fillCoordinates = (event: ClipboardEvent) => {
+    const paste = event.clipboardData?.getData("text");
+
+    if (!paste) return;
+
+    const coordinates = paste
+      .replaceAll(" ", "")
+      .split(",")
+      .map((item) => Number(item));
+
+    if (
+      coordinates.every((item) => !isNaN(item)) &&
+      [2, 3].includes(coordinates.length)
+    ) {
+      event.preventDefault();
+      const [latitude, longitude, altitude] = coordinates;
+      this.bivouacForm.patchValue({
+        latitude,
+        longitude,
+        ...(altitude ? { altitude } : undefined),
+      });
+    }
+  };
 
   closeModal = () => {
     this.modalService.close();
