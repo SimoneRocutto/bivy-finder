@@ -1,10 +1,11 @@
 import { Collection } from "mongodb";
 
-const removePropFromCollection = async (
-  collection: Collection,
+export const removePropFromCollection = async (
+  collection: Collection<any>,
   prop: string
 ) => {
   await collection?.updateMany({}, { $unset: { [prop]: 1 } });
+  console.log(`Property ${prop} removed from all documents in the collection!`);
 };
 
 /**
