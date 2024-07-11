@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, OnInit, Output } from "@angular/core";
 import {
   FormControl,
   FormGroup,
+  FormsModule,
   ReactiveFormsModule,
   Validators,
 } from "@angular/forms";
@@ -20,31 +21,49 @@ import { ToastService } from "../../../ui-components/generic/toast-box/toast.ser
 import { LatLngExpression } from "leaflet";
 import { ErrorService } from "../../../error.service";
 import { ModalService } from "../../../ui-components/generic/modal/modal.service";
+import { ItemsListInputComponent } from "../../../ui-components/generic/items-list-input/items-list-input.component";
 
 @Component({
   selector: "app-bivouac-form",
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    FormsModule,
+    ItemsListInputComponent,
+  ],
   template: `<form
     [formGroup]="bivouacForm"
     (ngSubmit)="submit()"
     class="flex flex-col"
   >
     <div class="flex flex-col gap-4 mb-6">
-      <label
-        class="input input-bordered flex items-center gap-2"
-        [ngClass]="{
-          'input-error': name.invalid && (name.dirty || name.touched)
-        }"
-      >
-        Name
-        <input formControlName="name" type="text" class="grow" />
-      </label>
+      <div class="indicator w-full">
+        <span class="indicator-item badge text-orange-500">*</span>
+        <label
+          class="input input-bordered w-full flex items-center gap-2"
+          [ngClass]="{
+            'input-error': name.invalid && (name.dirty || name.touched)
+          }"
+        >
+          Name
+          <input formControlName="name" type="text" class="grow" />
+        </label>
+      </div>
       <textarea
         formControlName="description"
         class="textarea textarea-bordered grow"
         placeholder="Description"
       ></textarea>
+      <div>
+        <div class="mb-2">External Links (max {{ maxExternalLinksCount }})</div>
+        <app-items-list-input
+          [items]="bivouacForm.value.externalLinks"
+          [maxItems]="maxExternalLinksCount"
+          [isLink]="true"
+        ></app-items-list-input>
+      </div>
+
       <select
         class="select select-bordered w-full max-w-xs"
         formControlName="type"
@@ -107,7 +126,7 @@ import { ModalService } from "../../../ui-components/generic/modal/modal.service
               type="button"
               class="btn btn-primary"
             >
-              <i class="material-icons">upload</i>
+              <i class="material-symbols-outlined">upload</i>
             </button>
           </div></ng-template
         >
@@ -130,10 +149,10 @@ import { ModalService } from "../../../ui-components/generic/modal/modal.service
               type="button"
               class="btn btn-primary"
             >
-              <i class="material-icons">upload</i>
+              <i class="material-symbols-outlined">upload</i>
             </button>
             <button (click)="removeImage()" type="button" class="btn btn-error">
-              <i class="material-icons">delete</i>
+              <i class="material-symbols-outlined">delete</i>
             </button>
           </div>
         </ng-container>
@@ -175,6 +194,10 @@ export class BivouacFormComponent implements OnInit {
 
   latLngPrecision = 0.0001;
 
+  maxExternalLinksCount = 5;
+
+  newLink: string = "";
+
   bivouacForm: FormGroup<{
     name: FormControl<string>;
     description: FormControl<string | null>;
@@ -183,6 +206,7 @@ export class BivouacFormComponent implements OnInit {
     latitude: FormControl<number | null>;
     longitude: FormControl<number | null>;
     altitude: FormControl<number | null>;
+    externalLinks: FormControl<string[] | null>;
   }> = new FormGroup({
     name: new FormControl("", {
       nonNullable: true,
@@ -194,6 +218,7 @@ export class BivouacFormComponent implements OnInit {
     latitude: new FormControl(),
     longitude: new FormControl(),
     altitude: new FormControl(),
+    externalLinks: new FormControl([] as string[]),
   });
 
   imageFile?: File;
@@ -228,7 +253,8 @@ export class BivouacFormComponent implements OnInit {
       return null;
     }
 
-    const { latitude, longitude, altitude, ...partialData } = optionalProps;
+    const { latitude, longitude, altitude, externalLinks, ...partialData } =
+      optionalProps;
 
     let latLng: LatLngExpression | null = null;
     // If lat is set, we give a default value to lng to avoid losing data and vice versa.
@@ -244,6 +270,8 @@ export class BivouacFormComponent implements OnInit {
       // Sending null imageName will delete both the image file and the property.
       ...(this.imageWillBeDeleted ? { imageName: null } : {}),
       latLng: latLng,
+      // Delete prop if array is empty.
+      externalLinks: externalLinks?.length === 0 ? null : externalLinks,
     };
   }
 
@@ -352,6 +380,12 @@ export class BivouacFormComponent implements OnInit {
     this.imageWillBeDeleted = true;
   };
 
+  pushLink = () => {
+    if (!this.newLink) return;
+    this.bivouacForm.get("externalLinks")?.value?.push(this.newLink);
+    this.newLink = "";
+  };
+
   closeModal = () => {
     this.modalService.close();
   };
@@ -372,6 +406,7 @@ export class BivouacFormComponent implements OnInit {
         latitude: this.bivouac?.latLng?.[0],
         longitude: this.bivouac?.latLng?.[1],
         altitude: this.bivouac?.latLng?.[2],
+        externalLinks: this.bivouac.externalLinks ?? [],
       });
     }
   };
