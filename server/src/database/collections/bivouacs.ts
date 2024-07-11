@@ -24,11 +24,6 @@ export const bivouacsConfig: CollectionConfigInterface = {
           bsonType: "string",
           description: "is a string",
         },
-        // Todo delete this
-        imageUrl: {
-          bsonType: "string",
-          description: "is a string",
-        },
         imageName: {
           bsonType: "string",
           description: "is a string",
@@ -68,6 +63,13 @@ export const bivouacsConfig: CollectionConfigInterface = {
               bsonType: ["decimal", "null"],
             },
           ],
+        },
+        externalLinks: {
+          bsonType: "array",
+          description: "must be an array of strings",
+          items: {
+            bsonType: "string",
+          },
         },
       },
     },
