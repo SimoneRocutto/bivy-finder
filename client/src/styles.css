@@ -8,3 +8,8 @@
 .hide-arrows {
   @apply [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none;
 }
+
+.aspect-ratio-16-9 {
+  width: 100%;
+  padding-top: calc(100% * 9 / 16);
+}

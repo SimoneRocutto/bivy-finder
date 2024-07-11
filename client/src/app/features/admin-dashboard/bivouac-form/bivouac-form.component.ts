@@ -95,6 +95,55 @@ import { ModalService } from "../../../ui-components/generic/modal/modal.service
           class="grow hide-arrows"
         />
       </label>
+      <div class="relative overflow-hidden">
+        <div class="aspect-ratio-16-9"></div>
+        <ng-template #noImage
+          ><div
+            class="absolute inset-0 flex flex-row justify-center items-center bg-gray-400"
+          >
+            <button
+              (click)="fileUploader.click()"
+              type="button"
+              class="btn btn-primary"
+            >
+              <i class="material-icons">upload</i>
+            </button>
+          </div></ng-template
+        >
+        <ng-container
+          *ngIf="
+            !imageWillBeDeleted && (temporaryImageUrl || bivouac?.imageUrl);
+            else noImage
+          "
+        >
+          <img
+            src="{{ temporaryImageUrl ?? bivouac?.imageUrl }}"
+            alt="Bivouac image"
+            class="absolute inset-0"
+          />
+          <div
+            class="absolute inset-0 z-10 flex flex-row justify-center items-center gap-2 transition-opacity opacity-0 hover:opacity-100"
+          >
+            <button
+              (click)="fileUploader.click()"
+              type="button"
+              class="btn btn-primary"
+            >
+              <i class="material-icons">upload</i>
+            </button>
+            <button (click)="removeImage()" type="button" class="btn btn-error">
+              <i class="material-icons">delete</i>
+            </button>
+          </div>
+        </ng-container>
+      </div>
+      <input
+        #fileUploader
+        type="file"
+        accept="image/*"
+        (change)="onFileChange($event)"
+        class="hidden"
+      />
     </div>
     <div class="flex flex-row self-end gap-4">
       <!-- todo: handle this outside this component. Ideally this form shouldn't know
@@ -130,7 +179,6 @@ export class BivouacFormComponent implements OnInit {
     description: FormControl<string | null>;
     type: FormControl<BivouacType | null>;
     material: FormControl<BivouacMaterial | null>;
-    // image: FormControl<string | null>;
     latitude: FormControl<number | null>;
     longitude: FormControl<number | null>;
     altitude: FormControl<number | null>;
@@ -142,11 +190,14 @@ export class BivouacFormComponent implements OnInit {
     description: new FormControl(),
     type: new FormControl(),
     material: new FormControl(),
-    // image: new FormControl(),
     latitude: new FormControl(),
     longitude: new FormControl(),
     altitude: new FormControl(),
   });
+
+  imageFile?: File;
+  temporaryImageUrl?: ArrayBuffer | string;
+  imageWillBeDeleted = false;
 
   get bivouacTypes(): BivouacType[] {
     return bivouacTypes;
@@ -161,6 +212,16 @@ export class BivouacFormComponent implements OnInit {
    * or update operations.
    */
   get parsedForm(): NewBivouac | null {
+    // Props that aren't altered in the form. We have to preserve them.
+    const nonFormProps = ["imageName"];
+    const nonFormPropsObj = nonFormProps.reduce((acc, curr) => {
+      const propValue = this.bivouac?.[curr];
+      if (propValue) {
+        acc[curr] = propValue;
+      }
+      return acc;
+    }, {});
+
     const { name, ...optionalProps } = this.bivouacForm.value;
     if (!name) {
       return null;
@@ -174,9 +235,13 @@ export class BivouacFormComponent implements OnInit {
     if (latitude || longitude || altitude) {
       latLng = [latitude ?? 0, longitude ?? 0, altitude ?? undefined];
     }
+
     return {
       name,
       ...partialData,
+      ...nonFormPropsObj,
+      // Sending null imageName will delete both the image file and the property.
+      ...(this.imageWillBeDeleted ? { imageName: null } : {}),
       latLng: latLng,
     };
   }
@@ -206,7 +271,7 @@ export class BivouacFormComponent implements OnInit {
   };
 
   createBivouac = (bivouac: NewBivouac) =>
-    this.bivouacsService.createBivouac(bivouac).pipe(
+    this.bivouacsService.createBivouac(bivouac, this.imageFile).pipe(
       catchError((res) => this.errorService.catchNonHttpError(res)),
       filter((res) => this.errorService.filterHttpError(res)),
       tap((res) => {
@@ -226,7 +291,7 @@ export class BivouacFormComponent implements OnInit {
     );
 
   updateBivouac = (bivouacId: string, bivouac: NewBivouac) =>
-    this.bivouacsService.updateBivouac(bivouacId, bivouac).pipe(
+    this.bivouacsService.updateBivouac(bivouacId, bivouac, this.imageFile).pipe(
       catchError((res) => this.errorService.catchNonHttpError(res)),
       filter((res) => this.errorService.filterHttpError(res)),
       tap((res) => {
@@ -266,6 +331,24 @@ export class BivouacFormComponent implements OnInit {
         ...(altitude ? { altitude } : undefined),
       });
     }
+  };
+
+  onFileChange = (event: Event) => {
+    const file = (event.target as HTMLInputElement)?.files?.[0];
+    if (file) {
+      this.imageFile = file;
+      const fileReader = new FileReader();
+      fileReader.readAsDataURL(file);
+      fileReader.onload = (e) => {
+        this.temporaryImageUrl = e.target?.result ?? undefined;
+        this.imageWillBeDeleted = false;
+      };
+    }
+  };
+
+  removeImage = () => {
+    this.temporaryImageUrl = undefined;
+    this.imageWillBeDeleted = true;
   };
 
   closeModal = () => {

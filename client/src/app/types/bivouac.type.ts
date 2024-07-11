@@ -18,7 +18,7 @@ export type BivouacMaterial = "stone" | "wood" | "metal" | "rock";
 export interface NewBivouac {
   name: string;
   description?: string | null;
-  imageUrl?: string | null;
+  imageName?: string | null;
   material?: BivouacMaterial | null;
   type?: BivouacType | null;
   latLng?: LatLngExpression | null;
@@ -26,6 +26,7 @@ export interface NewBivouac {
 
 export interface Bivouac extends NonNull<NewBivouac> {
   _id: string;
+  imageUrl?: string;
 }
 
 export const bivouacTypes: BivouacType[] = [
