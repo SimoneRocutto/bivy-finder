@@ -14,7 +14,7 @@ import { CommonModule } from "@angular/common";
       <input id="detail-drawer" type="checkbox" class="drawer-toggle" />
       <div class="drawer-side h-full sticky pointer-events-none">
         <div
-          class="menu relative p-0 w-96 min-h-full bg-base-200 text-base-content"
+          class="menu relative p-0 w-96  min-h-full bg-base-200 text-base-content"
         >
           <div class="w-full h-48">
             <img
@@ -25,14 +25,18 @@ import { CommonModule } from "@angular/common";
           </div>
           <div class="p-4">
             <h3 class="text-lg font-semibold">{{ bivouac?.name }}</h3>
-            <p>{{ bivouac?.description }}</p>
-            <div *ngFor="let link of bivouac?.externalLinks">
-              <a [href]="link" class="text-blue-700 hover:underline">{{
-                link
-              }}</a>
+            <p class="whitespace-pre-line">
+              {{ bivouac?.description }}
+            </p>
+            <div class="mt-4">
+              <p>Type: {{ bivouac?.type }}</p>
+              <p>Material: {{ bivouac?.material }}</p>
+              <div *ngFor="let link of bivouac?.externalLinks">
+                <a [href]="link" class="text-blue-700 hover:underline">{{
+                  link
+                }}</a>
+              </div>
             </div>
-            <p>Type: {{ bivouac?.type }}</p>
-            <p>Material: {{ bivouac?.material }}</p>
           </div>
         </div>
       </div>

@@ -40,10 +40,11 @@ import { ModalService } from "../../../ui-components/generic/modal/modal.service
         Name
         <input formControlName="name" type="text" class="grow" />
       </label>
-      <label class="input input-bordered flex items-center gap-2">
-        Description
-        <input formControlName="description" type="text" class="grow" />
-      </label>
+      <textarea
+        formControlName="description"
+        class="textarea textarea-bordered grow"
+        placeholder="Description"
+      ></textarea>
       <select
         class="select select-bordered w-full max-w-xs"
         formControlName="type"
