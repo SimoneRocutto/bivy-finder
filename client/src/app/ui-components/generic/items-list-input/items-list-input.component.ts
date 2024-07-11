@@ -13,7 +13,7 @@ import { FormControl, ReactiveFormsModule, Validators } from "@angular/forms";
         class="flex flex-row justify-between items-center"
       >
         <div
-          [ngClass]="{ 'text-blue-500': isLink }"
+          [ngClass]="{ 'link-info': isLink }"
           class="flex flex-row justify-center items-center gap-1"
         >
           <i class="block text-lg material-symbols-outlined" *ngIf="isLink"

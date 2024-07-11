@@ -28,15 +28,24 @@ import { CommonModule } from "@angular/common";
             <p class="whitespace-pre-line">
               {{ bivouac?.description }}
             </p>
-            <div class="mt-4">
+            <div class="divider"></div>
+            <div>
               <p>Type: {{ bivouac?.type }}</p>
               <p>Material: {{ bivouac?.material }}</p>
-              <div *ngFor="let link of bivouac?.externalLinks">
-                <a [href]="link" class="text-blue-700 hover:underline">{{
-                  link
-                }}</a>
-              </div>
             </div>
+            <ng-container *ngIf="bivouac?.externalLinks?.length ?? 0 > 0">
+              <div class="divider"></div>
+              <div>
+                <a
+                  [href]="link"
+                  target="_blank"
+                  *ngFor="let link of bivouac?.externalLinks"
+                  class="link-info flex flex-row gap-1"
+                  ><i class="material-symbols-outlined text-lg">ungroup</i>
+                  <div class="link leading-7">{{ link }}</div></a
+                >
+              </div>
+            </ng-container>
           </div>
         </div>
       </div>
