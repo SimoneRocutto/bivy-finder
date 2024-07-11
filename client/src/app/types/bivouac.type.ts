@@ -22,6 +22,7 @@ export interface NewBivouac {
   material?: BivouacMaterial | null;
   type?: BivouacType | null;
   latLng?: LatLngExpression | null;
+  externalLinks?: string[] | null;
 }
 
 export interface Bivouac extends NonNull<NewBivouac> {

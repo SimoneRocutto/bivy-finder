@@ -25,11 +25,12 @@ import { CommonModule } from "@angular/common";
           </div>
           <div class="p-4">
             <h3 class="text-lg font-semibold">{{ bivouac?.name }}</h3>
-            <a
-              [href]="bivouac?.description"
-              class="text-blue-700 hover:underline"
-              >{{ bivouac?.description }}</a
-            >
+            <p>{{ bivouac?.description }}</p>
+            <div *ngFor="let link of bivouac?.externalLinks">
+              <a [href]="link" class="text-blue-700 hover:underline">{{
+                link
+              }}</a>
+            </div>
             <p>Type: {{ bivouac?.type }}</p>
             <p>Material: {{ bivouac?.material }}</p>
           </div>
