@@ -55,15 +55,6 @@ import { ItemsListInputComponent } from "../../../ui-components/generic/items-li
         class="textarea textarea-bordered grow"
         placeholder="Description"
       ></textarea>
-      <div>
-        <div class="mb-2">External Links (max {{ maxExternalLinksCount }})</div>
-        <app-items-list-input
-          [items]="bivouacForm.value.externalLinks"
-          [maxItems]="maxExternalLinksCount"
-          [isLink]="true"
-        ></app-items-list-input>
-      </div>
-
       <select
         class="select select-bordered w-full max-w-xs"
         formControlName="type"
@@ -115,6 +106,18 @@ import { ItemsListInputComponent } from "../../../ui-components/generic/items-li
           class="grow hide-arrows"
         />
       </label>
+      <div>
+        <div class="mb-2">
+          External Links ({{ bivouacForm.value.externalLinks?.length ?? 0 }}/{{
+            maxExternalLinksCount
+          }})
+        </div>
+        <app-items-list-input
+          [items]="bivouacForm.value.externalLinks"
+          [maxItems]="maxExternalLinksCount"
+          [isLink]="true"
+        ></app-items-list-input>
+      </div>
       <div class="relative overflow-hidden">
         <div class="aspect-ratio-16-9"></div>
         <ng-template #noImage
