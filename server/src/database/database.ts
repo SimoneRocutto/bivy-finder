@@ -38,6 +38,8 @@ async function applySchemaValidation(db: mongodb.Db) {
           await db.createCollection(collectionConfig.name, {
             validator: collectionConfig.schema,
           });
+        } else {
+          console.error(error);
         }
       });
   }

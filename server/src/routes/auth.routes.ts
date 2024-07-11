@@ -3,7 +3,7 @@ import bcrypt from "bcrypt";
 import session from "express-session";
 import bodyParser from "body-parser";
 import { collections } from "../database/database";
-import { sendError, sendFail, sendSuccess } from "../utils/http";
+import { sendError, sendFail, sendSuccess } from "../helpers/http";
 
 interface SessionCustomData {
   userData?: {

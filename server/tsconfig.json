@@ -3,9 +3,10 @@
   "compilerOptions": {
     "target": "es2016",
     "module": "commonjs",
-    "esModuleInterop": true,  
+    "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "strict": true,    
+    "noImplicitAny": false,
+    "strict": true,
     "skipLibCheck": true,
     "outDir": "./dist"
   }

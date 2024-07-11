@@ -1,9 +1,9 @@
-import * as mongodb from "mongodb";
+import { Decimal128, ObjectId } from "mongodb";
 
 export interface BivouacInterface {
   name: string;
   description?: string;
-  imageUrl?: string;
+  imageName?: string;
   type?:
     | "managed"
     | "require-keys"
@@ -13,6 +13,12 @@ export interface BivouacInterface {
     | "incomplete"
     | "abandoned";
   material?: "stone" | "wood" | "metal" | "rock";
-  latLng?: [number, number, number];
-  _id?: mongodb.ObjectId;
+  latLng?: [Decimal128, Decimal128, Decimal128 | null];
+  _id?: ObjectId;
+}
+
+export interface BivouacFormattedInterface
+  extends Omit<BivouacInterface, "latLng"> {
+  imageUrl?: string;
+  latLng?: [number, number, number | null];
 }

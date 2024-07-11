@@ -1,6 +1,6 @@
 import * as dotenv from "dotenv";
 import express from "express";
-const { specs, swaggerUi } = require("./config/swagger");
+import { S3Client } from "@aws-sdk/client-s3";
 // Don't know yet if it's possible to use import syntax here.
 // This module allows to handle async errors without having to
 // use try-catch block everytime (express 5 would allow the same,
@@ -12,12 +12,22 @@ import cors from "cors";
 import { connectToDatabase } from "./database/database";
 import { errorMiddlewares, middlewares } from "./middlewares";
 import { routers } from "./routes";
+const { specs, swaggerUi } = require("./config/swagger");
 
 dotenv.config({ path: __dirname + "/config/.env" });
 
 // Load env vars from .env
 
-const { ATLAS_URI, SESSION_SECRET, PORT } = process.env;
+export const {
+  ATLAS_URI,
+  SESSION_SECRET,
+  PORT,
+  AWS_ACCESS_KEY_ID,
+  AWS_ACCESS_KEY_SECRET,
+  AWS_DEFAULT_REGION,
+  AWS_BUCKET_NAME,
+  AWS_BUCKET_DIRECTORY,
+} = process.env;
 if (!ATLAS_URI) {
   console.error(
     "No ATLAS_URI environment variable has been defined in config.env"
@@ -30,6 +40,28 @@ if (!SESSION_SECRET) {
   );
   process.exit(1);
 }
+if (
+  !AWS_ACCESS_KEY_ID ||
+  !AWS_ACCESS_KEY_SECRET ||
+  !AWS_DEFAULT_REGION ||
+  !AWS_BUCKET_NAME ||
+  !AWS_BUCKET_DIRECTORY
+) {
+  console.error(
+    "AWS_ACCESS_KEY_ID, AWS_ACCESS_KEY_SECRET, AWS_DEFAULT_REGION, AWS_BUCKET_NAME or AWS_BUCKET_DIRECTORY environment variable missing from config.env"
+  );
+  process.exit(1);
+}
+
+// Todo move this to a config file if possible
+// Now creating the S3 instance which will be used in uploading photo to s3 bucket.
+export const s3 = new S3Client({
+  credentials: {
+    accessKeyId: AWS_ACCESS_KEY_ID,
+    secretAccessKey: AWS_ACCESS_KEY_SECRET,
+  },
+  region: process.env.AWS_DEFAULT_REGION,
+});
 
 connectToDatabase(ATLAS_URI)
   .then(() => {

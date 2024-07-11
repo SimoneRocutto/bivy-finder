@@ -24,7 +24,12 @@ export const bivouacsConfig: CollectionConfigInterface = {
           bsonType: "string",
           description: "is a string",
         },
+        // Todo delete this
         imageUrl: {
+          bsonType: "string",
+          description: "is a string",
+        },
+        imageName: {
           bsonType: "string",
           description: "is a string",
         },
@@ -52,9 +57,17 @@ export const bivouacsConfig: CollectionConfigInterface = {
           description: "must be an array of 3 doubles",
           minItems: 3,
           maxItems: 3,
-          items: {
-            bsonType: "decimal128",
-          },
+          items: [
+            {
+              bsonType: "decimal",
+            },
+            {
+              bsonType: "decimal",
+            },
+            {
+              bsonType: ["decimal", "null"],
+            },
+          ],
         },
       },
     },

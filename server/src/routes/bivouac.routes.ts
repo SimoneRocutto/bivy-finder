@@ -1,8 +1,18 @@
 import * as express from "express";
 import { ObjectId } from "mongodb";
 import { collections } from "../database/database";
-import { sendFail, sendSuccess } from "../utils/http";
-import { objectFalsyFilter } from "../utils/misc";
+import { sendFail, sendSuccess } from "../helpers/http";
+import {
+  BivouacInterface,
+  BivouacFormattedInterface as BivouacFormattedInterface,
+} from "../models/data/bivouac";
+import { uploadImageToS3 } from "../helpers/s3";
+import { multerUploadImage } from "../helpers/multer";
+import {
+  deleteBivouacImageIfExists,
+  formatBivouac,
+  unformatBivouac,
+} from "../helpers/data/bivouacs";
 
 export const bivouacRouter = express.Router();
 bivouacRouter.use(express.json());
@@ -71,8 +81,14 @@ bivouacRouter.use(express.json());
  *                   $ref: '#/components/schemas/Bivouac'
  */
 bivouacRouter.get("/", async (_req, res) => {
-  const bivouacs = await collections?.bivouacs?.find({}).toArray();
-  sendSuccess(res, bivouacs);
+  const bivouacs = (await collections?.bivouacs?.find({}).toArray()) ?? [];
+  const formattedBivouacs: BivouacFormattedInterface[] = await Promise.all(
+    (bivouacs as BivouacInterface[]).map(async (bivouac) => {
+      return formatBivouac(bivouac);
+    })
+  );
+
+  sendSuccess(res, formattedBivouacs);
 });
 
 /**
@@ -103,7 +119,7 @@ bivouacRouter.get("/:id", async (req, res) => {
   const bivouac = await collections?.bivouacs?.findOne(query);
 
   if (bivouac) {
-    sendSuccess(res, bivouac);
+    sendSuccess(res, await formatBivouac(bivouac));
   } else {
     sendFail(res, null, 404);
   }
@@ -134,11 +150,27 @@ bivouacRouter.get("/:id", async (req, res) => {
  *       400:
  *         description: Operation failed
  */
-bivouacRouter.post("/", async (req, res) => {
-  {
-    const bivouac = req.body;
-    const cleanBivouac = objectFalsyFilter(bivouac)[0];
-    const result = await collections?.bivouacs?.insertOne(cleanBivouac);
+
+bivouacRouter.post(
+  "/",
+  multerUploadImage.single("bivouacImage"),
+  async (req, res) => {
+    let formattedBivouac: BivouacFormattedInterface;
+    try {
+      formattedBivouac = JSON.parse(req?.body?.bivouac);
+    } catch (e) {
+      console.error(e);
+      sendFail(res, null, 400);
+      return;
+    }
+
+    const bivouac = unformatBivouac(formattedBivouac)[0];
+    const file = req?.file;
+    if (file) {
+      bivouac.imageName = await uploadImageToS3(file);
+    }
+
+    const result = await collections?.bivouacs?.insertOne(bivouac);
 
     if (result?.acknowledged) {
       sendSuccess(res, { id: result.insertedId }, 201);
@@ -146,7 +178,7 @@ bivouacRouter.post("/", async (req, res) => {
       sendFail(res, null, 400);
     }
   }
-});
+);
 
 /**
  * @openapi
@@ -168,26 +200,67 @@ bivouacRouter.post("/", async (req, res) => {
  *       404:
  *         description: Resource not found
  */
-bivouacRouter.put("/:id", async (req, res) => {
-  const id = req?.params?.id;
-  const bivouac = req.body;
-  // Each prop that is null gets unset. To avoid
-  // removing props, simply do not pass that prop.
-  const [cleanBivouac, filteredProps] = objectFalsyFilter(bivouac);
-  const query = { _id: new ObjectId(id) };
-  const result = await collections?.bivouacs?.updateOne(query, [
-    { $set: cleanBivouac },
-    ...(filteredProps.length < 1 ? [] : [{ $unset: filteredProps }]),
-  ]);
+bivouacRouter.put(
+  "/:id",
+  multerUploadImage.single("bivouacImage"),
+  async (req, res) => {
+    let formattedBivouac: BivouacFormattedInterface;
+    try {
+      formattedBivouac = JSON.parse(req?.body?.bivouac);
+    } catch (e) {
+      console.error(e);
+      sendFail(res, null, 400);
+      return;
+    }
 
-  if (result && result.matchedCount) {
-    sendSuccess(res, null, 204);
-  } else if (!result?.matchedCount) {
-    sendFail(res, null, 404);
-  } else {
-    sendFail(res, null, 304);
+    const id = req?.params?.id;
+
+    // Each prop that is null gets unset. To avoid
+    // removing props, simply do not pass that prop.
+    const [bivouac, filteredProps] = unformatBivouac(formattedBivouac);
+
+    // imageName === null means that the image should be deleted.
+    // We'll also delete the image if a new image is uploaded (see below).
+    let deleteImage = filteredProps.includes("imageName");
+
+    const file = req?.file;
+    if (file) {
+      // If a new image is uploaded, delete the old one.
+      deleteImage = true;
+      try {
+        bivouac.imageName = await uploadImageToS3(file);
+      } catch (e) {
+        console.error(e);
+        sendFail(res, null, 400);
+      }
+    }
+
+    if (deleteImage) {
+      //! If this block fails we potentially uploaded an image without using it (if we are updating the image).
+      //Todo Fix this.
+      const errCode = await deleteBivouacImageIfExists(id);
+      if (errCode) {
+        sendFail(res, null, errCode);
+        return;
+      }
+    }
+
+    // Update object in the db.
+    const query = { _id: new ObjectId(id) };
+    const result = await collections?.bivouacs?.updateOne(query, [
+      { $set: bivouac },
+      ...(filteredProps.length < 1 ? [] : [{ $unset: filteredProps }]),
+    ]);
+
+    if (result && result.matchedCount) {
+      sendSuccess(res, null, 204);
+    } else if (!result?.matchedCount) {
+      sendFail(res, null, 404);
+    } else {
+      sendFail(res, null, 304);
+    }
   }
-});
+);
 
 /**
  * @openapi
@@ -212,14 +285,23 @@ bivouacRouter.put("/:id", async (req, res) => {
 bivouacRouter.delete("/:id", async (req, res) => {
   const id = req?.params?.id;
   const query = { _id: new ObjectId(id) };
+
+  const errCode = await deleteBivouacImageIfExists(id);
+  if (errCode) {
+    sendFail(res, null, errCode);
+    return;
+  }
+
   const result = await collections?.bivouacs?.deleteOne(query);
 
   if (!result) {
-    // Failed to remove the bivouac
+    // Failed to remove the bivouac.
     sendFail(res, null, 400);
+    return;
   } else if (!result.deletedCount) {
     sendFail(res, null, 404);
-  } else {
-    sendSuccess(res, null, 204);
+    return;
   }
+
+  sendSuccess(res, null, 204);
 });

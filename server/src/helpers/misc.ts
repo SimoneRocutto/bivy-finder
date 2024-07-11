@@ -1,3 +1,4 @@
+import crypto from "crypto";
 /**
  * Remove all undefined and null properties from an object. Returned object keeps the same type
  * as the input because we are only removing optional properties.
@@ -20,3 +21,6 @@ export const objectFalsyFilter = <T extends {}>(obj: T): [T, string[]] => {
 
   return [cleanObject, filteredProps];
 };
+
+export const randomImageName = (bytes = 32) =>
+  crypto.randomBytes(bytes).toString("hex");
