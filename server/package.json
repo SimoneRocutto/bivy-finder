@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "vitest",
-    "start": "npx ts-node src/server.ts"
+    "start": "npx ts-node src/server.ts",
+    "db-script": "npx ts-node db-queries/query.ts"
   },
   "keywords": [],
   "author": "",
