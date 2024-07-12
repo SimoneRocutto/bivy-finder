@@ -1,11 +1,12 @@
 import { Component, Input } from "@angular/core";
 import { Bivouac } from "../../../types/bivouac.type";
 import { CommonModule } from "@angular/common";
+import { CopyButtonComponent } from "../../../ui-components/generic/copy-button/copy-button.component";
 
 @Component({
   selector: "app-bivouac-detail-sidebar",
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, CopyButtonComponent],
   template: `
     <div
       [ngClass]="!hidden && bivouac ? 'drawer-open' : ''"
@@ -32,6 +33,15 @@ import { CommonModule } from "@angular/common";
             <div>
               <p>Type: {{ bivouac?.type }}</p>
               <p>Material: {{ bivouac?.material }}</p>
+              <div class="flex flex-row items-center gap-2">
+                <div>
+                  {{ bivouac?.latLng?.[0] | number : '1.5-5'}},
+                  {{ bivouac?.latLng?.[1] | number : '1.5-5'}}
+                </div>
+                <app-copy-button
+                  [text]="bivouac?.latLng?.[0] + ', ' + bivouac?.latLng?.[1]"
+                ></app-copy-button>
+              </div>
             </div>
             <ng-container *ngIf="bivouac?.externalLinks?.length ?? 0 > 0">
               <div class="divider"></div>

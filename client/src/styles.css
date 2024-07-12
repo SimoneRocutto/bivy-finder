@@ -13,3 +13,9 @@
   width: 100%;
   padding-top: calc(100% * 9 / 16);
 }
+
+/* Tooltip syling for transitioning between enabled and disabled */
+.tooltip.tooltip-hidden:before,
+.tooltip.tooltip-hidden:after {
+  opacity: 0;
+}

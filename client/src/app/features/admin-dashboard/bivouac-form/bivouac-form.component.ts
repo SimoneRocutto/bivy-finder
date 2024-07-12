@@ -22,6 +22,7 @@ import { LatLngExpression } from "leaflet";
 import { ErrorService } from "../../../error.service";
 import { ModalService } from "../../../ui-components/generic/modal/modal.service";
 import { ItemsListInputComponent } from "../../../ui-components/generic/items-list-input/items-list-input.component";
+import { TooltipComponent } from "../../../ui-components/generic/tooltip/tooltip.component";
 
 @Component({
   selector: "app-bivouac-form",
@@ -31,6 +32,7 @@ import { ItemsListInputComponent } from "../../../ui-components/generic/items-li
     ReactiveFormsModule,
     FormsModule,
     ItemsListInputComponent,
+    TooltipComponent,
   ],
   template: `<form
     [formGroup]="bivouacForm"
@@ -73,10 +75,7 @@ import { ItemsListInputComponent } from "../../../ui-components/generic/items-li
           {{ material }}
         </option>
       </select>
-      <div
-        class="tooltip"
-        data-tip="Try pasting comma-separated coordinates here"
-      >
+      <app-tooltip label="Try pasting comma-separated coordinates here">
         <label class="input input-bordered flex items-center gap-2">
           Latitude
           <input
@@ -87,7 +86,7 @@ import { ItemsListInputComponent } from "../../../ui-components/generic/items-li
             (paste)="fillCoordinates($event)"
           />
         </label>
-      </div>
+      </app-tooltip>
       <label class="input input-bordered flex items-center gap-2">
         Longitude
         <input

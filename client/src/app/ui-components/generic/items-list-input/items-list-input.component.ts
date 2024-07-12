@@ -1,11 +1,12 @@
 import { CommonModule } from "@angular/common";
 import { Component, Input } from "@angular/core";
 import { FormControl, ReactiveFormsModule, Validators } from "@angular/forms";
+import { TooltipComponent } from "../tooltip/tooltip.component";
 
 @Component({
   selector: "app-items-list-input",
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, TooltipComponent],
   template: `
     <div class="flex flex-col gap-1 mb-2" *ngIf="items?.length">
       <div
@@ -30,29 +31,31 @@ import { FormControl, ReactiveFormsModule, Validators } from "@angular/forms";
       *ngIf="!addIsDisabled"
       class="flex flex-row justify-between items-center gap-2"
     >
-      <div
-        class="grow"
-        [ngClass]="{ tooltip: newItem.invalid }"
-        [attr.data-tip]="newItem.invalid ? 'Invalid url' : ''"
-      >
-        <input
-          [formControl]="newItem"
-          [disabled]="!this.items"
-          [placeholder]="
-            inputPlaceHolder
-              ? inputPlaceHolder
-              : isLink
-              ? 'Add new link'
-              : 'Add new item'
-          "
-          type="text"
-          class="input input-bordered w-full"
-          [ngClass]="{
-            'input-error': newItem.invalid && (newItem.dirty || newItem.touched)
-          }"
-          (keydown.enter)="$event.preventDefault(); pushItem()"
-          aria-describedby="new-item-error"
-        />
+      <div class="grow">
+        <app-tooltip
+          [disabled]="!(newItem.invalid && (newItem.dirty || newItem.touched))"
+          label="Invalid url"
+        >
+          <input
+            [formControl]="newItem"
+            [disabled]="!this.items"
+            [placeholder]="
+              inputPlaceHolder
+                ? inputPlaceHolder
+                : isLink
+                ? 'Add new link'
+                : 'Add new item'
+            "
+            type="text"
+            class="input input-bordered w-full"
+            [ngClass]="{
+              'input-error':
+                newItem.invalid && (newItem.dirty || newItem.touched)
+            }"
+            (keydown.enter)="$event.preventDefault(); pushItem()"
+            aria-describedby="new-item-error"
+          />
+        </app-tooltip>
       </div>
       <button
         type="button"
