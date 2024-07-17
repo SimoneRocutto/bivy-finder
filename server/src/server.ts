@@ -9,6 +9,8 @@ require("express-async-errors");
 import session from "express-session";
 
 import cors from "cors";
+import * as redis from "redis";
+import RedisStore from "connect-redis";
 import { connectToDatabase } from "./database/database";
 import { errorMiddlewares, middlewares } from "./middlewares";
 import { routers } from "./routes";
@@ -27,6 +29,8 @@ export const {
   AWS_DEFAULT_REGION,
   AWS_BUCKET_NAME,
   AWS_BUCKET_DIRECTORY,
+  REDIS_HOST,
+  REDIS_PORT,
 } = process.env;
 if (!ATLAS_URI) {
   console.error(
@@ -53,6 +57,12 @@ if (
   process.exit(1);
 }
 
+if (!REDIS_HOST || !REDIS_PORT) {
+  console.error(
+    "REDIS_HOST or REDIS_PORT environment variable missing from config.env"
+  );
+}
+
 // Todo move this to a config file if possible
 // Now creating the S3 instance which will be used in uploading photo to s3 bucket.
 export const s3 = new S3Client({
@@ -64,18 +74,35 @@ export const s3 = new S3Client({
 });
 
 connectToDatabase(ATLAS_URI)
-  .then(() => {
+  .then(async () => {
     const app = express();
+
+    // Redis config
+    const redisClient = redis.createClient({
+      socket: {
+        host: REDIS_HOST,
+        port: Number(REDIS_PORT),
+      },
+    });
+    redisClient.on("error", function (err) {
+      console.log("Could not establish a connection with redis. " + err);
+    });
+    redisClient.on("connect", function (err) {
+      console.log("Connected to redis successfully");
+    });
+    const redisStore = new RedisStore({ client: redisClient });
+    await redisClient.connect();
+
     app.use(
       session({
-        // Todo should add a store to make the session persistent even
-        // when restarting the server.
+        // Using Redis makes the session persistent event when restarting the server.
+        store: redisStore,
         secret: SESSION_SECRET,
         name: "uniqueSessionId",
         resave: false,
         saveUninitialized: false,
         cookie: {
-          httpOnly: true,
+          httpOnly: false,
           // Todo change to true for production
           secure: false,
           maxAge: 1000 * 60 * 60 * 24 * 7,
