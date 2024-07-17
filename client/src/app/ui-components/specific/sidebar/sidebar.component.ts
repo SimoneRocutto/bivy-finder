@@ -7,7 +7,7 @@ import { RouterModule } from "@angular/router";
   standalone: true,
   imports: [CommonModule, RouterModule],
   template: `
-    <div class="drawer">
+    <div class="drawer drawer-auto-gutter">
       <input
         #drawerCheckbox
         id="my-drawer-3"

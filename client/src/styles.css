@@ -19,3 +19,8 @@
 .tooltip.tooltip-hidden:after {
   opacity: 0;
 }
+
+/* Fixes scrollbar on the left appearing when drawer is open. */
+html:has(.drawer-auto-gutter .drawer-toggle:checked) {
+  scrollbar-gutter: auto
+}
