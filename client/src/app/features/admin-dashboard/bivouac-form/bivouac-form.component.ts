@@ -16,7 +16,7 @@ import {
   bivouacTypes,
 } from "../../../types/bivouac.type";
 import { CommonModule } from "@angular/common";
-import { catchError, filter, tap } from "rxjs";
+import { catchError, filter, of, tap } from "rxjs";
 import { ToastService } from "../../../ui-components/generic/toast-box/toast.service";
 import { LatLngExpression } from "leaflet";
 import { ErrorService } from "../../../error.service";
@@ -138,9 +138,21 @@ import { TooltipComponent } from "../../../ui-components/generic/tooltip/tooltip
             else noImage
           "
         >
+          <ng-container *ngIf="!imageLoaded"
+            ><div
+              class="absolute inset-0 flex flex-row justify-center items-center"
+            >
+              <div class="skeleton absolute inset-0"></div>
+              @defer(on timer(400ms)) {
+              <div class="loading loading-dots loading-lg"></div>
+              }
+            </div></ng-container
+          >
           <img
-            src="{{ temporaryImageUrl ?? bivouac?.imageUrl }}"
+            [src]="temporaryImageUrl ?? bivouac?.imageUrl"
+            [ngClass]="{ invisible: !imageLoaded }"
             alt="Bivouac image"
+            (load)="onImageLoaded()"
             class="absolute inset-0"
           />
           <div
@@ -170,15 +182,24 @@ import { TooltipComponent } from "../../../ui-components/generic/tooltip/tooltip
     <div class="flex flex-row self-end gap-4">
       <!-- todo: handle this outside this component. Ideally this form shouldn't know
       whether it's called from a modal or not. -->
-      <button type="button" class="btn btn-error" (click)="closeModal()">
+      <button
+        type="button"
+        class="btn btn-error"
+        (click)="closeModal()"
+        [disabled]="isSubmitting"
+      >
         Cancel
       </button>
       <button
         type="submit"
-        [disabled]="!bivouacForm.valid"
-        class="btn btn-primary"
+        [disabled]="!bivouacForm.valid || isSubmitting"
+        class="btn btn-primary relative"
       >
-        Submit
+        <div [ngClass]="{ invisible: isSubmitting }">Submit</div>
+        <span
+          *ngIf="isSubmitting"
+          class="loading loading-dots loading-md absolute"
+        ></span>
       </button>
     </div>
   </form>`,
@@ -190,9 +211,9 @@ export class BivouacFormComponent implements OnInit {
   @Output() onCreate = new EventEmitter<string>();
   @Output() onUpdate = new EventEmitter<string>();
 
-  get name() {
-    return this.bivouacForm.get("name")!;
-  }
+  isSubmitting = false;
+
+  imageLoaded = false;
 
   latLngPrecision = 0.0001;
 
@@ -226,6 +247,10 @@ export class BivouacFormComponent implements OnInit {
   imageFile?: File;
   temporaryImageUrl?: ArrayBuffer | string;
   imageWillBeDeleted = false;
+
+  get name() {
+    return this.bivouacForm.get("name")!;
+  }
 
   get bivouacTypes(): BivouacType[] {
     return bivouacTypes;
@@ -294,11 +319,22 @@ export class BivouacFormComponent implements OnInit {
       return;
     }
 
-    if (this.isEdit()) {
-      this.updateBivouac(this.bivouac._id, this.parsedForm).subscribe();
-    } else {
-      this.createBivouac(this.parsedForm).subscribe();
-    }
+    this.isSubmitting = true;
+    (this.isEdit()
+      ? this.updateBivouac(this.bivouac._id, this.parsedForm)
+      : this.createBivouac(this.parsedForm)
+    )
+      .pipe(
+        catchError((e) => {
+          console.error(e);
+          // Re-enable form interaction if the operation failed.
+          this.isSubmitting = false;
+          this.toastService.createToast("Unknown error", "error");
+          // Todo check whether this makes sense.
+          return of(e);
+        })
+      )
+      .subscribe();
   };
 
   createBivouac = (bivouac: NewBivouac) =>
@@ -390,6 +426,10 @@ export class BivouacFormComponent implements OnInit {
 
   closeModal = () => {
     this.modalService.close();
+  };
+
+  onImageLoaded = () => {
+    this.imageLoaded = true;
   };
 
   private isEdit(): this is { bivouac: Bivouac & { _id: string } } {

@@ -14,7 +14,6 @@ import { CommonModule } from "@angular/common";
   template: `
     <div
       class="join flex flex-row justify-between"
-      *ngIf="items.length > 0"
       [ngStyle]="{
         width: buttonWidth * (extraPageButtons * 2 + 1 + 2 + 2 + 2) + 'rem'
       }"
@@ -25,7 +24,7 @@ import { CommonModule } from "@angular/common";
         [buttonWidth]="buttonWidth"
         ><</app-pagination-button
       >
-      <div>
+      <div *ngIf="!isLoading; else skeleton">
         <ng-container
           *ngIf="pagesCount <= extraPageButtons * 2 + 3; else compactPagination"
         >
@@ -80,6 +79,9 @@ import { CommonModule } from "@angular/common";
           </ng-container>
         </ng-template>
       </div>
+      <ng-template #skeleton
+        ><div class="skeleton grow mx-12"></div
+      ></ng-template>
       <app-pagination-button
         [disabled]="pageNumber >= pagesCount"
         [buttonWidth]="buttonWidth"
@@ -101,6 +103,7 @@ export class PaginationComponent {
   @Output() onPageChange = new EventEmitter<any[]>();
   @Output() pageNumberChange = new EventEmitter<number>();
   @Input() pageNumber = 1;
+  @Input() isLoading = false;
 
   /**  Width of each button (rem) */
   buttonWidth = 3;

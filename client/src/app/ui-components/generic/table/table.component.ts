@@ -24,53 +24,73 @@ import { sortObjectsByProp } from "../../../helpers/misc";
       [items]="filteredItems"
       [(pageNumber)]="pageNumber"
       [pageSize]="pageSize"
+      [isLoading]="isLoading"
       (onPageChange)="setShownItems($event)"
     ></app-pagination>
-    <table class="table table-zebra-zebra my-6">
-      <thead>
-        <tr class="flex flex-row">
-          <th class="w-16"></th>
-          <ng-container *ngFor="let col of columns">
-            <th *ngIf="!col.hidden" class="flex-1">
-              <button (click)="sortItems(col.prop)">{{ col.name }}</button>
-            </th>
+    <div class="my-6">
+      <table class="table" [ngClass]="{ 'table-zebra-zebra': !isLoading }">
+        <thead>
+          <tr class="flex flex-row">
+            <th class="w-16"></th>
+            <ng-container *ngFor="let col of columns">
+              <th *ngIf="!col.hidden" class="flex-1">
+                <button (click)="sortItems(col.prop)">{{ col.name }}</button>
+              </th>
+            </ng-container>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngIf="!isLoading; else skeleton">
+            <tr *ngFor="let item of shownItems" class="flex flex-row">
+              <ng-container
+                *ngTemplateOutlet="beforeCell; context: { $implicit: item }"
+              ></ng-container>
+              <ng-container *ngFor="let col of columns">
+                <td
+                  *ngIf="!col.hidden"
+                  class="flex-1"
+                  [ngClass]="{
+                    'first-letter:uppercase':
+                      col.style?.textTransform === 'capitalize',
+                    uppercase: col.style?.textTransform === 'uppercase',
+                    lowercase: col.style?.textTransform === 'lowercase'
+                  }"
+                >
+                  <ng-container *ngIf="col.transform; else defaultValue">{{
+                    col.transform(item[col.prop])
+                  }}</ng-container>
+                  <ng-template #defaultValue>
+                    {{ item[col.prop] }}
+                  </ng-template>
+                </td>
+              </ng-container>
+              <ng-container
+                *ngTemplateOutlet="afterCell; context: { $implicit: item }"
+              ></ng-container>
+            </tr>
           </ng-container>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let item of shownItems" class="flex flex-row">
-          <ng-container
-            *ngTemplateOutlet="beforeCell; context: { $implicit: item }"
-          ></ng-container>
-          <ng-container *ngFor="let col of columns">
-            <td
-              *ngIf="!col.hidden"
-              class="flex-1"
-              [ngClass]="{
-                'first-letter:uppercase':
-                  col.style?.textTransform === 'capitalize',
-                uppercase: col.style?.textTransform === 'uppercase',
-                lowercase: col.style?.textTransform === 'lowercase'
-              }"
+
+          <ng-template #skeleton>
+            <tr
+              *ngFor="let item of [].constructor(pageSize)"
+              class="w-full flex flex-row gap-4 my-6"
             >
-              <ng-container *ngIf="col.transform; else defaultValue">{{
-                col.transform(item[col.prop])
-              }}</ng-container>
-              <ng-template #defaultValue>
-                {{ item[col.prop] }}
-              </ng-template>
-            </td>
-          </ng-container>
-          <ng-container
-            *ngTemplateOutlet="afterCell; context: { $implicit: item }"
-          ></ng-container>
-        </tr>
-      </tbody>
-    </table>
+              <td class="skeleton h-8 w-12"></td>
+              <ng-container *ngFor="let col of columns">
+                <ng-container *ngIf="!col.hidden">
+                  <td class="skeleton h-8 flex-1"></td>
+                </ng-container>
+              </ng-container>
+            </tr>
+          </ng-template>
+        </tbody>
+      </table>
+    </div>
     <app-pagination
       [items]="filteredItems"
       [pageSize]="pageSize"
       [(pageNumber)]="pageNumber"
+      [isLoading]="isLoading"
       (onPageChange)="setShownItems($event)"
     ></app-pagination>
   `,
@@ -82,6 +102,7 @@ export class TableComponent<TableItem extends { [key: string]: any }> {
   @Input() afterCell: TemplateRef<any> | null = null;
   @Input() pageSize = 50;
   @Input() columns: TableColumn<TableItem>[] = [];
+  @Input() isLoading = false;
 
   get filterFields(): (keyof TableItem)[] {
     return this.columns.filter((col) => col.filter).map((col) => col.prop);

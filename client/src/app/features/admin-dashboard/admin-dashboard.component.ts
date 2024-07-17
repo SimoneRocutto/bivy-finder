@@ -47,6 +47,7 @@ import { TranslocoService } from "@jsverse/transloco";
         [afterCell]="afterCell"
         [pageSize]="pageSize"
         [columns]="columns"
+        [isLoading]="isLoading"
       >
         <ng-template #beforeCell let-bivouac>
           <td before class="w-16 flex justify-center items-center">
@@ -72,6 +73,7 @@ import { TranslocoService } from "@jsverse/transloco";
   styles: ``,
 })
 export class AdminDashboardComponent implements OnInit {
+  isLoading = true;
   bivouacs: Bivouac[] = [];
   pageSize = 50;
 
@@ -116,6 +118,7 @@ export class AdminDashboardComponent implements OnInit {
         return;
       }
       this.bivouacs = res.body.data;
+      this.stopLoading();
     });
   }
 
@@ -151,7 +154,7 @@ export class AdminDashboardComponent implements OnInit {
       content: bivouac.name,
       confirmLabel: "Delete",
       cancelLabel: "Cancel",
-      onConfirm: () => this.deleteBivouac(bivouac).subscribe(),
+      onConfirmObs: () => this.deleteBivouac(bivouac),
     });
   };
 
@@ -167,9 +170,7 @@ export class AdminDashboardComponent implements OnInit {
       content: bivouacsList,
       confirmLabel: "Delete",
       cancelLabel: "Cancel",
-      onConfirm: () => {
-        this.deleteSelectedBivouacs().subscribe();
-      },
+      onConfirmObs: () => this.deleteSelectedBivouacs(),
     });
   };
 
@@ -301,4 +302,8 @@ export class AdminDashboardComponent implements OnInit {
 
   private translationTransform = (item: string, translationPrefix: string) =>
     item ? this.translocoService.translate(translationPrefix + "." + item) : "";
+
+  private stopLoading = () => {
+    this.isLoading = false;
+  };
 }
