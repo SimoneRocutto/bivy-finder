@@ -23,6 +23,7 @@ import { ErrorService } from "../../../error.service";
 import { ModalService } from "../../../ui-components/generic/modal/modal.service";
 import { ItemsListInputComponent } from "../../../ui-components/generic/items-list-input/items-list-input.component";
 import { TooltipComponent } from "../../../ui-components/generic/tooltip/tooltip.component";
+import { FormInputComponent } from "../../../ui-components/generic/form-input/form-input.component";
 
 @Component({
   selector: "app-bivouac-form",
@@ -33,6 +34,7 @@ import { TooltipComponent } from "../../../ui-components/generic/tooltip/tooltip
     FormsModule,
     ItemsListInputComponent,
     TooltipComponent,
+    FormInputComponent,
   ],
   template: `<form
     [formGroup]="bivouacForm"
@@ -40,18 +42,11 @@ import { TooltipComponent } from "../../../ui-components/generic/tooltip/tooltip
     class="flex flex-col"
   >
     <div class="flex flex-col gap-4 mb-6">
-      <div class="indicator w-full">
-        <span class="indicator-item badge text-orange-500">*</span>
-        <label
-          class="input input-bordered w-full flex items-center gap-2"
-          [ngClass]="{
-            'input-error': name.invalid && (name.dirty || name.touched)
-          }"
-        >
-          Name
-          <input formControlName="name" type="text" class="grow" />
-        </label>
-      </div>
+      <app-form-input
+        label="name"
+        [formGroup]="bivouacForm"
+        formControlName="name"
+      ></app-form-input>
       <textarea
         formControlName="description"
         class="textarea textarea-bordered grow"
@@ -76,35 +71,33 @@ import { TooltipComponent } from "../../../ui-components/generic/tooltip/tooltip
         </option>
       </select>
       <app-tooltip label="Try pasting comma-separated coordinates here">
-        <label class="input input-bordered flex items-center gap-2">
-          Latitude
-          <input
-            formControlName="latitude"
-            type="number"
-            [step]="latLngPrecision"
-            class="grow hide-arrows"
-            (paste)="fillCoordinates($event)"
-          />
-        </label>
+        <app-form-input
+          label="latitude"
+          [formGroup]="bivouacForm"
+          formControlName="latitude"
+          type="number"
+          [step]="latLngPrecision"
+          [min]="-90"
+          [max]="90"
+          (paste)="fillCoordinates($event)"
+        ></app-form-input>
       </app-tooltip>
-      <label class="input input-bordered flex items-center gap-2">
-        Longitude
-        <input
-          formControlName="longitude"
-          type="number"
-          [step]="latLngPrecision"
-          class="grow hide-arrows"
-        />
-      </label>
-      <label class="input input-bordered flex items-center gap-2">
-        Altitude
-        <input
-          formControlName="altitude"
-          type="number"
-          [step]="latLngPrecision"
-          class="grow hide-arrows"
-        />
-      </label>
+      <app-form-input
+        label="longitude"
+        [formGroup]="bivouacForm"
+        formControlName="longitude"
+        type="number"
+        [step]="latLngPrecision"
+        [min]="-180"
+        [max]="180"
+      ></app-form-input>
+      <app-form-input
+        label="altitude"
+        [formGroup]="bivouacForm"
+        formControlName="altitude"
+        type="number"
+        [step]="latLngPrecision"
+      ></app-form-input>
       <div>
         <div class="mb-2">
           External Links ({{ bivouacForm.value.externalLinks?.length ?? 0 }}/{{
@@ -238,8 +231,14 @@ export class BivouacFormComponent implements OnInit {
     description: new FormControl(),
     type: new FormControl(),
     material: new FormControl(),
-    latitude: new FormControl(),
-    longitude: new FormControl(),
+    latitude: new FormControl(null, [
+      Validators.min(-90),
+      Validators.max(90),
+    ]) as FormControl<number | null>,
+    longitude: new FormControl(null, [
+      Validators.min(-180),
+      Validators.max(180),
+    ]) as FormControl<number | null>,
     altitude: new FormControl(),
     externalLinks: new FormControl([] as string[]),
   });

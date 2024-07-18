@@ -198,6 +198,8 @@ export class AdminDashboardComponent implements OnInit {
     bivouacId: string,
     bivouac?: Bivouac
   ): Observable<any> =>
+    // Todo improve api calls by using mongodb findOneAndUpdate: that allows us
+    // to get the updated bivouac without having to call the get api.
     this.bivouacService.getBivouacById(bivouacId).pipe(
       catchError((res) => this.errorService.catchNonHttpError(res)),
       filter((res) => this.errorService.filterHttpError(res)),

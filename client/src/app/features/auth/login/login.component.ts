@@ -3,41 +3,51 @@ import { Component } from "@angular/core";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { AuthService } from "../../../auth.service";
 import { TranslocoDirective } from "@jsverse/transloco";
-import { tap } from "rxjs";
+import { catchError, finalize, tap } from "rxjs";
 import { Router } from "@angular/router";
+import { ToastService } from "../../../ui-components/generic/toast-box/toast.service";
+import { FormInputComponent } from "../../../ui-components/generic/form-input/form-input.component";
 
 @Component({
   selector: "app-login",
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslocoDirective],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    TranslocoDirective,
+    FormInputComponent,
+  ],
   template: `
     <ng-container *transloco="let t">
-      <div class="bg-red-400">{{ t("auth.login") | titlecase }}</div>
       <form
         [formGroup]="loginForm"
         (ngSubmit)="onLoginFormSubmit()"
-        class="flex flex-col gap-2"
+        class="flex flex-col gap-2 mt-4"
       >
-        <label for="username">{{ t("auth.username") | titlecase }}</label>
-        <input
-          id="username"
+        <app-form-input
+          iconName="person"
+          [label]="t('auth.username')"
+          [formGroup]="loginForm"
           formControlName="username"
-          type="text"
-          class="bg-gray-200"
-        />
-        <label for="password">{{ t("auth.password") | titlecase }}</label>
-        <input
-          id="password"
+        ></app-form-input>
+        <app-form-input
+          iconName="key"
+          [label]="t('auth.password')"
+          [formGroup]="loginForm"
           formControlName="password"
-          type="password"
-          class="bg-gray-200"
-        />
+        ></app-form-input>
         <button
           type="submit"
-          [disabled]="!loginForm.valid"
-          class="disabled:text-gray-500 disabled:bg-gray-200"
+          [disabled]="!loginForm.valid || isSubmitting"
+          class="btn btn-primary"
         >
-          {{ t("common.submit") | titlecase }}
+          <div [ngClass]="{ invisible: isSubmitting }">
+            {{ t("common.submit") | titlecase }}
+          </div>
+          <span
+            *ngIf="isSubmitting"
+            class="loading loading-dots loading-md absolute"
+          ></span>
         </button>
       </form>
     </ng-container>
@@ -45,6 +55,8 @@ import { Router } from "@angular/router";
   styles: ``,
 })
 export class LoginComponent {
+  isSubmitting = false;
+
   loginForm = this.formBuilder.group({
     username: ["", Validators.required],
     password: ["", Validators.required],
@@ -52,7 +64,8 @@ export class LoginComponent {
   constructor(
     private formBuilder: FormBuilder,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private toastService: ToastService
   ) {}
 
   onLoginFormSubmit = () => {
@@ -61,14 +74,22 @@ export class LoginComponent {
       console.error("Invalid username or password");
       return;
     }
+
+    this.isSubmitting = true;
     this.authService
       .login(username, password)
       .pipe(
         tap((res) => {
           if (res.body?.status === "success") {
+            this.toastService.createToast("Login successful!", "success");
             this.router.navigate(["/"]);
           }
-        })
+        }),
+        catchError((e: any) => {
+          this.toastService.createToast("Login failed!", "error");
+          throw e;
+        }),
+        finalize(() => (this.isSubmitting = false))
       )
       .subscribe();
   };
