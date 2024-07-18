@@ -11,6 +11,8 @@ import {
   ConfirmModalContentComponent,
   ConfirmModalProps,
 } from "./confirm-modal/confirm-modal-content.component";
+import { Router } from "@angular/router";
+import { Subscription, take } from "rxjs";
 
 @Injectable({
   providedIn: "root",
@@ -18,9 +20,12 @@ import {
 export class ModalService {
   modalComponent!: ComponentRef<ModalComponent>;
 
+  closeOnRouteChange?: Subscription;
+
   constructor(
     private appRef: ApplicationRef,
-    private injector: EnvironmentInjector
+    private injector: EnvironmentInjector,
+    private router: Router
   ) {}
 
   openConfirmModal(props: ConfirmModalProps) {
@@ -52,10 +57,21 @@ export class ModalService {
     // Attach views to the changeDetection cycle
     this.appRef.attachView(newComponent.hostView);
     this.appRef.attachView(this.modalComponent.hostView);
+
+    this.closeOnRouteChange = this.router.events.pipe(take(1)).subscribe(() => {
+      this.modalComponent.destroy();
+    });
     return newComponent;
   };
 
   close() {
     this.modalComponent.instance.close();
+    const component = this.modalComponent;
+    this.closeOnRouteChange?.unsubscribe();
+    // This completely clears the modal from the html. I'm setting a timeout to make
+    // sure the closing transition is not too abrupt.
+    setTimeout(() => {
+      component.destroy();
+    }, 200);
   }
 }
