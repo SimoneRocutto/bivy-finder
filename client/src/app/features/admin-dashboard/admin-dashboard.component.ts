@@ -201,14 +201,7 @@ export class AdminDashboardComponent implements OnInit {
     // Todo improve api calls by using mongodb findOneAndUpdate: that allows us
     // to get the updated bivouac without having to call the get api.
     this.bivouacService.getBivouacById(bivouacId).pipe(
-      catchError((res) => this.errorService.catchNonHttpError(res)),
-      filter((res) => this.errorService.filterHttpError(res)),
       tap((res) => {
-        // ? This doesn't throw error in typescript version 5.5.2. (in fact it
-        // shouldn't throw - see the same case in updateBivouac)
-        // Todo remove ts-ignore comments after updating angular to a version
-        // that allows using typescript 5.5.2 or more.
-        // @ts-ignore
         if (res.status !== 200 || res.body?.status !== "success") {
           const errorMessage = "Unknown error while getting bivouac.";
           console.error(errorMessage);
@@ -222,7 +215,8 @@ export class AdminDashboardComponent implements OnInit {
         // @ts-ignore
         this.bivouacs.push(res.body.data);
         this.refreshPagination();
-      })
+      }),
+      catchError((res) => this.errorService.catchAll(res, true))
     );
 
   private deleteBivouac = (bivouac: Bivouac) =>

@@ -1,11 +1,8 @@
 import { Injectable } from "@angular/core";
 import { ApiService } from "./api.service";
 import { tap } from "rxjs";
-
-interface AuthUser {
-  id: string | null;
-  username: string | null;
-}
+import { AuthUser } from "./types/user.type";
+import { ToastService } from "./ui-components/generic/toast-box/toast.service";
 
 @Injectable({
   providedIn: "root",
@@ -18,14 +15,18 @@ export class AuthService {
   loggedUser: AuthUser = {
     id: null,
     username: null,
+    role: null,
   };
 
-  constructor(private apiService: ApiService) {
+  constructor(
+    private apiService: ApiService,
+    private toastService: ToastService
+  ) {
     this.checkAuth().subscribe((res) => {
       if (res.body?.status === "success") {
         if (res.body.data.userAuthenticated) {
-          const { id, username } = res.body.data.user;
-          this.setUser(id, username);
+          const { id, username, role } = res.body.data.user;
+          this.setUser(id, username, role);
         }
       } else {
         // Todo improve error handling
@@ -36,14 +37,18 @@ export class AuthService {
 
   login = (username: string, password: string) =>
     this.apiService
-      .post<
-        { user: { id: string; username: string } },
-        { username: string; password: string }
-      >("/auth/login", { username, password })
+      .post<{ user: AuthUser }, { username: string; password: string }>(
+        "/auth/login",
+        { username, password }
+      )
       .pipe(
         tap((res) => {
           if (res.body?.status === "success") {
-            this.setUser(res.body.data.user.id, res.body.data.user.username);
+            this.setUser(
+              res.body.data.user.id,
+              res.body.data.user.username,
+              res.body.data.user.role
+            );
           } else {
             console.error("Unknown error while authenticating.");
           }
@@ -55,6 +60,7 @@ export class AuthService {
       tap((res) => {
         if (res.body?.status === "success") {
           this.clearUser();
+          this.toastService.createToast("Logout successful!", "success");
         } else {
           console.error("Unknown error while logging out.");
         }
@@ -70,14 +76,18 @@ export class AuthService {
   checkAuth = () =>
     this.apiService.post<{
       userAuthenticated: boolean;
-      user: { username: string | null; id: string | null };
+      user: AuthUser;
     }>("/auth/check-login");
 
   private clearUser = () => {
-    this.loggedUser = { id: null, username: null };
+    this.loggedUser = { id: null, username: null, role: null };
   };
 
-  private setUser = (id: string | null, username: string | null) => {
+  private setUser = (
+    id: string | null,
+    username: string | null,
+    role: string | null
+  ) => {
     const invalidValue = [id, username].some(
       (item) => typeof item !== "string" || item === ""
     );
@@ -86,6 +96,6 @@ export class AuthService {
       return;
     }
 
-    this.loggedUser = { id, username };
+    this.loggedUser = { id, username, role };
   };
 }

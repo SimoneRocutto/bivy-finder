@@ -324,30 +324,19 @@ export class BivouacFormComponent implements OnInit {
       : this.createBivouac(this.parsedForm)
     )
       .pipe(
-        catchError((e) => {
-          console.error(e);
-          // Re-enable form interaction if the operation failed.
-          this.isSubmitting = false;
-          this.toastService.createToast("Unknown error", "error");
-          // Todo check whether this makes sense.
-          return of(e);
-        })
+        catchError((e) =>
+          this.errorService
+            .catchAll(e, true)
+            .pipe(tap(() => (this.isSubmitting = false)))
+        )
       )
       .subscribe();
   };
 
   createBivouac = (bivouac: NewBivouac) =>
     this.bivouacsService.createBivouac(bivouac, this.imageFile).pipe(
-      catchError((res) => this.errorService.catchNonHttpError(res)),
-      filter((res) => this.errorService.filterHttpError(res)),
       tap((res) => {
-        // ? This doesn't throw error in typescript version 5.5.2. (in fact it
-        // shouldn't throw - see the same case in updateBivouac)
-        // Todo remove ts-ignore comments after updating angular to a version
-        // that allows using typescript 5.5.2 or more.
-        // @ts-ignore
         if (res.body?.status === "success") {
-          // @ts-ignore
           const { id } = res.body.data;
           this.toastService.createToast("Bivouac created", "success");
           this.onSubmit.emit();
@@ -358,8 +347,6 @@ export class BivouacFormComponent implements OnInit {
 
   updateBivouac = (bivouacId: string, bivouac: NewBivouac) =>
     this.bivouacsService.updateBivouac(bivouacId, bivouac, this.imageFile).pipe(
-      catchError((res) => this.errorService.catchNonHttpError(res)),
-      filter((res) => this.errorService.filterHttpError(res)),
       tap((res) => {
         if (res.status === 204) {
           this.toastService.createToast("Bivouac updated", "success");
