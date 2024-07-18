@@ -34,6 +34,7 @@ import { FormInputComponent } from "../../../ui-components/generic/form-input/fo
           iconName="key"
           [label]="t('auth.password')"
           [formGroup]="loginForm"
+          type="password"
           formControlName="password"
         ></app-form-input>
         <button
