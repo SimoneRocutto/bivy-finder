@@ -102,9 +102,10 @@ connectToDatabase(ATLAS_URI)
         resave: false,
         saveUninitialized: false,
         cookie: {
-          httpOnly: false,
+          httpOnly: true,
           // Todo change to true for production
           secure: false,
+          sameSite: "strict",
           maxAge: 1000 * 60 * 60 * 24 * 7,
         },
       })
