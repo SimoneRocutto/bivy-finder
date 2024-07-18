@@ -25,6 +25,12 @@ export const usersConfig: CollectionConfigInterface = {
           description: "is required and is a string",
           minLength: 5,
         },
+        role: {
+          bsonType: "string",
+          description:
+            "is either 'admin' or null. May add extra values in the future",
+          enum: ["admin"],
+        },
       },
     },
   },

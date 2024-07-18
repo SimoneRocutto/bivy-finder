@@ -4,13 +4,7 @@ import session from "express-session";
 import bodyParser from "body-parser";
 import { collections } from "../database/database";
 import { sendError, sendFail, sendSuccess } from "../helpers/http";
-
-interface SessionCustomData {
-  userData?: {
-    id: string;
-    username: string;
-  };
-}
+import { CustomSession } from "../models/application/session";
 
 export const authRouter = express.Router();
 authRouter.use(express.json());
@@ -60,12 +54,11 @@ authRouter.post("/login", bodyParser.json(), async (_req, res, next) => {
         _req.session.regenerate(function (err) {
           if (err) next(err);
           // Store user data in session
-          const {
-            session,
-          }: { session: session.Session & Partial<SessionCustomData> } = _req;
+          const { session }: { session: CustomSession } = _req;
           session.userData = {
             id: user._id.toString(),
             username: user.username,
+            ...(user.role ? { role: user.role } : undefined),
           };
           _req.session.save(function (err) {
             if (err) {
@@ -83,8 +76,7 @@ authRouter.post("/login", bodyParser.json(), async (_req, res, next) => {
 });
 
 authRouter.post("/logout", bodyParser.json(), async (_req, res, next) => {
-  const { session }: { session: session.Session & Partial<SessionCustomData> } =
-    _req;
+  const { session }: { session: CustomSession } = _req;
   session.userData = undefined;
   // I copied this code from the express-session docs, I honestly don't
   // know why we are doing this instead of _req.session.destroy.
@@ -108,11 +100,14 @@ authRouter.post("/logout", bodyParser.json(), async (_req, res, next) => {
 // In the future, this logic should be moved to a middleware, so that
 // unauthenticated users cannot access protected routes.
 authRouter.post("/check-login", bodyParser.json(), async (_req, res) => {
-  const { session }: { session: session.Session & Partial<SessionCustomData> } =
-    _req;
+  const { session }: { session: CustomSession } = _req;
   sendSuccess(res, {
     userAuthenticated: !!session.userData,
-    user: { username: session.userData?.username, id: session.userData?.id },
+    user: {
+      username: session.userData?.username,
+      id: session.userData?.id,
+      role: session.userData?.role,
+    },
   });
 });
 

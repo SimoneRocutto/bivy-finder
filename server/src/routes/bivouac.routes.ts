@@ -13,6 +13,7 @@ import {
   formatBivouac,
   unformatBivouac,
 } from "../helpers/data/bivouacs";
+import { checkRole } from "../middlewares/route-guards";
 
 export const bivouacRouter = express.Router();
 bivouacRouter.use(express.json());
@@ -153,6 +154,7 @@ bivouacRouter.get("/:id", async (req, res) => {
 
 bivouacRouter.post(
   "/",
+  checkRole("admin"),
   multerUploadImage.single("bivouacImage"),
   async (req, res) => {
     let formattedBivouac: BivouacFormattedInterface;
@@ -202,6 +204,7 @@ bivouacRouter.post(
  */
 bivouacRouter.put(
   "/:id",
+  checkRole("admin"),
   multerUploadImage.single("bivouacImage"),
   async (req, res) => {
     let formattedBivouac: BivouacFormattedInterface;
@@ -282,7 +285,7 @@ bivouacRouter.put(
  *       404:
  *         description: Resource not found
  */
-bivouacRouter.delete("/:id", async (req, res) => {
+bivouacRouter.delete("/:id", checkRole("admin"), async (req, res) => {
   const id = req?.params?.id;
   const query = { _id: new ObjectId(id) };
 
