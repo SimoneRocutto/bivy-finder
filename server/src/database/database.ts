@@ -1,11 +1,9 @@
 import * as mongodb from "mongodb";
-import { Employee } from "../models/data/employee";
 import { UserInterface } from "../models/data/user";
 import { BivouacInterface } from "../models/data/bivouac";
 import { collectionsConfigs } from "./collections";
 
 export const collections: {
-  employees?: mongodb.Collection<Employee>;
   users?: mongodb.Collection<UserInterface>;
   bivouacs?: mongodb.Collection<BivouacInterface>;
 } = {};
@@ -23,10 +21,9 @@ export async function connectToDatabase(uri: string) {
   }
 }
 
-// Update our existing collection with JSON schema validation so we know our documents will always match the shape of our Employee model, even if added elsewhere.
-// For more information about schema validation, see this blog series: https://www.mongodb.com/blog/post/json-schema-validation--locking-down-your-model-the-smart-way
+// Update our existing collection with JSON schema validation so we know our documents will always match the shape of our models.
 async function applySchemaValidation(db: mongodb.Db) {
-  // Try applying the modification to the collection, if the collection doesn't exist, create it
+  // Try applying the modification to the collection, if the collection doesn't exist, create it.
   for (const collectionConfig of collectionsConfigs) {
     await db
       .command({
