@@ -1,6 +1,7 @@
 import { CommonModule } from "@angular/common";
 import { Component, ElementRef, ViewChild } from "@angular/core";
 import { RouterModule } from "@angular/router";
+import { AuthService } from "../../../auth.service";
 
 @Component({
   selector: "app-sidebar",
@@ -26,11 +27,13 @@ import { RouterModule } from "@angular/router";
         ></label>
         <ul class="menu p-4 w-80 min-h-full bg-base-200">
           <!-- Sidebar list -->
-          <li *ngFor="let item of menuItems">
-            <a [routerLink]="[item.url]" (click)="closeSidebar()">{{
-              item.title
-            }}</a>
-          </li>
+          <ng-container *ngFor="let item of menuItems">
+            <li *ngIf="!item.role || item.role === userRole">
+              <a [routerLink]="[item.url]" (click)="closeSidebar()">{{
+                item.title
+              }}</a>
+            </li>
+          </ng-container>
         </ul>
       </div>
     </div>
@@ -39,11 +42,17 @@ import { RouterModule } from "@angular/router";
 })
 export class SidebarComponent {
   @ViewChild("drawerCheckbox") drawerCheckbox?: ElementRef<HTMLElement>;
-  menuItems: { title: string; url: string }[] = [
+  menuItems: { title: string; url: string; role?: string }[] = [
     { title: "Home", url: "/" },
     { title: "Map", url: "/bivouacs-map" },
-    { title: "Admin Dashboard", url: "/admin-dashboard" },
+    { title: "Admin Dashboard", url: "/admin-dashboard", role: "admin" },
   ];
+
+  constructor(private authService: AuthService) {}
+
+  get userRole() {
+    return this.authService.loggedUser?.role;
+  }
 
   closeSidebar = () => {
     if (this.drawerCheckbox?.nativeElement) {

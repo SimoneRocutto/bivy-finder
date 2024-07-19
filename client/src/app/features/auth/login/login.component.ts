@@ -4,7 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { AuthService } from "../../../auth.service";
 import { TranslocoDirective } from "@jsverse/transloco";
 import { catchError, finalize, tap } from "rxjs";
-import { Router } from "@angular/router";
+import { ActivatedRoute, Router } from "@angular/router";
 import { ToastService } from "../../../ui-components/generic/toast-box/toast.service";
 import { FormInputComponent } from "../../../ui-components/generic/form-input/form-input.component";
 
@@ -62,9 +62,13 @@ export class LoginComponent {
     username: ["", Validators.required],
     password: ["", Validators.required],
   });
+
+  private defaultRedirectAfterLogin = "/";
+
   constructor(
     private formBuilder: FormBuilder,
     private authService: AuthService,
+    private route: ActivatedRoute,
     private router: Router,
     private toastService: ToastService
   ) {}
@@ -83,7 +87,10 @@ export class LoginComponent {
         tap((res) => {
           if (res.body?.status === "success") {
             this.toastService.createToast("Login successful!", "success");
-            this.router.navigate(["/"]);
+            const returnUrl =
+              this.route.snapshot.queryParams["returnUrl"] ||
+              this.defaultRedirectAfterLogin;
+            this.router.navigateByUrl(returnUrl);
           }
         }),
         catchError((e: any) => {
