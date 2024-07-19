@@ -55,11 +55,12 @@ authRouter.post("/login", bodyParser.json(), async (_req, res, next) => {
           if (err) next(err);
           // Store user data in session
           const { session }: { session: CustomSession } = _req;
-          session.userData = {
+          const userData = {
             id: user._id.toString(),
             username: user.username,
             ...(user.role ? { role: user.role } : undefined),
           };
+          session.userData = userData;
           _req.session.save(function (err) {
             if (err) {
               sendError(res, "Unknown error.", 500);
@@ -67,7 +68,7 @@ authRouter.post("/login", bodyParser.json(), async (_req, res, next) => {
             }
           });
           sendSuccess(res, {
-            user: { id: user._id.toString(), username: username },
+            user: userData,
           });
         });
       }
