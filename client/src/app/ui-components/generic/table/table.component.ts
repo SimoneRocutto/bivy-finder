@@ -18,7 +18,7 @@ import { sortObjectsByProp } from "../../../helpers/misc";
         [(ngModel)]="filterString"
         (input)="filterItems()"
       />
-      <i class="material-icons">search</i>
+      <i class="material-symbols-outlined">search</i>
     </label>
     <app-pagination
       [items]="filteredItems"

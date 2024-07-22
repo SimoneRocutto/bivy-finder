@@ -61,9 +61,9 @@ import { TranslocoService } from "@jsverse/transloco";
         <ng-template #afterCell let-bivouac>
           <td after>
             <button (click)="openUpdateModal(bivouac)">
-              <i class="material-icons">edit</i></button
+              <i class="material-symbols-outlined">edit</i></button
             ><button (click)="openDeleteModal(bivouac)">
-              <i class="material-icons">delete</i>
+              <i class="material-symbols-outlined">delete</i>
             </button>
           </td></ng-template
         ></app-table

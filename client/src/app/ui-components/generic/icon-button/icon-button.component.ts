@@ -9,7 +9,7 @@ import { Component, EventEmitter, Input, Output } from "@angular/core";
       (click)="onClick.emit($event)"
       class="flex justify-center items-center"
     >
-      <i class="material-icons">{{ iconName }}</i>
+      <i class="material-symbols-outlined">{{ iconName }}</i>
     </button>
   `,
   styles: ``,

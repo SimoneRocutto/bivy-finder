@@ -60,7 +60,7 @@ import { tap } from "rxjs";
               [attr.aria-label]="t('common.languages') | titlecase"
               [attr.title]="t('common.languages') | titlecase"
             >
-              <span class="material-icons"> language </span>
+              <span class="material-symbols-outlined"> language </span>
             </div>
             <ul
               tabindex="0"
@@ -86,7 +86,7 @@ import { tap } from "rxjs";
               [attr.aria-label]="t('navbar.user_area') | titlecase"
               [attr.title]="t('navbar.user_area') | titlecase"
             >
-              <span class="material-icons"> account_circle </span>
+              <span class="material-symbols-outlined"> account_circle </span>
             </div>
             <ul
               tabindex="0"
