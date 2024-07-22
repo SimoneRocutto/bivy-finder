@@ -24,3 +24,7 @@
 html:has(.drawer-auto-gutter .drawer-toggle:checked) {
   scrollbar-gutter: auto
 }
+
+.material-symbols-outlined.material-symbols--filled {
+  font-variation-settings: 'FILL' 1;
+}
