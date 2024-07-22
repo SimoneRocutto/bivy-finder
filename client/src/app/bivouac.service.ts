@@ -32,4 +32,10 @@ export class BivouacService {
   };
 
   deleteBivouac = (id: string) => this.apiService.delete(`/bivouacs/${id}`);
+
+  favoriteBivouac = (id: string) =>
+    this.apiService.post(`/bivouacs/favorite/${id}`);
+
+  unfavoriteBivouac = (id: string) =>
+    this.apiService.delete(`/bivouacs/favorite/${id}`);
 }

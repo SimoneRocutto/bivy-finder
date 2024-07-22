@@ -18,6 +18,8 @@ import {
 } from "leaflet";
 import { Bivouac } from "../../types/bivouac.type";
 import { LeafletMarkerClusterModule } from "@bluehalo/ngx-leaflet-markercluster";
+import { forkJoin, tap } from "rxjs";
+import { BivouacsMapService } from "./bivouacs-map.service";
 
 @Component({
   selector: "app-bivouacs-map",
@@ -84,6 +86,7 @@ export class BivouacsMapComponent {
 
   constructor(
     private bivouacService: BivouacService,
+    private bivouacsMapService: BivouacsMapService,
     private changeDetector: ChangeDetectorRef
   ) {
     this.loadData();
@@ -105,27 +108,35 @@ export class BivouacsMapComponent {
   };
 
   private loadData = () => {
-    this.bivouacService.getBivouacs().subscribe((res) => {
-      if (res.body?.status !== "success") {
-        console.error("Unknown error");
-        return;
-      }
-      this.bivouacs = res.body.data;
-      const markerCluster = markerClusterGroup({ maxClusterRadius: 45 });
-      for (const bivouac of this.bivouacs) {
-        // No latLng data => no marker on the map
-        if (!bivouac?.latLng) {
-          continue;
-        }
-        const marker = new Marker(bivouac.latLng, {
-          icon: this.markerIcon,
-        }).addEventListener("click", () => {
-          this.selectBivouac(bivouac);
-          this.changeDetector.detectChanges();
-        });
-        markerCluster?.addLayer(marker);
-      }
-      this.markerCluster = markerCluster;
-    });
+    forkJoin([
+      this.bivouacsMapService.loadFavorites(),
+      this.loadBivouacs(),
+    ]).subscribe();
   };
+
+  private loadBivouacs = () =>
+    this.bivouacService.getBivouacs().pipe(
+      tap((res) => {
+        if (res.body?.status !== "success") {
+          console.error("Unknown error");
+          return;
+        }
+        this.bivouacs = res.body.data;
+        const markerCluster = markerClusterGroup({ maxClusterRadius: 45 });
+        for (const bivouac of this.bivouacs) {
+          // No latLng data => no marker on the map
+          if (!bivouac?.latLng) {
+            continue;
+          }
+          const marker = new Marker(bivouac.latLng, {
+            icon: this.markerIcon,
+          }).addEventListener("click", () => {
+            this.selectBivouac(bivouac);
+            this.changeDetector.detectChanges();
+          });
+          markerCluster?.addLayer(marker);
+        }
+        this.markerCluster = markerCluster;
+      })
+    );
 }

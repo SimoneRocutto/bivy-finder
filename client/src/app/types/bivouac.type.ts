@@ -28,6 +28,7 @@ export interface NewBivouac {
 export interface Bivouac extends NonNull<NewBivouac> {
   _id: string;
   imageUrl?: string;
+  favoritesCount?: number;
 }
 
 export const bivouacTypes: BivouacType[] = [
