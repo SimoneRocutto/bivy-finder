@@ -24,7 +24,10 @@ authRouter.post("/login", bodyParser.json(), async (_req, res, next) => {
     return;
   }
 
-  const user = await usersCollection?.findOne({ username });
+  const user = await usersCollection?.findOne(
+    { username },
+    { projection: { username: 1, password: 1, role: 1 } }
+  );
 
   if (!user) {
     sendFail(
@@ -115,7 +118,6 @@ authRouter.post("/check-login", bodyParser.json(), async (_req, res) => {
 authRouter.post("/sign-up", bodyParser.json(), async (_req, res) => {
   const usersCollection = await collections?.users;
   const { username, password } = _req.body;
-  console.log(_req.body);
 
   if (!username || !password) {
     sendFail(

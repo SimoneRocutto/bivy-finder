@@ -31,6 +31,25 @@ export const usersConfig: CollectionConfigInterface = {
             "is either 'admin' or null. May add extra values in the future",
           enum: ["admin"],
         },
+        favoriteBivouacs: {
+          bsonType: "array",
+          description: "must be an array of objects",
+          items: {
+            bsonType: "object",
+            required: ["bivouacId"],
+            properties: {
+              bivouacId: {
+                bsonType: "objectId",
+                description:
+                  "is required and is an objectId referencing a bivouac",
+              },
+              time: {
+                bsonType: "date",
+                description: "is required and is a date",
+              },
+            },
+          },
+        },
       },
     },
   },

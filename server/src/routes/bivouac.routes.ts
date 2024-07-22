@@ -1,6 +1,6 @@
 import * as express from "express";
-import { ObjectId } from "mongodb";
-import { collections } from "../database/database";
+import { ClientSession, ObjectId } from "mongodb";
+import { collections, getClient } from "../database/database";
 import { sendFail, sendSuccess } from "../helpers/http";
 import {
   BivouacInterface,
@@ -13,7 +13,8 @@ import {
   formatBivouac,
   unformatBivouac,
 } from "../helpers/data/bivouacs";
-import { checkRole } from "../middlewares/route-guards";
+import { checkAuth, checkRole } from "../middlewares/route-guards";
+import { CustomSession } from "../models/application/session";
 
 export const bivouacRouter = express.Router();
 bivouacRouter.use(express.json());
@@ -150,6 +151,8 @@ bivouacRouter.get("/:id", async (req, res) => {
  *                     type: string
  *       400:
  *         description: Operation failed
+ *       403:
+ *         description: Unauthorized. Needs admin role
  */
 
 bivouacRouter.post(
@@ -199,6 +202,8 @@ bivouacRouter.post(
  *         description: Operation successful
  *       304:
  *         description: Resource was found, but operation failed
+ *       403:
+ *         description: Unauthorized. Needs admin role
  *       404:
  *         description: Resource not found
  */
@@ -282,6 +287,8 @@ bivouacRouter.put(
  *         description: Operation successful
  *       400:
  *         description: Resource was found, but operation failed
+ *       403:
+ *         description: Unauthorized. Needs admin role
  *       404:
  *         description: Resource not found
  */
@@ -307,4 +314,160 @@ bivouacRouter.delete("/:id", checkRole("admin"), async (req, res) => {
   }
 
   sendSuccess(res, null, 204);
+});
+
+/**
+ * @openapi
+ * /bivouacs/favorite/{id}:
+ *   post:
+ *     description: Favorites a bivouac
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         description: Bivouac id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       201:
+ *         description: Operation successful
+ *         content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *       400:
+ *         description: Operation failed
+ *       403:
+ *         description: Unauthorized. Needs login
+ */
+bivouacRouter.post("/favorite/:id", checkAuth(), async (req, res) => {
+  const { session }: { session: CustomSession } = req;
+  const userId = session.userData?.id;
+  const bivouacId = req?.params?.id;
+
+  if (!userId || !bivouacId) {
+    sendFail(res, null, 400);
+  }
+
+  const bivouacIsFavorite = await collections.users?.findOne({
+    _id: new ObjectId(userId),
+    "favoriteBivouacs.bivouacId": new ObjectId(bivouacId),
+  });
+
+  if (bivouacIsFavorite) {
+    return sendFail(res, { message: "Bivouac is already favorite." }, 400);
+  }
+
+  // Using a transaction to make sure both operation succeed together or
+  // fail together.
+  const client = getClient();
+  const dbSession: ClientSession = client.startSession();
+  try {
+    await dbSession.withTransaction(async () => {
+      await collections?.bivouacs?.updateOne(
+        { _id: new ObjectId(bivouacId) },
+        {
+          $inc: {
+            favoritesCount: 1,
+          },
+        },
+        { session: dbSession }
+      );
+      await collections?.users?.updateOne(
+        { _id: new ObjectId(userId) },
+        {
+          $push: {
+            favoriteBivouacs: {
+              bivouacId: new ObjectId(bivouacId),
+              time: new Date(),
+            },
+          },
+        },
+        { session: dbSession }
+      );
+    });
+    sendSuccess(res, null, 201);
+  } catch (e) {
+    sendFail(res, null, 400);
+  } finally {
+    await dbSession.endSession();
+    return;
+  }
+});
+
+/**
+ * @openapi
+ * /bivouacs/favorite/{id}:
+ *   delete:
+ *     description: Unfavorites a bivouac
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         description: Bivouac id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       204:
+ *         description: Operation successful
+ *       400:
+ *         description: Resource was found, but operation failed
+ *       403:
+ *         description: Unauthorized. Needs login
+ */
+bivouacRouter.delete("/favorite/:id", checkAuth(), async (req, res) => {
+  const { session }: { session: CustomSession } = req;
+  const userId = session.userData?.id;
+  const bivouacId = req?.params?.id;
+
+  if (!userId || !bivouacId) {
+    sendFail(res, null, 400);
+  }
+
+  const bivouacIsFavorite = await collections.users?.findOne({
+    _id: new ObjectId(userId),
+    "favoriteBivouacs.bivouacId": new ObjectId(bivouacId),
+  });
+
+  if (!bivouacIsFavorite) {
+    return sendFail(res, { message: "Bivouac is already not favorite." }, 400);
+  }
+
+  // Using a transaction to make sure both operation succeed together or
+  // fail together.
+  const client = getClient();
+  const dbSession: ClientSession = client.startSession();
+  try {
+    await dbSession.withTransaction(async () => {
+      await collections?.bivouacs?.updateOne(
+        { _id: new ObjectId(bivouacId) },
+        {
+          $inc: {
+            favoritesCount: -1,
+          },
+        },
+        { session: dbSession }
+      );
+      await collections?.users?.updateOne(
+        { _id: new ObjectId(userId) },
+        {
+          $pull: {
+            favoriteBivouacs: {
+              bivouacId: new ObjectId(bivouacId),
+            },
+          },
+        },
+        { session: dbSession }
+      );
+    });
+    sendSuccess(res, null, 204);
+  } catch (e) {
+    sendFail(res, null, 400);
+  } finally {
+    await dbSession.endSession();
+    return;
+  }
 });

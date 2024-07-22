@@ -71,6 +71,10 @@ export const bivouacsConfig: CollectionConfigInterface = {
             bsonType: "string",
           },
         },
+        favoritesCount: {
+          bsonType: "int",
+          description: "is an integer",
+        },
       },
     },
   },

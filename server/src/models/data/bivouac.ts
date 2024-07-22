@@ -14,6 +14,7 @@ export interface BivouacInterface {
     | "abandoned";
   material?: "stone" | "wood" | "metal" | "rock";
   latLng?: [Decimal128, Decimal128, Decimal128 | null];
+  favoritesCount?: number;
   _id?: ObjectId;
 }
 
