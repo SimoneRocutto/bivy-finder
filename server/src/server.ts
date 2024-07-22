@@ -14,6 +14,7 @@ import RedisStore from "connect-redis";
 import { connectToDatabase } from "./database/database";
 import { errorMiddlewares, middlewares } from "./middlewares";
 import { routers } from "./routes";
+import { sendError, sendFail } from "./helpers/http";
 const { specs, swaggerUi } = require("./config/swagger");
 
 dotenv.config({ path: __dirname + "/config/.env" });
@@ -22,6 +23,7 @@ dotenv.config({ path: __dirname + "/config/.env" });
 
 export const {
   ATLAS_URI,
+  ATLAS_DB,
   SESSION_SECRET,
   PORT,
   AWS_ACCESS_KEY_ID,
@@ -32,15 +34,15 @@ export const {
   REDIS_HOST,
   REDIS_PORT,
 } = process.env;
-if (!ATLAS_URI) {
+if (!ATLAS_URI || !ATLAS_DB) {
   console.error(
-    "No ATLAS_URI environment variable has been defined in config.env"
+    "ATLAS_URI or ATLAS_DB environment variable missing from config/.env"
   );
   process.exit(1);
 }
 if (!SESSION_SECRET) {
   console.error(
-    "No SESSION_SECRET environment variable has been defined in config.env"
+    "No SESSION_SECRET environment variable has been defined in config/.env"
   );
   process.exit(1);
 }
@@ -52,14 +54,14 @@ if (
   !AWS_BUCKET_DIRECTORY
 ) {
   console.error(
-    "AWS_ACCESS_KEY_ID, AWS_ACCESS_KEY_SECRET, AWS_DEFAULT_REGION, AWS_BUCKET_NAME or AWS_BUCKET_DIRECTORY environment variable missing from config.env"
+    "AWS_ACCESS_KEY_ID, AWS_ACCESS_KEY_SECRET, AWS_DEFAULT_REGION, AWS_BUCKET_NAME or AWS_BUCKET_DIRECTORY environment variable missing from config/.env"
   );
   process.exit(1);
 }
 
 if (!REDIS_HOST || !REDIS_PORT) {
   console.error(
-    "REDIS_HOST or REDIS_PORT environment variable missing from config.env"
+    "REDIS_HOST or REDIS_PORT environment variable missing from config/.env"
   );
 }
 
