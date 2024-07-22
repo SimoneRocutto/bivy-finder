@@ -1,9 +1,10 @@
-import { Component } from "@angular/core";
+import { Component, OnInit } from "@angular/core";
 import { RouterOutlet } from "@angular/router";
 import { CommonModule } from "@angular/common";
 import { NavbarComponent } from "./ui-components/specific/navbar/navbar.component";
 import { SidebarComponent } from "./ui-components/specific/sidebar/sidebar.component";
 import { ToastBoxComponent } from "./ui-components/generic/toast-box/toast-box.component";
+import { AuthService } from "./auth.service";
 
 @Component({
   selector: "app-root",
@@ -16,7 +17,7 @@ import { ToastBoxComponent } from "./ui-components/generic/toast-box/toast-box.c
     ToastBoxComponent,
   ],
   template: `
-    <div class="min-h-screen bg-gray-100">
+    <div class="min-h-screen bg-gray-100" *ngIf="!isLoading">
       <app-sidebar>
         <app-navbar></app-navbar>
         <main class="relative z-0 flex flex-1 justify-center">
@@ -26,4 +27,13 @@ import { ToastBoxComponent } from "./ui-components/generic/toast-box/toast-box.c
     </div>
   `,
 })
-export class AppComponent {}
+export class AppComponent implements OnInit {
+  isLoading = true;
+  constructor(private authService: AuthService) {}
+
+  ngOnInit(): void {
+    this.authService.loadUserAuthData().subscribe(() => {
+      this.isLoading = false;
+    });
+  }
+}

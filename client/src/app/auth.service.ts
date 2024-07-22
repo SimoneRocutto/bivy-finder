@@ -21,19 +21,23 @@ export class AuthService {
   constructor(
     private apiService: ApiService,
     private toastService: ToastService
-  ) {
-    this.checkAuth().subscribe((res) => {
-      if (res.body?.status === "success") {
-        if (res.body.data.userAuthenticated) {
-          const { id, username, role } = res.body.data.user;
-          this.setUser(id, username, role);
+  ) {}
+
+  // Fires during app initialization (see app.component.ts).
+  loadUserAuthData = () =>
+    this.checkAuth().pipe(
+      tap((res) => {
+        if (res.body?.status === "success") {
+          if (res.body.data.userAuthenticated) {
+            const { id, username, role } = res.body.data.user;
+            this.setUser(id, username, role);
+          }
+        } else {
+          // Todo improve error handling
+          console.error("Unknown error while authenticating.");
         }
-      } else {
-        // Todo improve error handling
-        console.error("Unknown error while authenticating.");
-      }
-    });
-  }
+      })
+    );
 
   login = (username: string, password: string) =>
     this.apiService
