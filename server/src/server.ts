@@ -135,6 +135,10 @@ connectToDatabase(ATLAS_URI)
       app.use(middleware);
     }
 
+    app.use("/", (req, res) => {
+      sendError(res, "Api route not found", 404);
+    });
+
     // Start the Express server
     app.listen(PORT, () => {
       console.log(`Server running at http://localhost:${PORT}...`);
