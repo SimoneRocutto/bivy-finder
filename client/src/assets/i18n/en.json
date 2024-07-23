@@ -9,7 +9,12 @@
     "sign_up": "sign up",
     "logout": "logout",
     "password": "password",
-    "username": "username"
+    "confirm_password": "Confirm password",
+    "username": "username",
+    "errors": {
+      "password_mismatch": "Passwords do not match",
+      "username_taken": "Username already taken"
+    }
   },
   "bivouacs": {
     "materials": {

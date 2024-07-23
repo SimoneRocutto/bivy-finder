@@ -47,6 +47,7 @@ export const CUSTOM_CONROL_VALUE_ACCESSOR: any = {
           class="grow"
           [placeholder]="_labelAsPlaceholder ? (label | titlecase) : ''"
           [step]="step"
+          [autocomplete]="this.autocomplete ? '' : 'new-password'"
           [ngClass]="{
             'hide-arrows': type === 'number'
           }"
@@ -75,6 +76,8 @@ export class FormInputComponent {
   @Input() step?: number;
   @Input() min?: number;
   @Input() max?: number;
+
+  @Input() autocomplete = true;
 
   @Output() paste = new EventEmitter<ClipboardEvent>();
 

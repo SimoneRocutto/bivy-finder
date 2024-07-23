@@ -9,7 +9,12 @@
     "sign_up": "sign up",
     "logout": "logout",
     "password": "password",
-    "username": "username"
+    "confirm_password": "Conferma password",
+    "username": "username",
+    "errors": {
+      "password_mismatch": "Le password non corrispondono",
+      "username_taken": "Username già in uso"
+    }
   },
   "bivouacs": {
     "materials": {
