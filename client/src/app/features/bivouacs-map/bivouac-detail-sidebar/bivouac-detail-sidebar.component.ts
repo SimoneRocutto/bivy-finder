@@ -20,66 +20,68 @@ import { BivouacsMapService } from "../bivouacs-map.service";
           class="relative p-0 w-96 min-h-full bg-base-200 text-base-content"
           style="max-width: calc(100vw - 60px)"
         >
-          <ng-container *ngIf="bivouac">
-            <div class="w-full h-48">
-              <img
-                [src]="bivouac.imageUrl"
-                alt="Bivouac image"
-                class="w-full h-full"
-              />
-            </div>
-            <div class="p-4">
-              <div class="flex flex-row justify-between items-center">
-                <h3 class="text-lg font-semibold">{{ bivouac.name }}</h3>
-                <div class="flex flex-row items-center">
-                  <div>{{ bivouacsCount }}</div>
-                  <button
-                    class="btn btn-ghost"
-                    (click)="toggleFavorite(bivouac._id)"
+          <div class="w-full h-48">
+            <img
+              [src]="bivouac?.imageUrl"
+              alt="Bivouac image"
+              class="w-full h-full"
+            />
+          </div>
+          <div class="p-4">
+            <div
+              *ngIf="bivouac"
+              class="flex flex-row justify-between items-center"
+            >
+              <h3 class="text-lg font-semibold">{{ bivouac.name }}</h3>
+              <div class="flex flex-row items-center">
+                <div>{{ bivouacsCount }}</div>
+                <button
+                  class="btn btn-ghost"
+                  (click)="toggleFavorite(bivouac._id)"
+                >
+                  <i
+                    class="material-symbols-outlined"
+                    [ngClass]="{
+                      'material-symbols--filled text-red-500':
+                        bivouacIsFavorite(bivouac._id)
+                    }"
+                    >favorite</i
                   >
-                    <i
-                      class="material-symbols-outlined"
-                      [ngClass]="{
-                        'material-symbols--filled text-red-500':
-                          bivouacIsFavorite(bivouac._id)
-                      }"
-                      >favorite</i
-                    >
-                  </button>
-                </div>
+                </button>
               </div>
-              <p class="whitespace-pre-line">
-                {{ bivouac.description }}
-              </p>
+            </div>
+            <p class="whitespace-pre-line">
+              {{ bivouac?.description }}
+            </p>
+            <div class="divider"></div>
+            <div>
+              <p>Type: {{ bivouac?.type }}</p>
+              <p>Material: {{ bivouac?.material }}</p>
+              <div class="flex flex-row items-center gap-2">
+                <div>
+                  {{ bivouac?.latLng?.[0] | number : '1.5-5'}},
+                  {{ bivouac?.latLng?.[1] | number : '1.5-5'}}
+                </div>
+                <!-- If this is inside an ngIf, the animation doesn't work. Still don't know why tbh -->
+                <app-copy-button
+                  [text]="bivouac?.latLng?.[0] + ', ' + bivouac?.latLng?.[1]"
+                ></app-copy-button>
+              </div>
+            </div>
+            <ng-container *ngIf="bivouac?.externalLinks?.length ?? 0 > 0">
               <div class="divider"></div>
               <div>
-                <p>Type: {{ bivouac.type }}</p>
-                <p>Material: {{ bivouac.material }}</p>
-                <div class="flex flex-row items-center gap-2">
-                  <div>
-                    {{ bivouac.latLng?.[0] | number : '1.5-5'}},
-                    {{ bivouac.latLng?.[1] | number : '1.5-5'}}
-                  </div>
-                  <app-copy-button
-                    [text]="bivouac.latLng?.[0] + ', ' + bivouac.latLng?.[1]"
-                  ></app-copy-button>
-                </div>
+                <a
+                  [href]="link"
+                  target="_blank"
+                  *ngFor="let link of bivouac?.externalLinks"
+                  class="link-info flex flex-row gap-1"
+                  ><i class="material-symbols-outlined text-lg">ungroup</i>
+                  <div class="link leading-7">{{ link }}</div></a
+                >
               </div>
-              <ng-container *ngIf="bivouac?.externalLinks?.length ?? 0 > 0">
-                <div class="divider"></div>
-                <div>
-                  <a
-                    [href]="link"
-                    target="_blank"
-                    *ngFor="let link of bivouac?.externalLinks"
-                    class="link-info flex flex-row gap-1"
-                    ><i class="material-symbols-outlined text-lg">ungroup</i>
-                    <div class="link leading-7">{{ link }}</div></a
-                  >
-                </div>
-              </ng-container>
-            </div>
-          </ng-container>
+            </ng-container>
+          </div>
         </div>
       </div>
     </div>
