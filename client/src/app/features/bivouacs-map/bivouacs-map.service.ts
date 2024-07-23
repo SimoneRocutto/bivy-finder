@@ -1,8 +1,8 @@
 import { Injectable } from "@angular/core";
-import { AuthService } from "../../auth.service";
+import { AuthService } from "../../services/auth.service";
 import { UserService } from "../../services/user.service";
 import { of, tap } from "rxjs";
-import { BivouacService } from "../../bivouac.service";
+import { BivouacService } from "../../services/bivouac.service";
 
 @Injectable({
   providedIn: "root",

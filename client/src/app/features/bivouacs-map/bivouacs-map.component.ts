@@ -1,5 +1,5 @@
 import { BivouacDetailSidebarComponent } from "./bivouac-detail-sidebar/bivouac-detail-sidebar.component";
-import { BivouacService } from "../../bivouac.service";
+import { BivouacService } from "../../services/bivouac.service";
 import { ChangeDetectorRef, Component } from "@angular/core";
 import { LeafletModule } from "@bluehalo/ngx-leaflet";
 import {

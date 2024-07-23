@@ -1,6 +1,6 @@
 import { inject } from "@angular/core";
 import { CanActivateFn, Router } from "@angular/router";
-import { AuthService } from "../auth.service";
+import { AuthService } from "../services/auth.service";
 import { authGuard } from "./auth.guard";
 import { ToastService } from "../ui-components/generic/toast-box/toast.service";
 

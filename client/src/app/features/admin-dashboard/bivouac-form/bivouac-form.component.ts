@@ -6,7 +6,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from "@angular/forms";
-import { BivouacService } from "../../../bivouac.service";
+import { BivouacService } from "../../../services/bivouac.service";
 import {
   Bivouac,
   BivouacMaterial,
@@ -19,7 +19,7 @@ import { CommonModule } from "@angular/common";
 import { catchError, filter, of, tap } from "rxjs";
 import { ToastService } from "../../../ui-components/generic/toast-box/toast.service";
 import { LatLngExpression } from "leaflet";
-import { ErrorService } from "../../../error.service";
+import { ErrorService } from "../../../services/error.service";
 import { ModalService } from "../../../ui-components/generic/modal/modal.service";
 import { ItemsListInputComponent } from "../../../ui-components/generic/items-list-input/items-list-input.component";
 import { TooltipComponent } from "../../../ui-components/generic/tooltip/tooltip.component";

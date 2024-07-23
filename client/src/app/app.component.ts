@@ -4,7 +4,7 @@ import { CommonModule } from "@angular/common";
 import { NavbarComponent } from "./ui-components/specific/navbar/navbar.component";
 import { SidebarComponent } from "./ui-components/specific/sidebar/sidebar.component";
 import { ToastBoxComponent } from "./ui-components/generic/toast-box/toast-box.component";
-import { AuthService } from "./auth.service";
+import { AuthService } from "./services/auth.service";
 
 @Component({
   selector: "app-root",

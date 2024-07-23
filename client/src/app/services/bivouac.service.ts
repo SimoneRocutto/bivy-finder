@@ -1,6 +1,6 @@
-import { ApiService } from "./api.service";
+import { ApiService } from "../api.service";
 import { Injectable } from "@angular/core";
-import { Bivouac, NewBivouac } from "./types/bivouac.type";
+import { Bivouac, NewBivouac } from "../types/bivouac.type";
 
 @Injectable({
   providedIn: "root",

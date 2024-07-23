@@ -1,7 +1,7 @@
 import { Component } from "@angular/core";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { ApiService } from "../../../api.service";
-import { AuthService } from "../../../auth.service";
+import { AuthService } from "../../../services/auth.service";
 
 @Component({
   selector: "app-user-sign-up",

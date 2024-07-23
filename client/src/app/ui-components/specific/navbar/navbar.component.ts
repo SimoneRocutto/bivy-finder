@@ -5,7 +5,7 @@ import {
   DropdownBodyContentDirective,
   DropdownComponent,
 } from "../../generic/dropdown/dropdown.component";
-import { AuthService } from "../../../auth.service";
+import { AuthService } from "../../../services/auth.service";
 import { Router, RouterModule } from "@angular/router";
 import { tap } from "rxjs";
 

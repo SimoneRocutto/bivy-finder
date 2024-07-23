@@ -1,8 +1,8 @@
 import { Injectable } from "@angular/core";
-import { ApiService } from "./api.service";
+import { ApiService } from "../api.service";
 import { tap } from "rxjs";
-import { AuthUser } from "./types/user.type";
-import { ToastService } from "./ui-components/generic/toast-box/toast.service";
+import { AuthUser } from "../types/user.type";
+import { ToastService } from "../ui-components/generic/toast-box/toast.service";
 
 @Injectable({
   providedIn: "root",

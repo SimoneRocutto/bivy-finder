@@ -1,8 +1,8 @@
-import { ErrorResponseInterface } from "./../../../server/src/models/application/response";
+import { ErrorResponseInterface } from "../../../../server/src/models/application/response";
 import { HttpErrorResponse, HttpResponse } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { of } from "rxjs";
-import { ToastService } from "./ui-components/generic/toast-box/toast.service";
+import { ToastService } from "../ui-components/generic/toast-box/toast.service";
 
 @Injectable({
   providedIn: "root",

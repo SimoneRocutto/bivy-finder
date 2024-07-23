@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild } from "@angular/core";
 import { Bivouac } from "../../types/bivouac.type";
-import { BivouacService } from "../../bivouac.service";
+import { BivouacService } from "../../services/bivouac.service";
 import { CommonModule } from "@angular/common";
 import { PaginationComponent } from "../../ui-components/generic/pagination/pagination.component";
 import { ToastService } from "../../ui-components/generic/toast-box/toast.service";
@@ -17,7 +17,7 @@ import {
   tap,
 } from "rxjs";
 import { BivouacFormComponent } from "./bivouac-form/bivouac-form.component";
-import { ErrorService } from "../../error.service";
+import { ErrorService } from "../../services/error.service";
 import { FormsModule } from "@angular/forms";
 import { TableComponent } from "../../ui-components/generic/table/table.component";
 import { TableColumn } from "../../ui-components/generic/table/table.type";
