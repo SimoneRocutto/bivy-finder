@@ -25,7 +25,8 @@ authRouter.post("/login", bodyParser.json(), async (_req, res, next) => {
   }
 
   const user = await usersCollection?.findOne(
-    { username },
+    // Case insensitive search
+    { username: { $regex: new RegExp(username, "i") } },
     { projection: { username: 1, password: 1, role: 1 } }
   );
 
@@ -128,6 +129,17 @@ authRouter.post("/sign-up", bodyParser.json(), async (_req, res) => {
       },
       400
     );
+    return;
+  }
+
+  const user = await usersCollection?.findOne(
+    // Case insensitive search
+    { username: { $regex: new RegExp(username, "i") } },
+    { projection: { username: 1 } }
+  );
+
+  if (user) {
+    sendFail(res, { username: "username already taken" }, 409);
     return;
   }
 
