@@ -10,16 +10,16 @@ import {
   MapOptions,
   Marker,
   control,
-  icon,
   latLng,
   tileLayer,
   MarkerClusterGroup,
   markerClusterGroup,
 } from "leaflet";
-import { Bivouac } from "../../types/bivouac.type";
+import { Bivouac, StartingSpot } from "../../types/bivouac.type";
 import { LeafletMarkerClusterModule } from "@bluehalo/ngx-leaflet-markercluster";
 import { forkJoin, tap } from "rxjs";
 import { BivouacsMapService } from "./bivouacs-map.service";
+import { GlyphOptions, glyph } from "../../helpers/leaflet/Leaflet.Icon.Glyph";
 
 @Component({
   selector: "app-bivouacs-map",
@@ -31,7 +31,7 @@ import { BivouacsMapService } from "./bivouacs-map.service";
   ],
   template: `
     <app-bivouac-detail-sidebar
-      [bivouac]="selectedBivouac"
+      [bivouac]="selectedBivouac.data"
       [hidden]="detailHidden"
     ></app-bivouac-detail-sidebar>
     <div
@@ -55,20 +55,27 @@ export class BivouacsMapComponent {
   // optimizing performance.
   markerCluster?: MarkerClusterGroup;
 
-  selectedBivouac?: Bivouac;
+  selectedBivouac: { data: Bivouac | null; marker: Marker | null } = {
+    data: null,
+    marker: null,
+  };
 
   detailHidden?: boolean = true;
 
   bivouacs: Bivouac[] = [];
 
-  markerIcon: Icon = icon({
-    iconSize: [25, 41],
-    iconAnchor: [13, 41],
-    iconUrl: "leaflet/marker-icon.png",
-    shadowUrl: "leaflet/marker-shadow.png",
-  });
+  private getMarkerIcon = (
+    markerColor: GlyphOptions["markerColor"] = "blue"
+  ): Icon =>
+    glyph({
+      className: "material-symbols-outlined material-symbols--filled",
+      glyph: "radio_button_unchecked",
+      glyphSize: "12px",
+      glyphAnchor: [0, -6],
+      markerColor: markerColor,
+    });
 
-  markersLayer: LayerGroup = new LayerGroup();
+  startingSpotsLayer: LayerGroup = new LayerGroup();
 
   options: MapOptions = {
     layers: [
@@ -76,10 +83,10 @@ export class BivouacsMapComponent {
         maxZoom: 18,
         attribution: "...",
       }),
-      this.markersLayer,
+      this.startingSpotsLayer,
     ],
-    zoom: 8,
     zoomControl: false,
+    zoom: 8,
     // Lombardy center
     center: latLng(45.47606840909091, 9.146797684437137),
   };
@@ -99,12 +106,7 @@ export class BivouacsMapComponent {
 
   // Close bivouac detail when user clicks on the map.
   onMapClick = (event) => {
-    this.detailHidden = true;
-  };
-
-  private selectBivouac = (bivouac: Bivouac) => {
-    this.detailHidden = false;
-    this.selectedBivouac = bivouac;
+    this.unselectBivouac();
   };
 
   private loadData = () => {
@@ -112,6 +114,97 @@ export class BivouacsMapComponent {
       this.bivouacsMapService.loadFavorites(),
       this.loadBivouacs(),
     ]).subscribe();
+  };
+
+  private selectBivouac = (bivouac: Bivouac, marker?: Marker) => {
+    if (this.selectedBivouac?.data === bivouac) {
+      return;
+    }
+
+    this.unselectBivouac(false);
+
+    if (marker) {
+      this.selectedBivouac.marker = marker;
+      this.highlightMarker(marker);
+    }
+
+    this.detailHidden = false;
+    this.selectedBivouac.data = bivouac;
+
+    if (bivouac?.startingSpots?.length ?? 0 > 0) {
+      this.showBivouacStartingSpots(bivouac);
+    }
+  };
+
+  private unselectBivouac = (hideBar: boolean = true) => {
+    this.detailHidden = hideBar;
+    const marker = this.selectedBivouac.marker;
+    this.selectedBivouac = {
+      data: null,
+      marker: null,
+    };
+    this.resetStartingSpotsLayer();
+    if (marker) {
+      this.unhighlightMarker(marker);
+    }
+  };
+
+  /**
+   * Highlights the given marker. Useful for marker selection.
+   * @param marker The marker to highlight
+   */
+  private highlightMarker = (marker: Marker) => {
+    // We are removing the marker from the cluster group, so it will be visible even when
+    // zooming out. On unselection, we'll add it back.
+    marker.setIcon(this.getMarkerIcon("red"));
+    this.markerCluster?.removeLayer(marker);
+    marker.addTo(this.startingSpotsLayer);
+    // Making sure the marker is on top of the starting spots markers.
+    marker.setZIndexOffset(1000);
+  };
+
+  /**
+   * Restores original highlighted marker conditions.
+   * @param marker The marker to unhighlight
+   */
+  private unhighlightMarker = (marker: Marker) => {
+    marker.setIcon(this.getMarkerIcon());
+    marker.setZIndexOffset(0);
+    this.markerCluster?.addLayer(marker);
+  };
+
+  private showBivouacStartingSpots = (bivouac: Bivouac) => {
+    for (const spot of bivouac?.startingSpots ?? []) {
+      const latLng = spot.latLng;
+      if (!latLng) {
+        continue;
+      }
+      const marker = new Marker(latLng, {
+        icon: glyph({
+          className: "material-symbols-outlined material-symbols--filled",
+          glyph: "directions_car",
+          markerColor: "purple",
+        }),
+      }).addEventListener("click", () => {
+        this.selectStartingSpot(spot);
+        this.changeDetector.detectChanges();
+      });
+      marker.addTo(this.startingSpotsLayer);
+    }
+  };
+
+  private resetStartingSpotsLayer = () => {
+    if (!this.map) {
+      return;
+    }
+    this.startingSpotsLayer.removeFrom(this.map);
+    this.startingSpotsLayer = new LayerGroup();
+    this.startingSpotsLayer.addTo(this.map);
+  };
+
+  private selectStartingSpot = (spot: StartingSpot) => {
+    // Todo allow the user to see the details for the starting spots (at least being able to copy coordinates)
+    return;
   };
 
   private loadBivouacs = () =>
@@ -129,9 +222,9 @@ export class BivouacsMapComponent {
             continue;
           }
           const marker = new Marker(bivouac.latLng, {
-            icon: this.markerIcon,
+            icon: this.getMarkerIcon(),
           }).addEventListener("click", () => {
-            this.selectBivouac(bivouac);
+            this.selectBivouac(bivouac, marker);
             this.changeDetector.detectChanges();
           });
           markerCluster?.addLayer(marker);

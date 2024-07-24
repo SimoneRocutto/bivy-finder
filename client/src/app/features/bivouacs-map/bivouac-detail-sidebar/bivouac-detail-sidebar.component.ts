@@ -89,7 +89,7 @@ import { BivouacsMapService } from "../bivouacs-map.service";
   styles: ``,
 })
 export class BivouacDetailSidebarComponent {
-  @Input() bivouac?: Bivouac;
+  @Input() bivouac?: Bivouac | null;
   @Input() hidden?: boolean = true;
 
   favoriteIsLoading = false;

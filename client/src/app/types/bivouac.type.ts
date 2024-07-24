@@ -12,6 +12,34 @@ export type BivouacType =
 
 export type BivouacMaterial = "stone" | "wood" | "metal" | "rock";
 
+export type CostPer = "hour" | "day" | "week" | "month" | "forever";
+
+export type Currency = "EUR" | "USD";
+
+export interface StartingSpot {
+  description?: string;
+  timeToDestination?: number;
+  transport?: {
+    car?: {
+      description?: string;
+      cost?: {
+        value: number;
+        currency: Currency;
+        per: CostPer;
+      };
+    };
+    public?: {
+      name: string;
+      description?: string;
+      cost?: {
+        value: number;
+        currency: Currency;
+      };
+    }[];
+  };
+  latLng: LatLngExpression;
+}
+
 // Allowing nulls because we cannot send undefined values through jsons.
 // Null means we want to delete the field. Undefined or key not present
 // means the field will not be sent.
@@ -23,6 +51,7 @@ export interface NewBivouac {
   type?: BivouacType | null;
   latLng?: LatLngExpression | null;
   externalLinks?: string[] | null;
+  startingSpots?: StartingSpot[];
 }
 
 export interface Bivouac extends NonNull<NewBivouac> {
