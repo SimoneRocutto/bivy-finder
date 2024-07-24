@@ -1,4 +1,6 @@
 import crypto from "crypto";
+import { FormattedLatLng, UnformattedLatLng } from "../models/data/bivouac";
+import { Decimal128 } from "mongodb";
 /**
  * Remove all undefined and null properties from an object. Returned object keeps the same type
  * as the input because we are only removing optional properties.
@@ -24,3 +26,15 @@ export const objectFalsyFilter = <T extends {}>(obj: T): [T, string[]] => {
 
 export const randomImageName = (bytes = 32) =>
   crypto.randomBytes(bytes).toString("hex");
+
+export const formatLatLng = (
+  unformattedLatLng?: UnformattedLatLng
+): FormattedLatLng | undefined =>
+  unformattedLatLng?.map((item) => (item ? Number(item?.toString()) : item)) as
+    | [number, number, number | null]
+    | undefined;
+
+export const unformatLatLng = (formattedLatLng?: FormattedLatLng) =>
+  formattedLatLng?.map((item) =>
+    typeof item === "number" ? new Decimal128(item.toString()) : item
+  ) as [Decimal128, Decimal128, Decimal128] | undefined;

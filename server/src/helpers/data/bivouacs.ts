@@ -1,10 +1,14 @@
-import { Decimal128, ObjectId } from "mongodb";
+import { ObjectId } from "mongodb";
 import {
   BivouacFormattedInterface,
   BivouacInterface,
+  FormattedLatLng,
+  StartingSpotFormattedInterface,
+  StartingSpotInterface,
+  UnformattedLatLng,
 } from "../../models/data/bivouac";
 import { deleteImageFromS3, getImageUrlFromS3 } from "../s3";
-import { objectFalsyFilter } from "../misc";
+import { formatLatLng, objectFalsyFilter, unformatLatLng } from "../misc";
 import { collections } from "../../database/database";
 
 export const formatBivouac = async (
@@ -12,13 +16,21 @@ export const formatBivouac = async (
   getImageUrl: boolean = true
 ): Promise<BivouacFormattedInterface> => {
   // Convert latLng to number
-  const { latLng } = bivouac;
-  const parsedLatlng: [number, number, number | null] | undefined = latLng?.map(
-    (item) => (item ? Number(item?.toString()) : item)
-  ) as [number, number, number | null] | undefined;
+  const { latLng, startingSpots, ...rest } = bivouac;
+  const parsedLatlng = formatLatLng(latLng);
+
+  const parsedStartingSpots: StartingSpotFormattedInterface[] | undefined =
+    startingSpots?.map((startingSpot) => ({
+      ...startingSpot,
+      // There should be no cases where formatLatLng is undefined. Even then, if this fails for a starting spot,
+      // it will simply avoid being shown on the map. Nothing to worry about.
+      latLng: formatLatLng(startingSpot.latLng) as FormattedLatLng,
+    }));
+
   const formattedBivouac: BivouacFormattedInterface = {
-    ...bivouac,
+    ...rest,
     latLng: parsedLatlng,
+    ...(startingSpots ? { startingSpots: parsedStartingSpots } : undefined),
   };
 
   // Get image url
@@ -34,16 +46,22 @@ export const formatBivouac = async (
 export const unformatBivouac = (
   bivouac: BivouacFormattedInterface
 ): [BivouacInterface, string[]] => {
-  const [{ latLng: latLngRaw, ...cleanBivouac }, filteredProps] =
+  const [{ latLng: latLngRaw, startingSpots, ...cleanBivouac }, filteredProps] =
     objectFalsyFilter(bivouac);
-  const latLng: [Decimal128, Decimal128, Decimal128] | undefined =
-    latLngRaw?.map((item) =>
-      typeof item === "number" ? new Decimal128(item.toString()) : item
-    ) as [Decimal128, Decimal128, Decimal128] | undefined;
+  const parsedStartingSpots: StartingSpotInterface[] | undefined =
+    startingSpots?.map((startingSpot) => ({
+      ...startingSpot,
+      latLng: unformatLatLng(startingSpot.latLng) as UnformattedLatLng,
+    }));
+  const latLng = unformatLatLng(latLngRaw) as UnformattedLatLng;
+
   return [
     {
       ...cleanBivouac,
       ...(latLng ? { latLng } : undefined),
+      ...(parsedStartingSpots
+        ? { startingSpots: parsedStartingSpots }
+        : undefined),
     },
     filteredProps,
   ];
