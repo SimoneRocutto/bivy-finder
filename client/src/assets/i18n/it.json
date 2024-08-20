@@ -1,6 +1,17 @@
 {
   "app": { "name": "Bivy Finder" },
-  "common": { "submit": "conferma", "languages": "lingue" },
+  "common": {
+    "submit": "conferma",
+    "languages": "lingue",
+    "time_units": {
+      "per": {
+        "month": "mese",
+        "week": "settimana",
+        "day": "giorno",
+        "hour": "h"
+      }
+    }
+  },
   "navbar": {
     "user_area": "area utente"
   },
@@ -31,6 +42,12 @@
       "out-of-lombardy": "fuori lombardia",
       "incomplete": "incompleto",
       "abandoned": "abbandonato"
+    },
+    "map": {
+      "tabs": {
+        "overview": "panoramica",
+        "starting_spots": "punti di partenza"
+      }
     }
   }
 }

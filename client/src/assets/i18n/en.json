@@ -1,6 +1,17 @@
 {
   "app": { "name": "Bivy Finder" },
-  "common": { "submit": "submit", "languages": "languages" },
+  "common": {
+    "submit": "submit",
+    "languages": "languages",
+    "time_units": {
+      "per": {
+        "month": "month",
+        "week": "week",
+        "day": "day",
+        "hour": "h"
+      }
+    }
+  },
   "navbar": {
     "user_area": "user area"
   },
@@ -31,6 +42,12 @@
       "out-of-lombardy": "out of lombardy",
       "incomplete": "incomplete",
       "abandoned": "abandoned"
+    },
+    "map": {
+      "tabs": {
+        "overview": "overview",
+        "starting_spots": "starting spots"
+      }
     }
   }
 }

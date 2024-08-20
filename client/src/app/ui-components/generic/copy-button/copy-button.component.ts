@@ -1,5 +1,5 @@
 import { CommonModule } from "@angular/common";
-import { Component, Input } from "@angular/core";
+import { ChangeDetectorRef, Component, Input } from "@angular/core";
 import { TooltipComponent } from "../tooltip/tooltip.component";
 
 @Component({
@@ -29,6 +29,8 @@ export class CopyButtonComponent {
 
   animationDuration = 2000;
 
+  constructor(private changeDetector: ChangeDetectorRef) {}
+
   copyCoordinatesToClipboard = () => {
     this.justCopied = true;
 
@@ -40,6 +42,9 @@ export class CopyButtonComponent {
 
     this.copyTimeout = setTimeout(() => {
       this.justCopied = false;
+      this.changeDetector.detectChanges();
     }, this.animationDuration);
+
+    this.changeDetector.detectChanges();
   };
 }

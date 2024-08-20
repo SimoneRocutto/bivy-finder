@@ -1,6 +1,6 @@
 import { BivouacDetailSidebarComponent } from "./bivouac-detail-sidebar/bivouac-detail-sidebar.component";
 import { BivouacService } from "../../services/bivouac.service";
-import { ChangeDetectorRef, Component } from "@angular/core";
+import { ChangeDetectorRef, Component, ViewChild } from "@angular/core";
 import { LeafletModule } from "@bluehalo/ngx-leaflet";
 import {
   Icon,
@@ -15,23 +15,27 @@ import {
   MarkerClusterGroup,
   markerClusterGroup,
 } from "leaflet";
-import { Bivouac, StartingSpot } from "../../types/bivouac.type";
+import { Bivouac } from "../../types/bivouac.type";
 import { LeafletMarkerClusterModule } from "@bluehalo/ngx-leaflet-markercluster";
 import { forkJoin, tap } from "rxjs";
 import { BivouacsMapService } from "./bivouacs-map.service";
 import { GlyphOptions, glyph } from "../../helpers/leaflet/Leaflet.Icon.Glyph";
+import { CommonModule } from "@angular/common";
 
 @Component({
   selector: "app-bivouacs-map",
   standalone: true,
   imports: [
+    CommonModule,
     LeafletModule,
     LeafletMarkerClusterModule,
     BivouacDetailSidebarComponent,
   ],
   template: `
     <app-bivouac-detail-sidebar
+      *ngIf="map"
       [bivouac]="selectedBivouac.data"
+      [map]="map"
       [hidden]="detailHidden"
     ></app-bivouac-detail-sidebar>
     <div
@@ -49,6 +53,9 @@ import { GlyphOptions, glyph } from "../../helpers/leaflet/Leaflet.Icon.Glyph";
   `,
 })
 export class BivouacsMapComponent {
+  @ViewChild(BivouacDetailSidebarComponent)
+  bivouacDetailSidebar!: BivouacDetailSidebarComponent;
+
   map?: LMap;
 
   // Marker cluster allows to avoid loading every marker at once,
@@ -102,6 +109,7 @@ export class BivouacsMapComponent {
   onMapReady = (map: LMap) => {
     this.map = map;
     control.zoom({ position: "bottomright" }).addTo(this.map);
+    this.changeDetector.detectChanges();
   };
 
   // Close bivouac detail when user clicks on the map.
@@ -174,19 +182,19 @@ export class BivouacsMapComponent {
   };
 
   private showBivouacStartingSpots = (bivouac: Bivouac) => {
-    for (const spot of bivouac?.startingSpots ?? []) {
+    for (const [key, spot] of (bivouac?.startingSpots ?? []).entries()) {
       const latLng = spot.latLng;
       if (!latLng) {
         continue;
       }
       const marker = new Marker(latLng, {
         icon: glyph({
-          className: "material-symbols-outlined material-symbols--filled",
-          glyph: "directions_car",
+          className: "number-marker",
+          glyph: "" + (key + 1),
           markerColor: "purple",
         }),
       }).addEventListener("click", () => {
-        this.selectStartingSpot(spot);
+        this.selectStartingSpot(key + 1);
         this.changeDetector.detectChanges();
       });
       marker.addTo(this.startingSpotsLayer);
@@ -202,8 +210,8 @@ export class BivouacsMapComponent {
     this.startingSpotsLayer.addTo(this.map);
   };
 
-  private selectStartingSpot = (spot: StartingSpot) => {
-    // Todo allow the user to see the details for the starting spots (at least being able to copy coordinates)
+  private selectStartingSpot = (spotNumber: number) => {
+    this.bivouacDetailSidebar?.showSpotDetails(spotNumber);
     return;
   };
 

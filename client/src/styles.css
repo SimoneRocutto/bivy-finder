@@ -28,3 +28,13 @@ html:has(.drawer-auto-gutter .drawer-toggle:checked) {
 .material-symbols-outlined.material-symbols--filled {
   font-variation-settings: 'FILL' 1;
 }
+
+/* Fixes DaisyUI tab. This avoids ugly text wrapping for the tab title. */
+.tab:is(input[type=radio]):after {
+    text-wrap: nowrap;
+}
+
+/* Number marker for leaflet map */
+.number-marker {
+  font-weight: bold;
+}
