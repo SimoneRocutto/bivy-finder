@@ -1,27 +1,24 @@
 import { inject } from "@angular/core";
 import { CanActivateFn, Router } from "@angular/router";
 import { AuthService } from "../services/auth.service";
-import { authGuard } from "./auth.guard";
 import { ToastService } from "../ui-components/generic/toast-box/toast.service";
+import { map } from "rxjs";
 
 export const roleGuard: CanActivateFn = (route, state) => {
-  // First we make sure the user is logged in. If not, he will be
-  // redirected to the login page.
-  if (!authGuard(route, state)) {
-    return false;
-  }
-
   const authService = inject(AuthService);
   const router = inject(Router);
+  const toastService = inject(ToastService);
 
   let role: string = route.data?.role;
-  if (role && authService.loggedUser.role === role) {
-    return true;
-  }
+  return authService.getUserIsLoggedObs().pipe(
+    map((res) => {
+      if (res && role && authService.loggedUser.role === role) {
+        return true;
+      }
+      toastService.createToast("Unauthorized", "error");
 
-  const toastService = inject(ToastService);
-  toastService.createToast("Unauthorized", "error");
-
-  router.navigate(["/"]);
-  return false;
+      router.navigate(["/"]);
+      return false;
+    })
+  );
 };

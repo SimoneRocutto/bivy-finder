@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { ApiService } from "../api.service";
-import { tap } from "rxjs";
+import { Subject, of, tap } from "rxjs";
 import { AuthUser } from "../types/user.type";
 import { ToastService } from "../ui-components/generic/toast-box/toast.service";
 
@@ -8,6 +8,7 @@ import { ToastService } from "../ui-components/generic/toast-box/toast.service";
   providedIn: "root",
 })
 export class AuthService {
+  // Tells whether user is logged instantly. If the app is still initializing, consider calling `getUserIsLoggedObs` instead.
   get userIsLogged() {
     return !!this.loggedUser?.id;
   }
@@ -18,10 +19,22 @@ export class AuthService {
     role: null,
   };
 
+  // Whether user login has been initialized or not.
+  private isLoading = true;
+
+  private userIsLoggedSubject = new Subject<boolean>();
+
   constructor(
     private apiService: ApiService,
     private toastService: ToastService
   ) {}
+
+  /**
+   * This works even when the app has not yet finished initialization.
+   * @returns Observable that emits `true` if user is logged in and `false` if not.
+   */
+  getUserIsLoggedObs = () =>
+    this.isLoading ? this.userIsLoggedSubject : of(this.userIsLogged);
 
   // Fires during app initialization (see app.component.ts).
   loadUserAuthData = () =>
@@ -31,6 +44,8 @@ export class AuthService {
           if (res.body.data.userAuthenticated) {
             const { id, username, role } = res.body.data.user;
             this.setUser(id, username, role);
+            this.isLoading = false;
+            this.userIsLoggedSubject.next(!!id);
           }
         } else {
           // Todo improve error handling
