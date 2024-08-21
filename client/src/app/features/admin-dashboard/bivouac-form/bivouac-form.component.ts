@@ -1,4 +1,11 @@
-import { Component, EventEmitter, Input, OnInit, Output } from "@angular/core";
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output,
+  ViewChild,
+} from "@angular/core";
 import {
   FormControl,
   FormGroup,
@@ -16,14 +23,17 @@ import {
   bivouacTypes,
 } from "../../../types/bivouac.type";
 import { CommonModule } from "@angular/common";
-import { catchError, filter, of, tap } from "rxjs";
+import { catchError, tap } from "rxjs";
 import { ToastService } from "../../../ui-components/generic/toast-box/toast.service";
-import { LatLngExpression } from "leaflet";
 import { ErrorService } from "../../../services/error.service";
 import { ModalService } from "../../../ui-components/generic/modal/modal.service";
 import { ItemsListInputComponent } from "../../../ui-components/generic/items-list-input/items-list-input.component";
 import { TooltipComponent } from "../../../ui-components/generic/tooltip/tooltip.component";
 import { FormInputComponent } from "../../../ui-components/generic/form-input/form-input.component";
+import {
+  LatLngFormComponent,
+  LatLngFormGroup,
+} from "../lat-lng-input/lat-lng-form.component";
 
 @Component({
   selector: "app-bivouac-form",
@@ -35,6 +45,7 @@ import { FormInputComponent } from "../../../ui-components/generic/form-input/fo
     ItemsListInputComponent,
     TooltipComponent,
     FormInputComponent,
+    LatLngFormComponent,
   ],
   template: `<form
     [formGroup]="bivouacForm"
@@ -70,34 +81,7 @@ import { FormInputComponent } from "../../../ui-components/generic/form-input/fo
           {{ material }}
         </option>
       </select>
-      <app-tooltip label="Try pasting comma-separated coordinates here">
-        <app-form-input
-          label="latitude"
-          [formGroup]="bivouacForm"
-          formControlName="latitude"
-          type="number"
-          [step]="latLngPrecision"
-          [min]="-90"
-          [max]="90"
-          (paste)="fillCoordinates($event)"
-        ></app-form-input>
-      </app-tooltip>
-      <app-form-input
-        label="longitude"
-        [formGroup]="bivouacForm"
-        formControlName="longitude"
-        type="number"
-        [step]="latLngPrecision"
-        [min]="-180"
-        [max]="180"
-      ></app-form-input>
-      <app-form-input
-        label="altitude"
-        [formGroup]="bivouacForm"
-        formControlName="altitude"
-        type="number"
-        [step]="latLngPrecision"
-      ></app-form-input>
+      <app-lat-lng-form></app-lat-lng-form>
       <div>
         <div class="mb-2">
           External Links ({{ bivouacForm.value.externalLinks?.length ?? 0 }}/{{
@@ -199,6 +183,8 @@ import { FormInputComponent } from "../../../ui-components/generic/form-input/fo
   styles: ``,
 })
 export class BivouacFormComponent implements OnInit {
+  @ViewChild(LatLngFormComponent, { static: true })
+  latLngForm!: LatLngFormComponent;
   @Input() bivouac?: Bivouac;
   @Output() onSubmit = new EventEmitter();
   @Output() onCreate = new EventEmitter<string>();
@@ -214,36 +200,17 @@ export class BivouacFormComponent implements OnInit {
 
   newLink: string = "";
 
-  bivouacForm: FormGroup<{
+  bivouacForm!: FormGroup<{
     name: FormControl<string>;
     description: FormControl<string | null>;
     type: FormControl<BivouacType | null>;
     material: FormControl<BivouacMaterial | null>;
-    latitude: FormControl<number | null>;
-    longitude: FormControl<number | null>;
-    altitude: FormControl<number | null>;
+    latLng: LatLngFormGroup;
     externalLinks: FormControl<string[] | null>;
-  }> = new FormGroup({
-    name: new FormControl("", {
-      nonNullable: true,
-      validators: [Validators.required],
-    }),
-    description: new FormControl(),
-    type: new FormControl(),
-    material: new FormControl(),
-    latitude: new FormControl(null, [
-      Validators.min(-90),
-      Validators.max(90),
-    ]) as FormControl<number | null>,
-    longitude: new FormControl(null, [
-      Validators.min(-180),
-      Validators.max(180),
-    ]) as FormControl<number | null>,
-    altitude: new FormControl(),
-    externalLinks: new FormControl([] as string[]),
-  });
+  }>;
 
   imageFile?: File;
+
   temporaryImageUrl?: ArrayBuffer | string;
   imageWillBeDeleted = false;
 
@@ -279,15 +246,9 @@ export class BivouacFormComponent implements OnInit {
       return null;
     }
 
-    const { latitude, longitude, altitude, externalLinks, ...partialData } =
-      optionalProps;
+    const { latLng, externalLinks, ...partialData } = optionalProps;
 
-    let latLng: LatLngExpression | null = null;
-    // If lat is set, we give a default value to lng to avoid losing data and vice versa.
-    // If altitude is set, both lat and lng must be set.
-    if (latitude || longitude || altitude) {
-      latLng = [latitude ?? 0, longitude ?? 0, altitude ?? undefined];
-    }
+    const parsedLatLng = this.latLngForm.getValue();
 
     return {
       name,
@@ -295,7 +256,7 @@ export class BivouacFormComponent implements OnInit {
       ...nonFormPropsObj,
       // Sending null imageName will delete both the image file and the property.
       ...(this.imageWillBeDeleted ? { imageName: null } : {}),
-      latLng: latLng,
+      latLng: parsedLatLng,
       // Delete prop if array is empty.
       externalLinks: externalLinks?.length === 0 ? null : externalLinks,
     };
@@ -309,6 +270,17 @@ export class BivouacFormComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.bivouacForm = new FormGroup({
+      name: new FormControl("", {
+        nonNullable: true,
+        validators: [Validators.required],
+      }),
+      description: new FormControl(),
+      type: new FormControl(),
+      material: new FormControl(),
+      latLng: this.latLngForm.createGroup(),
+      externalLinks: new FormControl([] as string[]),
+    });
     this.prefillForm();
   }
 
@@ -356,36 +328,6 @@ export class BivouacFormComponent implements OnInit {
       })
     );
 
-  /**
-   * Pasting a comma-separated list of coordinates in the latitude input
-   * will fill the coordinates form inputs. Altitude is filled only if
-   * 3 coordinates are provided.
-   * @param event Paste event
-   */
-  fillCoordinates = (event: ClipboardEvent) => {
-    const paste = event.clipboardData?.getData("text");
-
-    if (!paste) return;
-
-    const coordinates = paste
-      .replaceAll(" ", "")
-      .split(",")
-      .map((item) => Number(item));
-
-    if (
-      coordinates.every((item) => !isNaN(item)) &&
-      [2, 3].includes(coordinates.length)
-    ) {
-      event.preventDefault();
-      const [latitude, longitude, altitude] = coordinates;
-      this.bivouacForm.patchValue({
-        latitude,
-        longitude,
-        ...(altitude ? { altitude } : undefined),
-      });
-    }
-  };
-
   onFileChange = (event: Event) => {
     const file = (event.target as HTMLInputElement)?.files?.[0];
     if (file) {
@@ -429,12 +371,15 @@ export class BivouacFormComponent implements OnInit {
   private prefillForm = () => {
     if (this.isEdit()) {
       // patchValue should correctly handle all cases except for latLng
+      const { latLng, ...otherProps } = this.bivouac;
       this.bivouacForm.patchValue({
-        ...this.bivouac,
-        latitude: this.bivouac?.latLng?.[0],
-        longitude: this.bivouac?.latLng?.[1],
-        altitude: this.bivouac?.latLng?.[2],
+        ...otherProps,
         externalLinks: this.bivouac.externalLinks ?? [],
+      });
+      this.latLngForm.latLngFormGroup.patchValue({
+        latitude: latLng?.[0],
+        longitude: latLng?.[1],
+        altitude: latLng?.[2],
       });
     }
   };
