@@ -31,7 +31,6 @@ export type LatLngFormGroup = FormGroup<{
           [min]="-90"
           [max]="90"
           (paste)="fillCoordinates($event)"
-          (valueChange)="log($event)"
         ></app-form-input>
       </app-tooltip>
       <app-form-input
@@ -122,10 +121,5 @@ export class LatLngFormComponent {
       ];
     }
     return parsedLatLng;
-  };
-
-  log = (foo: any) => {
-    console.log("lmao");
-    console.log(foo);
   };
 }
