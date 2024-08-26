@@ -115,7 +115,6 @@ export const bivouacsConfig: CollectionConfigInterface = {
                       },
                       cost: {
                         bsonType: "object",
-                        required: ["value", "per"],
                         additionalProperties: false,
                         properties: {
                           value: {
@@ -136,6 +135,7 @@ export const bivouacsConfig: CollectionConfigInterface = {
                   public: {
                     bsonType: "array",
                     description: "must be an array of public transports",
+                    maxItems: 20,
                     items: {
                       bsonType: "object",
                       additionalProperties: false,
@@ -152,7 +152,6 @@ export const bivouacsConfig: CollectionConfigInterface = {
                         cost: {
                           bsonType: "object",
                           additionalProperties: false,
-                          required: ["value"],
                           properties: {
                             value: {
                               bsonType: "int",
