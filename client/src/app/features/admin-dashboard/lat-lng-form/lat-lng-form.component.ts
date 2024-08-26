@@ -8,12 +8,7 @@ import {
 import { FormInputComponent } from "../../../ui-components/generic/form-input/form-input.component";
 import { TooltipComponent } from "../../../ui-components/generic/tooltip/tooltip.component";
 import { LatLngExpression } from "leaflet";
-
-export type LatLngFormGroup = FormGroup<{
-  latitude: FormControl<number | null>;
-  longitude: FormControl<number | null>;
-  altitude: FormControl<number | null>;
-}>;
+import { LatLngFormGroup } from "../../../types/bivouac.type";
 
 @Component({
   selector: "app-lat-lng-form",

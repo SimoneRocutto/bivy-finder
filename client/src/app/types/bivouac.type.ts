@@ -1,5 +1,6 @@
 import { LatLngExpression } from "leaflet";
 import { NonNull } from "./misc.type";
+import { FormArray, FormControl, FormGroup } from "@angular/forms";
 
 export type BivouacType =
   | "managed"
@@ -16,28 +17,32 @@ export type CostPer = "hour" | "day" | "week" | "month" | "forever";
 
 export type Currency = "EUR" | "USD";
 
+export interface CarTransport {
+  description?: string | null;
+  cost?: {
+    value: number;
+    currency: Currency;
+    per?: CostPer | null;
+  };
+}
+
+export interface PublicTransport {
+  name: string;
+  description?: string | null;
+  cost?: {
+    value: number;
+    currency: Currency;
+  };
+}
+
 export interface StartingSpot {
-  description?: string;
+  description?: string | null;
   timeToDestination?: number;
   transport?: {
-    car?: {
-      description?: string;
-      cost?: {
-        value: number;
-        currency: Currency;
-        per: CostPer;
-      };
-    };
-    public?: {
-      name: string;
-      description?: string;
-      cost?: {
-        value: number;
-        currency: Currency;
-      };
-    }[];
+    car?: CarTransport;
+    public?: PublicTransport[];
   };
-  latLng: LatLngExpression;
+  latLng?: LatLngExpression | null;
 }
 
 // Allowing nulls because we cannot send undefined values through jsons.
@@ -76,3 +81,33 @@ export const bivouacMaterials: BivouacMaterial[] = [
   "wood",
   "rock",
 ];
+
+export type LatLngFormGroup = FormGroup<{
+  latitude: FormControl<number | null>;
+  longitude: FormControl<number | null>;
+  altitude: FormControl<number | null>;
+}>;
+
+export type CarFormGroup = FormGroup<{
+  description: FormControl<string | null>;
+  currency: FormControl<Currency | null>;
+  cost: FormControl<number | null>;
+  costPer: FormControl<CostPer | null>;
+}>;
+
+export type PublicTransportFormGroup = FormGroup<{
+  name: FormControl<string | null>;
+  description: FormControl<string | null>;
+  currency: FormControl<Currency | null>;
+  cost: FormControl<number | null>;
+}>;
+
+export type StartingSpotFormGroup = FormGroup<{
+  description: FormControl<string | null>;
+  days: FormControl<number | null>;
+  hours: FormControl<number | null>;
+  minutes: FormControl<number | null>;
+  latLng: LatLngFormGroup;
+  car?: CarFormGroup;
+  public: FormArray<PublicTransportFormGroup>;
+}>;

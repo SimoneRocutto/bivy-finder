@@ -18,6 +18,7 @@ import {
   Bivouac,
   BivouacMaterial,
   BivouacType,
+  LatLngFormGroup,
   NewBivouac,
   bivouacMaterials,
   bivouacTypes,
@@ -30,10 +31,7 @@ import { ModalService } from "../../../ui-components/generic/modal/modal.service
 import { ItemsListInputComponent } from "../../../ui-components/generic/items-list-input/items-list-input.component";
 import { TooltipComponent } from "../../../ui-components/generic/tooltip/tooltip.component";
 import { FormInputComponent } from "../../../ui-components/generic/form-input/form-input.component";
-import {
-  LatLngFormComponent,
-  LatLngFormGroup,
-} from "../lat-lng-input/lat-lng-form.component";
+import { LatLngFormComponent } from "../lat-lng-form/lat-lng-form.component";
 
 @Component({
   selector: "app-bivouac-form",

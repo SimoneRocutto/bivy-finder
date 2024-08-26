@@ -1,4 +1,5 @@
 import { Pipe, PipeTransform } from "@angular/core";
+import { msToHuman } from "../helpers/misc";
 
 @Pipe({
   name: "formatTime",
@@ -6,18 +7,7 @@ import { Pipe, PipeTransform } from "@angular/core";
 })
 export class FormatTimePipe implements PipeTransform {
   transform(msTime: number, ...args: unknown[]): string {
-    const units = [1000 * 60 * 60 * 24, 1000 * 60 * 60, 1000 * 60];
-    const values = units.reduce(
-      (valuesAndRest: [number[], number], currUnit) => {
-        const [values, previousRest] = valuesAndRest;
-        const value = Math.floor(previousRest / currUnit);
-        const rest = previousRest % currUnit;
-        values.push(value);
-        valuesAndRest[1] = rest;
-        return valuesAndRest;
-      },
-      [[], msTime]
-    )[0];
+    const values = msToHuman(msTime);
 
     return `${values[0] ? values[0] + "d " : ""} ${
       values[1] ? values[1] + "h " : ""

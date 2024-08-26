@@ -71,7 +71,7 @@ import { LatLngExpression, Map as LMap } from "leaflet";
                 <div
                   role="tablist"
                   class="tabs tabs-bordered"
-                  style="word-break: break-all;"
+                  style="word-break: break-word;"
                 >
                   <input
                     type="radio"
@@ -331,7 +331,8 @@ export class BivouacDetailSidebarComponent {
       .subscribe();
   };
 
-  scrollToLatLng = (latLng: LatLngExpression) => {
+  scrollToLatLng = (latLng?: LatLngExpression | null) => {
+    if (!latLng) return;
     // We are compensating for the sidebar width.
     const { width } =
       this.bivouacDetailSidebar.nativeElement.getBoundingClientRect();

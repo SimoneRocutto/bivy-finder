@@ -22,6 +22,7 @@ import { FormsModule } from "@angular/forms";
 import { TableComponent } from "../../ui-components/generic/table/table.component";
 import { TableColumn } from "../../ui-components/generic/table/table.type";
 import { TranslocoService } from "@jsverse/transloco";
+import { StartingSpotsFormComponent } from "./starting-spots-form/starting-spots-form.component";
 
 @Component({
   selector: "app-admin-dashboard",
@@ -62,6 +63,8 @@ import { TranslocoService } from "@jsverse/transloco";
           <td after>
             <button (click)="openUpdateModal(bivouac)">
               <i class="material-symbols-outlined">edit</i></button
+            ><button (click)="openStartingSpotsModal(bivouac)">
+              <i class="material-symbols-outlined">hiking</i></button
             ><button (click)="openDeleteModal(bivouac)">
               <i class="material-symbols-outlined">delete</i>
             </button>
@@ -138,6 +141,23 @@ export class AdminDashboardComponent implements OnInit {
     const newComponent = this.modalService.openModal(BivouacFormComponent, {
       bivouac,
     });
+    newComponent.instance.onUpdate
+      .pipe(
+        concatMap(() => this.refreshAfterCreateOrUpdate(bivouac._id, bivouac)),
+        take(1)
+      )
+      .subscribe(() => {
+        this.modalService.close();
+      });
+  };
+
+  openStartingSpotsModal = (bivouac: Bivouac) => {
+    const newComponent = this.modalService.openModal(
+      StartingSpotsFormComponent,
+      {
+        bivouac,
+      }
+    );
     newComponent.instance.onUpdate
       .pipe(
         concatMap(() => this.refreshAfterCreateOrUpdate(bivouac._id, bivouac)),

@@ -1,3 +1,4 @@
+import { capitalize } from "./../../../helpers/misc";
 import { CommonModule } from "@angular/common";
 import {
   Component,
@@ -13,7 +14,7 @@ import {
   Validators,
 } from "@angular/forms";
 
-export const CUSTOM_CONROL_VALUE_ACCESSOR: any = {
+export const CUSTOM_CONTROL_VALUE_ACCESSOR: any = {
   provide: NG_VALUE_ACCESSOR,
   useExisting: forwardRef(() => FormInputComponent),
   multi: true,
@@ -37,7 +38,9 @@ export const CUSTOM_CONROL_VALUE_ACCESSOR: any = {
         }"
       >
         <i *ngIf="iconName" class="material-symbols-outlined">{{ iconName }}</i>
-        {{ _labelAsPlaceholder ? "" : (label | titlecase) }}
+        <ng-container *ngIf="!labelAfterInput"
+          ><ng-container *ngTemplateOutlet="labelTemplate"></ng-container>
+        </ng-container>
         <input
           [value]="value"
           (input)="onInput($event)"
@@ -45,13 +48,20 @@ export const CUSTOM_CONROL_VALUE_ACCESSOR: any = {
           (paste)="onPaste($event)"
           [type]="type"
           class="grow"
-          [placeholder]="_labelAsPlaceholder ? (label | titlecase) : ''"
+          [placeholder]="_labelAsPlaceholder ? transformedLabel : ''"
           [step]="step"
           [autocomplete]="this.autocomplete ? '' : 'new-password'"
           [ngClass]="{
             'hide-arrows': type === 'number'
           }"
+          [ngStyle]="{ width: inputWidth ? inputWidth + 'px' : 'auto' }"
         />
+        <ng-container *ngIf="labelAfterInput"
+          ><ng-container *ngTemplateOutlet="labelTemplate"></ng-container>
+        </ng-container>
+        <ng-template #labelTemplate>
+          {{ _labelAsPlaceholder ? "" : transformedLabel }}
+        </ng-template>
       </label>
     </div>
   `,
@@ -60,13 +70,19 @@ export const CUSTOM_CONROL_VALUE_ACCESSOR: any = {
       display: flex;
       width: 100%;
     }`,
-  providers: [CUSTOM_CONROL_VALUE_ACCESSOR],
+  providers: [CUSTOM_CONTROL_VALUE_ACCESSOR],
 })
 export class FormInputComponent {
   @Input() type: "text" | "password" | "number" = "text";
   @Input() label = "";
   @Input() iconName?: string;
   @Input() labelAsPlaceholder = false;
+  @Input() labelAfterInput = false;
+  // If true, label will not be capitalized
+  @Input() labelAsIs = false;
+  @Input() isCurrency = false;
+  // Input field width in px
+  @Input() inputWidth?: number;
 
   @Input() formGroup?: FormGroup;
   // Required for this component to work
@@ -88,6 +104,10 @@ export class FormInputComponent {
     return this.inputField?.hasValidator(Validators.required);
   }
 
+  get transformedLabel() {
+    return this.labelAsIs ? this.label : capitalize(this.label);
+  }
+
   // By default, we display the label. If we use an Icon, we show the
   // label in the placeholder of the input (it would take too much space).
   // This is left as an input so we can always customize the behavior.
@@ -98,10 +118,10 @@ export class FormInputComponent {
   // Control value accessor props and methods (necessary to make this work
   // inside a reactive form)
 
-  value: string | number = "";
+  value?: string | number = "";
   @Output() valueChange = new EventEmitter<string | number>();
 
-  onChange: (value: string) => void = () => {};
+  onChange: (value?: string | number) => void = () => {};
 
   onTouched: () => void = () => {};
 
@@ -109,17 +129,26 @@ export class FormInputComponent {
     this.value = value;
   }
 
-  registerOnChange(fn: (value: string | number) => void): void {
+  registerOnChange(fn: (value?: string | number) => void): void {
     this.onChange = fn;
   }
 
   registerOnTouched(fn: () => void): void {
     this.onTouched = fn;
   }
+
+  // Todo remove the Number logic here: it makes it so when deleting "." from numbers,
+  // weird stuff happens. I have to find another way of making number inputs produce numeric values.
   onInput(event: any): void {
-    const value = event.target.value;
-    this.value = value;
-    this.onChange(value);
+    const value: string = event.target.value;
+    const parsedValue =
+      this.type !== "number" || value.endsWith(".")
+        ? value
+        : [null, undefined, ""].includes(value)
+        ? undefined
+        : Number(value);
+    this.value = parsedValue;
+    this.onChange(parsedValue);
   }
 
   onBlur(): void {
