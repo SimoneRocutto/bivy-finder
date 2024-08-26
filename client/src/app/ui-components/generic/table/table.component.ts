@@ -37,6 +37,7 @@ import { sortObjectsByProp } from "../../../helpers/misc";
                 <button (click)="sortItems(col.prop)">{{ col.name }}</button>
               </th>
             </ng-container>
+            <th class="flex-1" *ngIf="afterCell"></th>
           </tr>
         </thead>
         <tbody>
