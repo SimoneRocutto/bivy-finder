@@ -1,6 +1,11 @@
 import { BivouacDetailSidebarComponent } from "./bivouac-detail-sidebar/bivouac-detail-sidebar.component";
 import { BivouacService } from "../../services/bivouac.service";
-import { ChangeDetectorRef, Component, ViewChild } from "@angular/core";
+import {
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  ViewChild,
+} from "@angular/core";
 import { LeafletModule } from "@bluehalo/ngx-leaflet";
 import {
   Icon,
@@ -17,11 +22,13 @@ import {
 } from "leaflet";
 import { Bivouac, BivouacType } from "../../types/bivouac.type";
 import { LeafletMarkerClusterModule } from "@bluehalo/ngx-leaflet-markercluster";
-import { forkJoin, tap } from "rxjs";
+import { Subscription, forkJoin, tap } from "rxjs";
 import { BivouacsMapService } from "./bivouacs-map.service";
 import { GlyphOptions, glyph } from "../../helpers/leaflet/Leaflet.Icon.Glyph";
 import { CommonModule } from "@angular/common";
 import { ActivatedRoute } from "@angular/router";
+import { ModalService } from "../../ui-components/generic/modal/modal.service";
+import { MapFiltersComponent } from "./map-filters/map-filters.component";
 
 @Component({
   selector: "app-bivouacs-map",
@@ -50,10 +57,19 @@ import { ActivatedRoute } from "@angular/router";
       @if (markerCluster) {
       <div [leafletLayer]="markerCluster"></div>
       }
+      <div
+        class="absolute top-0 right-0 p-4"
+        style="z-index: 500"
+        (click)="openFilterModal()"
+      >
+        <button class="btn btn-primary">
+          <i class="material-symbols-outlined">filter_alt</i>
+        </button>
+      </div>
     </div>
   `,
 })
-export class BivouacsMapComponent {
+export class BivouacsMapComponent implements OnDestroy {
   @ViewChild(BivouacDetailSidebarComponent)
   bivouacDetailSidebar!: BivouacDetailSidebarComponent;
 
@@ -111,14 +127,21 @@ export class BivouacsMapComponent {
 
   initialBivouacId?: string;
 
+  private refreshSubscription?: Subscription;
+
   constructor(
     private bivouacService: BivouacService,
     private bivouacsMapService: BivouacsMapService,
     private changeDetector: ChangeDetectorRef,
+    private modalService: ModalService,
     private route: ActivatedRoute
   ) {
     this.initialBivouacId = this.route.snapshot.paramMap.get("id") ?? undefined;
     this.loadData();
+  }
+
+  ngOnDestroy(): void {
+    this.refreshSubscription?.unsubscribe();
   }
 
   onMapReady = (map: LMap) => {
@@ -133,28 +156,40 @@ export class BivouacsMapComponent {
     this.unselectBivouac();
   };
 
+  openFilterModal = () => {
+    this.modalService.openModal(MapFiltersComponent);
+  };
+
   private loadData = () => {
     forkJoin([this.bivouacsMapService.loadFavorites(), this.loadBivouacs()])
       .pipe(
         tap(() => {
-          // If a route param has been passed, pan to the bivouac with that id.
-          if (this.initialBivouacData) {
-            this.selectBivouac(
-              this.initialBivouacData.bivouac,
-              this.initialBivouacData.marker
-            );
-            const { latLng } = this.initialBivouacData.bivouac;
-            if (latLng) {
-              this.bivouacsMapService.scrollToLatLng(
-                latLng,
-                this.bivouacZoom,
-                false
-              );
-            }
-          }
+          this.onLoad();
         })
       )
       .subscribe();
+  };
+
+  /**
+   * Fires after all data has been loaded.
+   */
+  private onLoad = () => {
+    // If a route param has been passed, pan to the bivouac with that id.
+    if (this.initialBivouacData) {
+      this.selectBivouac(
+        this.initialBivouacData.bivouac,
+        this.initialBivouacData.marker
+      );
+      const { latLng } = this.initialBivouacData.bivouac;
+      if (latLng) {
+        this.bivouacsMapService.scrollToLatLng(latLng, this.bivouacZoom, false);
+      }
+    }
+
+    this.refreshSubscription =
+      this.bivouacsMapService.refreshBivouacsSubject.subscribe(() => {
+        this.refreshBivouacs();
+      });
   };
 
   private selectBivouac = (bivouac: Bivouac, marker?: Marker) => {
@@ -256,27 +291,40 @@ export class BivouacsMapComponent {
           return;
         }
         this.bivouacs = res.body.data;
-        const markerCluster = markerClusterGroup({ maxClusterRadius: 45 });
-        for (const bivouac of this.bivouacs) {
-          // No latLng data => no marker on the map
-          if (!bivouac?.latLng) {
-            continue;
-          }
-          const marker = new Marker(bivouac.latLng, {
-            icon: this.getMarkerIcon(this.getMarkerColor(bivouac.type)),
-          }).addEventListener("click", () => {
-            this.selectBivouac(bivouac, marker);
-            this.changeDetector.detectChanges();
-          });
-          if (bivouac._id === this.initialBivouacId) {
-            console.log(bivouac._id);
-            this.initialBivouacData = { bivouac, marker };
-          }
-          markerCluster?.addLayer(marker);
-        }
-        this.markerCluster = markerCluster;
+        this.refreshBivouacs(true);
       })
     );
+
+  private refreshBivouacs = (firstLoad = false) => {
+    const markerCluster = markerClusterGroup({ maxClusterRadius: 45 });
+    const filteredBivouacs = this.bivouacs.filter((bivouac) => {
+      if (
+        this.bivouacsMapService.filters.onlyOpenBivouacs &&
+        !["open", "out-of-lombardy"].includes(bivouac.type ?? "")
+      ) {
+        return false;
+      }
+      return true;
+    });
+    for (const bivouac of filteredBivouacs) {
+      // No latLng data => no marker on the map
+      if (!bivouac?.latLng) {
+        continue;
+      }
+      const marker = new Marker(bivouac.latLng, {
+        icon: this.getMarkerIcon(this.getMarkerColor(bivouac.type)),
+      }).addEventListener("click", () => {
+        this.selectBivouac(bivouac, marker);
+        this.changeDetector.detectChanges();
+      });
+      if (firstLoad && bivouac._id === this.initialBivouacId) {
+        this.initialBivouacData = { bivouac, marker };
+      }
+      markerCluster?.addLayer(marker);
+    }
+    this.markerCluster = markerCluster;
+  };
+
   private getMarkerColor = (
     bivouacType?: BivouacType
   ): GlyphOptions["markerColor"] =>

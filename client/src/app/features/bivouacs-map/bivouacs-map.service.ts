@@ -1,7 +1,7 @@
 import { ElementRef, Injectable } from "@angular/core";
 import { AuthService } from "../../services/auth.service";
 import { UserService } from "../../services/user.service";
-import { of, tap } from "rxjs";
+import { Subject, of, tap } from "rxjs";
 import { BivouacService } from "../../services/bivouac.service";
 import { LatLngExpression, Map as LMap } from "leaflet";
 
@@ -21,6 +21,13 @@ export class BivouacsMapService {
 
   // Standard zoom for bivouacs (when flying to them on the map)
   bivouacZoom = 16;
+
+  // Filters
+  filters = {
+    onlyOpenBivouacs: false,
+  };
+
+  refreshBivouacsSubject = new Subject();
 
   constructor(
     private authService: AuthService,
@@ -128,5 +135,11 @@ export class BivouacsMapService {
       if (!targetLatLng) return;
     }
     this.map?.flyTo(targetLatLng, zoom, { animate, duration: 1 });
+  };
+
+  // Filters
+
+  filterBivouacs = () => {
+    this.refreshBivouacsSubject.next(this.filters);
   };
 }

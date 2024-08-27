@@ -1,14 +1,28 @@
 import { CommonModule } from "@angular/common";
-import { AfterViewInit, Component, ElementRef, ViewChild } from "@angular/core";
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  Input,
+  ViewChild,
+} from "@angular/core";
 
 @Component({
   selector: "app-modal",
   standalone: true,
   imports: [CommonModule],
   template: `
-    <dialog #modal class="modal w-screen h-screen sm:modal">
+    <dialog
+      #modal
+      class="modal"
+      [ngClass]="{ 'w-screen h-screen sm:modal': fullOnSmallScreen }"
+    >
       <div
-        class="modal-box w-full h-full max-w-none max-h-none rounded-none sm:modal-box sm:h-auto"
+        class="modal-box"
+        [ngClass]="{
+          'w-full h-full max-w-none max-h-none rounded-none sm:modal-box sm:h-auto':
+            fullOnSmallScreen
+        }"
       >
         <ng-content></ng-content>
       </div>
@@ -18,6 +32,7 @@ import { AfterViewInit, Component, ElementRef, ViewChild } from "@angular/core";
 })
 export class ModalComponent implements AfterViewInit {
   @ViewChild("modal") modal!: ElementRef<HTMLDialogElement>;
+  @Input() fullOnSmallScreen = false;
 
   ngAfterViewInit() {
     this.showModal();

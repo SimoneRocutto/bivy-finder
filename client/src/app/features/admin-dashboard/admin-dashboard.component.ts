@@ -126,7 +126,11 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   openCreateModal = () => {
-    const newComponent = this.modalService.openModal(BivouacFormComponent);
+    const newComponent = this.modalService.openModal(
+      BivouacFormComponent,
+      {},
+      { fullOnSmallScreen: true }
+    );
     newComponent.instance.onCreate
       .pipe(
         concatMap((bivouacId) => this.refreshAfterCreateOrUpdate(bivouacId)),
@@ -138,9 +142,13 @@ export class AdminDashboardComponent implements OnInit {
   };
 
   openUpdateModal = (bivouac: Bivouac) => {
-    const newComponent = this.modalService.openModal(BivouacFormComponent, {
-      bivouac,
-    });
+    const newComponent = this.modalService.openModal(
+      BivouacFormComponent,
+      {
+        bivouac,
+      },
+      { fullOnSmallScreen: true }
+    );
     newComponent.instance.onUpdate
       .pipe(
         concatMap(() => this.refreshAfterCreateOrUpdate(bivouac._id, bivouac)),
@@ -156,7 +164,8 @@ export class AdminDashboardComponent implements OnInit {
       StartingSpotsFormComponent,
       {
         bivouac,
-      }
+      },
+      { fullOnSmallScreen: true }
     );
     newComponent.instance.onUpdate
       .pipe(

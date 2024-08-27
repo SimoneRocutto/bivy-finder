@@ -36,7 +36,11 @@ export class ModalService {
     this.appRef.attachView(this.modalComponent.hostView);
   }
 
-  openModal = <T>(component: Type<T>, inputProps: any = {}) => {
+  openModal = <T>(
+    component: Type<T>,
+    inputProps: any = {},
+    modalInputProps: any = {}
+  ) => {
     // create the desired component, the content of the modal box
     const newComponent: ComponentRef<T> = createComponent(component, {
       environmentInjector: this.injector,
@@ -51,6 +55,10 @@ export class ModalService {
       environmentInjector: this.injector,
       projectableNodes: [[newComponent.location.nativeElement]],
     });
+
+    for (const [key, value] of Object.entries(modalInputProps)) {
+      this.modalComponent.setInput(key, value);
+    }
 
     document.body.appendChild(this.modalComponent.location.nativeElement);
 
