@@ -1,5 +1,12 @@
 import { CommonModule } from "@angular/common";
-import { Component, Input, TemplateRef, ViewChild } from "@angular/core";
+import {
+  Component,
+  Input,
+  OnDestroy,
+  OnInit,
+  TemplateRef,
+  ViewChild,
+} from "@angular/core";
 import { PaginationComponent } from "../pagination/pagination.component";
 import { FormsModule } from "@angular/forms";
 import { TableColumn } from "./table.type";
@@ -10,7 +17,7 @@ import { sortObjectsByProp } from "../../../helpers/misc";
   standalone: true,
   imports: [CommonModule, FormsModule, PaginationComponent],
   template: `
-    <label class="input input-bordered flex items-center gap-2 mb-4">
+    <label class="input input-bordered flex items-center gap-2 mb-4 mx-4">
       <input
         type="text"
         class="grow"
@@ -25,9 +32,10 @@ import { sortObjectsByProp } from "../../../helpers/misc";
       [(pageNumber)]="pageNumber"
       [pageSize]="pageSize"
       [isLoading]="isLoading"
+      [extraPageButtons]="extraPageButtons"
       (onPageChange)="setShownItems($event)"
     ></app-pagination>
-    <div class="my-6">
+    <div class="my-6 max-w-screen">
       <table class="table" [ngClass]="{ 'table-zebra-zebra': !isLoading }">
         <thead>
           <tr class="flex flex-row">
@@ -49,7 +57,7 @@ import { sortObjectsByProp } from "../../../helpers/misc";
               <ng-container *ngFor="let col of columns">
                 <td
                   *ngIf="!col.hidden"
-                  class="flex-1"
+                  class="flex-1 overflow-x-auto"
                   [ngClass]="{
                     'first-letter:uppercase':
                       col.style?.textTransform === 'capitalize',
@@ -92,12 +100,17 @@ import { sortObjectsByProp } from "../../../helpers/misc";
       [pageSize]="pageSize"
       [(pageNumber)]="pageNumber"
       [isLoading]="isLoading"
+      [extraPageButtons]="extraPageButtons"
       (onPageChange)="setShownItems($event)"
     ></app-pagination>
   `,
-  styles: ``,
+  styles: `.max-w-screen {
+    max-width: 100vw;
+  }`,
 })
-export class TableComponent<TableItem extends { [key: string]: any }> {
+export class TableComponent<TableItem extends { [key: string]: any }>
+  implements OnInit, OnDestroy
+{
   @ViewChild(PaginationComponent) pagination!: PaginationComponent;
   @Input() beforeCell: TemplateRef<any> | null = null;
   @Input() afterCell: TemplateRef<any> | null = null;
@@ -114,6 +127,8 @@ export class TableComponent<TableItem extends { [key: string]: any }> {
   }
 
   pageNumber = 1;
+
+  extraPageButtons = 2;
 
   private _items: TableItem[] = [];
   @Input() set items(value: TableItem[]) {
@@ -135,6 +150,23 @@ export class TableComponent<TableItem extends { [key: string]: any }> {
 
   currentSortProp?: keyof TableItem;
   reverseSort = false;
+
+  ngOnInit(): void {
+    this.adjustPagination();
+    window.addEventListener("resize", this.adjustPagination);
+  }
+
+  ngOnDestroy(): void {
+    window.removeEventListener("resize", this.adjustPagination);
+  }
+
+  adjustPagination = () => {
+    if (window.matchMedia("only screen and (max-width: 768px)").matches) {
+      this.extraPageButtons = 0;
+    } else {
+      this.extraPageButtons = 2;
+    }
+  };
 
   setShownItems = (items: TableItem[]) => {
     this.shownItems = items;

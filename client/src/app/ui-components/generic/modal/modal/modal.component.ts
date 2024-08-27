@@ -6,8 +6,10 @@ import { AfterViewInit, Component, ElementRef, ViewChild } from "@angular/core";
   standalone: true,
   imports: [CommonModule],
   template: `
-    <dialog #modal class="modal">
-      <div class="modal-box">
+    <dialog #modal class="modal w-screen h-screen sm:modal">
+      <div
+        class="modal-box w-full h-full max-w-none max-h-none rounded-none sm:modal-box sm:h-auto"
+      >
         <ng-content></ng-content>
       </div>
     </dialog>

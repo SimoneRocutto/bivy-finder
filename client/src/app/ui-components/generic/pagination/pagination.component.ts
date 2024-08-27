@@ -90,7 +90,10 @@ import { CommonModule } from "@angular/common";
       >
     </div>
   `,
-  styles: ``,
+  styles: `:host {
+    display: flex;
+    justify-content: center;
+  }`,
 })
 export class PaginationComponent {
   // For now, I'll use frontend pagination because

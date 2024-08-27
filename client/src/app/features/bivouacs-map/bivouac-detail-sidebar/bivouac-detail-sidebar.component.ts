@@ -177,88 +177,100 @@ import { LatLngExpression, Map as LMap } from "leaflet";
                               ></app-copy-button>
                             </div>
                           </div>
-                          <div
-                            *ngIf="spot?.transport?.car as car"
-                            class="card w-full shadow-xl bg-yellow-600 text-gray-200"
-                          >
-                            <div class="card-body flex flex-col gap-4">
-                              <div class="grid grid-cols-2">
-                                <div
-                                  class="flex w-8 h-8 justify-center items-center bg-transparent"
-                                >
-                                  <i
-                                    class="material-symbols-outlined material-symbols--filled"
-                                    >directions_car</i
-                                  >
-                                </div>
-                                <div class="text-lg">
-                                  <ng-content
-                                    *ngIf="
-                                      car?.cost?.value ?? 0 > 0;
-                                      else noCost
-                                    "
-                                  >
-                                    {{
-                                      (car?.cost?.value ?? 0) / 100
-                                        | currency
-                                          : car?.cost?.currency ?? "EUR"
-                                    }}
-                                    <ng-content
-                                      *ngIf="
-                                        car?.cost?.per &&
-                                        car?.cost?.per !== 'forever'
-                                      "
-                                    >
-                                      /
-                                      {{
-                                        t(
-                                          "common.time_units.per." +
-                                            (car?.cost?.per ?? "hour")
-                                        )
-                                      }}
-                                    </ng-content>
-                                  </ng-content>
-                                  <ng-template #noCost>Free</ng-template>
-                                </div>
-                              </div>
-                              <div>{{ car?.description }}</div>
-                            </div>
-                          </div>
-                          <ng-content *ngIf="spot?.transport?.public">
+                          <div class="flex flex-col gap-4 my-4">
                             <div
-                              *ngFor="let transport of spot?.transport?.public"
-                              class="card w-full shadow-xl bg-green-600 text-gray-200"
+                              *ngIf="spot?.transport?.car as car"
+                              class="card w-full shadow-xl bg-yellow-600 text-gray-200"
                             >
-                              <div class="card-body grid grid-cols-2">
-                                <div class="flex flex-row items-center gap-2">
+                              <div class="card-body flex flex-col gap-4">
+                                <div class="grid grid-cols-2">
                                   <div
                                     class="flex w-8 h-8 justify-center items-center bg-transparent"
                                   >
                                     <i
                                       class="material-symbols-outlined material-symbols--filled"
-                                      >directions_bus</i
+                                      >directions_car</i
                                     >
                                   </div>
-                                  <div>{{ transport.name }}</div>
+                                  <div class="text-lg">
+                                    <ng-content
+                                      *ngIf="
+                                        car?.cost?.value ?? 0 > 0;
+                                        else noCost
+                                      "
+                                    >
+                                      {{
+                                        (car?.cost?.value ?? 0) / 100
+                                          | currency
+                                            : car?.cost?.currency ?? "EUR"
+                                      }}
+                                      <ng-content
+                                        *ngIf="
+                                          car?.cost?.per &&
+                                          car?.cost?.per !== 'forever'
+                                        "
+                                      >
+                                        /
+                                        {{
+                                          t(
+                                            "common.time_units.per." +
+                                              (car?.cost?.per ?? "hour")
+                                          )
+                                        }}
+                                      </ng-content>
+                                    </ng-content>
+                                    <ng-template #noCost>Free</ng-template>
+                                  </div>
                                 </div>
-                                <div class="text-lg">
-                                  <ng-content
-                                    *ngIf="
-                                      transport?.cost?.value ?? 0 > 0;
-                                      else noCost
-                                    "
-                                  >
-                                    {{
-                                      (transport?.cost?.value ?? 0) / 100
-                                        | currency
-                                          : transport?.cost?.currency ?? "EUR"
-                                    }}
-                                  </ng-content>
-                                  <ng-template #noCost>Free</ng-template>
-                                </div>
+                                <div>{{ car?.description }}</div>
                               </div>
                             </div>
-                          </ng-content>
+                            <ng-content *ngIf="spot?.transport?.public">
+                              <div
+                                *ngFor="
+                                  let transport of spot?.transport?.public
+                                "
+                                class="card w-full shadow-xl bg-green-600 text-gray-200"
+                              >
+                                <div class="card-body">
+                                  <h5 class="font-bold">
+                                    {{ transport.name }}
+                                  </h5>
+                                  <div class="grid grid-cols-2">
+                                    <div
+                                      class="flex flex-row items-center gap-2"
+                                    >
+                                      <div
+                                        class="flex w-8 h-8 justify-center items-center bg-transparent"
+                                      >
+                                        <i
+                                          class="material-symbols-outlined material-symbols--filled"
+                                          >directions_bus</i
+                                        >
+                                      </div>
+                                    </div>
+                                    <div class="text-lg">
+                                      <ng-content
+                                        *ngIf="
+                                          transport?.cost?.value ?? 0 > 0;
+                                          else noCost
+                                        "
+                                      >
+                                        {{
+                                          (transport?.cost?.value ?? 0) / 100
+                                            | currency
+                                              : transport?.cost?.currency ??
+                                                  "EUR"
+                                        }}
+                                      </ng-content>
+                                      <ng-template #noCost>Free</ng-template>
+                                    </div>
+                                  </div>
+                                  <div>{{ transport.description }}</div>
+                                </div>
+                              </div>
+                            </ng-content>
+                          </div>
                           <div>{{ spot.description }}</div>
                         </div>
                       </ng-content>

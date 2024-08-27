@@ -131,7 +131,7 @@ import { LatLngFormComponent } from "../lat-lng-form/lat-lng-form.component";
             class="absolute inset-0"
           />
           <div
-            class="absolute inset-0 z-10 flex flex-row justify-center items-center gap-2 transition-opacity opacity-0 hover:opacity-100"
+            class="absolute inset-0 z-10 flex flex-row justify-center items-center gap-2 transition-opacity dsk:opacity-0 dsk:hover:opacity-100"
           >
             <button
               (click)="fileUploader.click()"

@@ -24,7 +24,7 @@ export const CUSTOM_CONTROL_VALUE_ACCESSOR: any = {
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   template: `
-    <div class="indicator grow">
+    <div class="indicator w-full flex-1">
       <span
         *ngIf="isRequired"
         class="indicator-item badge text-orange-500 text-xs material-symbols-outlined"
@@ -55,6 +55,8 @@ export const CUSTOM_CONTROL_VALUE_ACCESSOR: any = {
             'hide-arrows': type === 'number'
           }"
           [ngStyle]="{ width: inputWidth ? inputWidth + 'px' : 'auto' }"
+          [min]="min"
+          [max]="max"
         />
         <ng-container *ngIf="labelAfterInput"
           ><ng-container *ngTemplateOutlet="labelTemplate"></ng-container>
@@ -82,7 +84,7 @@ export class FormInputComponent {
   @Input() labelAsIs = false;
   @Input() isCurrency = false;
   // Input field width in px
-  @Input() inputWidth?: number;
+  @Input() inputWidth?: number = 40;
 
   @Input() formGroup?: FormGroup;
   // Required for this component to work

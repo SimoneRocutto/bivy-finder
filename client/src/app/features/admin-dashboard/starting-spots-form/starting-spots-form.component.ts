@@ -66,7 +66,9 @@ import { ErrorService } from "../../../services/error.service";
                     <div class="flex flex-row justify-between">
                       <div class="flex flex-row items-center gap-6">
                         <i class="material-symbols-outlined">hiking</i>
-                        <div class="flex flex-row gap-1">
+                        <div
+                          class="flex flex-row gap-1 flex-wrap xs:flex-nowrap"
+                        >
                           <app-form-input
                             label="d"
                             [formGroup]="spotForm"
@@ -153,11 +155,15 @@ import { ErrorService } from "../../../services/error.service";
                                 >directions_car</i
                               >
                             </div>
-                            <div>
-                              <div class="flex flex-row items-center">
+                            <div
+                              class="flex flex-col sm:flex-row sm:items-center gap-y-2 xs:gap-y-4"
+                            >
+                              <div
+                                class="flex flex-col gap-y-2 xs:gap-y-0 xs:flex-row xs:items-center"
+                              >
                                 <select
                                   formControlName="currency"
-                                  class="select select-bordered max-w-xs"
+                                  class="select select-bordered max-w-24"
                                 >
                                   <option ngValue="EUR">€</option>
                                   <option ngValue="USD">$</option>
@@ -171,22 +177,22 @@ import { ErrorService } from "../../../services/error.service";
                                   [labelAsPlaceholder]="true"
                                 ></app-form-input>
                                 <div class="text-gray-200 mx-2">/</div>
-                                <select
-                                  formControlName="costPer"
-                                  class="select select-bordered max-w-xs"
-                                >
-                                  <option [ngValue]="null">Forever</option>
-                                  <option ngValue="hour">Hour</option>
-                                  <option ngValue="day">Day</option>
-                                  <option ngValue="week">Week</option>
-                                  <option ngValue="month">Month</option>
-                                </select>
                               </div>
+                              <select
+                                formControlName="costPer"
+                                class="select select-bordered max-w-xs"
+                              >
+                                <option [ngValue]="null">Forever</option>
+                                <option ngValue="hour">Hour</option>
+                                <option ngValue="day">Day</option>
+                                <option ngValue="week">Week</option>
+                                <option ngValue="month">Month</option>
+                              </select>
                             </div>
                           </div>
                           <textarea
                             formControlName="description"
-                            class="textarea textarea-bordered grow"
+                            class="textarea textarea-bordered w-full"
                             placeholder="Description"
                           ></textarea>
                         </div>
@@ -225,7 +231,7 @@ import { ErrorService } from "../../../services/error.service";
                         [formGroup]="transportForm"
                       >
                         <div class="flex flex-row">
-                          <div class="card-body pr-4">
+                          <div class="card-body pr-4 flex flex-col gap-4">
                             <div class="flex flex-row items-center gap-2">
                               <div
                                 class="flex w-8 h-8 justify-center items-center bg-transparent"
@@ -235,21 +241,22 @@ import { ErrorService } from "../../../services/error.service";
                                   >directions_bus</i
                                 >
                               </div>
-                              <div class="flex flex-col gap-4">
+                              <div class="flex flex-col gap-4 flex-1">
                                 <app-form-input
                                   formControlName="name"
                                   label="Name"
                                   [labelAsPlaceholder]="true"
+                                  [inputWidth]="40"
                                 ></app-form-input>
-                                <div class="flex flex-row">
+                                <div class="flex flex-col gap-y-2 xs:flex-row">
                                   <select
                                     formControlName="currency"
-                                    class="select select-bordered max-w-xs"
+                                    class="select select-bordered max-w-24"
                                   >
                                     <option ngValue="EUR">€</option>
                                     <option ngValue="USD">$</option>
                                   </select>
-                                  <div class="w-10">
+                                  <div class="max-w-64">
                                     <app-form-input
                                       formControlName="cost"
                                       type="number"
@@ -260,13 +267,13 @@ import { ErrorService } from "../../../services/error.service";
                                     ></app-form-input>
                                   </div>
                                 </div>
-                                <textarea
-                                  formControlName="description"
-                                  class="textarea textarea-bordered grow"
-                                  placeholder="Description"
-                                ></textarea>
                               </div>
                             </div>
+                            <textarea
+                              formControlName="description"
+                              class="textarea textarea-bordered w-full"
+                              placeholder="Description"
+                            ></textarea>
                           </div>
                           <div class="flex flex-col">
                             <button

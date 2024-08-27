@@ -28,7 +28,7 @@ import { ActivatedRoute, Router } from "@angular/router";
       <form
         [formGroup]="signUpForm"
         (ngSubmit)="onSignUpFormSubmit()"
-        class="flex flex-col gap-2 mt-4"
+        class="flex flex-col grow max-w-72 gap-2 mt-4 mx-8"
         autocomplete="off"
       >
         <app-form-input
@@ -73,7 +73,12 @@ import { ActivatedRoute, Router } from "@angular/router";
       </form>
     </ng-container>
   `,
-  styles: ``,
+  styles: `:host {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    width: 100%;
+  }`,
 })
 export class UserSignUpComponent {
   isSubmitting = false;

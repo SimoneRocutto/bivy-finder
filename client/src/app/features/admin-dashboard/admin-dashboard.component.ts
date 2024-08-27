@@ -29,8 +29,8 @@ import { StartingSpotsFormComponent } from "./starting-spots-form/starting-spots
   standalone: true,
   imports: [CommonModule, FormsModule, PaginationComponent, TableComponent],
   template: `
-    <div class="min-w-96 overflow-x-auto pt-4 pb-16">
-      <div class="flex justify-end gap-4 mb-4">
+    <div class="sm:min-w-96 overflow-x-auto pt-4 pb-16">
+      <div class="flex justify-end gap-4 mb-4 mx-4">
         <button class="btn btn-primary" (click)="openCreateModal()">
           Add bivouac
         </button>

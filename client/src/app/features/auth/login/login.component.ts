@@ -22,7 +22,7 @@ import { FormInputComponent } from "../../../ui-components/generic/form-input/fo
       <form
         [formGroup]="loginForm"
         (ngSubmit)="onLoginFormSubmit()"
-        class="flex flex-col gap-2 mt-4"
+        class="flex flex-col grow max-w-72 gap-2 mt-4 mx-8"
       >
         <app-form-input
           iconName="person"
@@ -53,7 +53,12 @@ import { FormInputComponent } from "../../../ui-components/generic/form-input/fo
       </form>
     </ng-container>
   `,
-  styles: ``,
+  styles: `:host {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    width: 100%;
+  }`,
 })
 export class LoginComponent {
   isSubmitting = false;
