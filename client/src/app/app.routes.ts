@@ -7,6 +7,7 @@ import { roleGuard } from "./guards/role.guard";
 import { NotFoundComponent } from "./features/not-found/not-found.component";
 
 export const routes: Routes = [
+  { path: "", redirectTo: "bivouacs-map", pathMatch: "full" },
   { path: "bivouacs-map", component: BivouacsMapComponent },
   {
     path: "admin-dashboard",
