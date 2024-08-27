@@ -68,7 +68,7 @@ export class LoginComponent {
     password: ["", Validators.required],
   });
 
-  private defaultRedirectAfterLogin = "/";
+  private defaultRedirectAfterLogin = "/bivouacs-map";
 
   constructor(
     private formBuilder: FormBuilder,

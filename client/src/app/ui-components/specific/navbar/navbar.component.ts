@@ -151,7 +151,7 @@ export class NavbarComponent {
       .pipe(
         tap((res) => {
           if (res.body?.status === "success") {
-            this.router.navigate(["/"]);
+            this.router.navigate(["/bivouacs-map"]);
           }
         })
       )

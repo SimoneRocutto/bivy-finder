@@ -43,7 +43,6 @@ import { AuthService } from "../../../services/auth.service";
 export class SidebarComponent {
   @ViewChild("drawerCheckbox") drawerCheckbox?: ElementRef<HTMLElement>;
   menuItems: { title: string; url: string; role?: string }[] = [
-    { title: "Home", url: "/" },
     { title: "Map", url: "/bivouacs-map" },
     { title: "Admin Dashboard", url: "/admin-dashboard", role: "admin" },
   ];
