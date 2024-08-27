@@ -97,7 +97,7 @@ export class BivouacsMapComponent {
     layers: [
       tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 18,
-        attribution: "...",
+        attribution: "OpenStreetMap",
       }),
       this.startingSpotsLayer,
     ],
@@ -122,6 +122,7 @@ export class BivouacsMapComponent {
   }
 
   onMapReady = (map: LMap) => {
+    map.attributionControl.setPrefix("");
     this.bivouacsMapService.map = map;
     control.zoom({ position: "bottomright" }).addTo(map);
     this.changeDetector.detectChanges();
