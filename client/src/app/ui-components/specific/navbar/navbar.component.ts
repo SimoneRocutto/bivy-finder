@@ -52,7 +52,7 @@ import { tap } from "rxjs";
         </div>
         <div class="flex flex-row justify-end">
           <!-- languages dropdown -->
-          <div class="dropdown dropdown-bottom dropdown-end">
+          <!-- <div class="dropdown dropdown-bottom dropdown-end">
             <div
               tabindex="0"
               role="button"
@@ -76,7 +76,7 @@ import { tap } from "rxjs";
                 </button>
               </li>
             </ul>
-          </div>
+          </div> -->
           <!-- user area dropdown -->
           <div class="dropdown dropdown-bottom dropdown-end">
             <div
