@@ -15,7 +15,7 @@ import {
   MarkerClusterGroup,
   markerClusterGroup,
 } from "leaflet";
-import { Bivouac } from "../../types/bivouac.type";
+import { Bivouac, BivouacType } from "../../types/bivouac.type";
 import { LeafletMarkerClusterModule } from "@bluehalo/ngx-leaflet-markercluster";
 import { forkJoin, tap } from "rxjs";
 import { BivouacsMapService } from "./bivouacs-map.service";
@@ -179,14 +179,14 @@ export class BivouacsMapComponent {
 
   private unselectBivouac = (hideBar: boolean = true) => {
     this.detailHidden = hideBar;
-    const marker = this.selectedBivouac.marker;
+    const { marker, data: bivouac } = this.selectedBivouac;
     this.selectedBivouac = {
       data: null,
       marker: null,
     };
     this.resetStartingSpotsLayer();
     if (marker) {
-      this.unhighlightMarker(marker);
+      this.unhighlightMarker(marker, bivouac ?? undefined);
     }
   };
 
@@ -208,8 +208,8 @@ export class BivouacsMapComponent {
    * Restores original highlighted marker conditions.
    * @param marker The marker to unhighlight
    */
-  private unhighlightMarker = (marker: Marker) => {
-    marker.setIcon(this.getMarkerIcon());
+  private unhighlightMarker = (marker: Marker, bivouac?: Bivouac) => {
+    marker.setIcon(this.getMarkerIcon(this.getMarkerColor(bivouac?.type)));
     marker.setZIndexOffset(0);
     this.markerCluster?.addLayer(marker);
   };
@@ -263,7 +263,7 @@ export class BivouacsMapComponent {
             continue;
           }
           const marker = new Marker(bivouac.latLng, {
-            icon: this.getMarkerIcon(),
+            icon: this.getMarkerIcon(this.getMarkerColor(bivouac.type)),
           }).addEventListener("click", () => {
             this.selectBivouac(bivouac, marker);
             this.changeDetector.detectChanges();
@@ -277,4 +277,12 @@ export class BivouacsMapComponent {
         this.markerCluster = markerCluster;
       })
     );
+  private getMarkerColor = (
+    bivouacType?: BivouacType
+  ): GlyphOptions["markerColor"] =>
+    ["managed", "require-keys"].includes(bivouacType ?? "")
+      ? "green"
+      : ["private", "incomplete", "abandoned"].includes(bivouacType ?? "")
+      ? "purple"
+      : "blue";
 }
