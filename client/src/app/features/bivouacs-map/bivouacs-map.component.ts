@@ -21,6 +21,7 @@ import { forkJoin, tap } from "rxjs";
 import { BivouacsMapService } from "./bivouacs-map.service";
 import { GlyphOptions, glyph } from "../../helpers/leaflet/Leaflet.Icon.Glyph";
 import { CommonModule } from "@angular/common";
+import { ActivatedRoute } from "@angular/router";
 
 @Component({
   selector: "app-bivouacs-map",
@@ -56,7 +57,9 @@ export class BivouacsMapComponent {
   @ViewChild(BivouacDetailSidebarComponent)
   bivouacDetailSidebar!: BivouacDetailSidebarComponent;
 
-  map?: LMap;
+  get map() {
+    return this.bivouacsMapService.map;
+  }
 
   // Marker cluster allows to avoid loading every marker at once,
   // optimizing performance.
@@ -70,6 +73,12 @@ export class BivouacsMapComponent {
   detailHidden?: boolean = true;
 
   bivouacs: Bivouac[] = [];
+
+  private initialZoom = 8;
+
+  private get bivouacZoom() {
+    return this.bivouacsMapService.bivouacZoom;
+  }
 
   private getMarkerIcon = (
     markerColor: GlyphOptions["markerColor"] = "blue"
@@ -93,22 +102,28 @@ export class BivouacsMapComponent {
       this.startingSpotsLayer,
     ],
     zoomControl: false,
-    zoom: 8,
+    zoom: this.initialZoom,
     // Lombardy center
     center: latLng(45.47606840909091, 9.146797684437137),
   };
 
+  initialBivouacData?: { bivouac: Bivouac; marker: Marker };
+
+  initialBivouacId?: string;
+
   constructor(
     private bivouacService: BivouacService,
     private bivouacsMapService: BivouacsMapService,
-    private changeDetector: ChangeDetectorRef
+    private changeDetector: ChangeDetectorRef,
+    private route: ActivatedRoute
   ) {
+    this.initialBivouacId = this.route.snapshot.paramMap.get("id") ?? undefined;
     this.loadData();
   }
 
   onMapReady = (map: LMap) => {
-    this.map = map;
-    control.zoom({ position: "bottomright" }).addTo(this.map);
+    this.bivouacsMapService.map = map;
+    control.zoom({ position: "bottomright" }).addTo(map);
     this.changeDetector.detectChanges();
   };
 
@@ -118,10 +133,27 @@ export class BivouacsMapComponent {
   };
 
   private loadData = () => {
-    forkJoin([
-      this.bivouacsMapService.loadFavorites(),
-      this.loadBivouacs(),
-    ]).subscribe();
+    forkJoin([this.bivouacsMapService.loadFavorites(), this.loadBivouacs()])
+      .pipe(
+        tap(() => {
+          // If a route param has been passed, pan to the bivouac with that id.
+          if (this.initialBivouacData) {
+            this.selectBivouac(
+              this.initialBivouacData.bivouac,
+              this.initialBivouacData.marker
+            );
+            const { latLng } = this.initialBivouacData.bivouac;
+            if (latLng) {
+              this.bivouacsMapService.scrollToLatLng(
+                latLng,
+                this.bivouacZoom,
+                false
+              );
+            }
+          }
+        })
+      )
+      .subscribe();
   };
 
   private selectBivouac = (bivouac: Bivouac, marker?: Marker) => {
@@ -235,6 +267,10 @@ export class BivouacsMapComponent {
             this.selectBivouac(bivouac, marker);
             this.changeDetector.detectChanges();
           });
+          if (bivouac._id === this.initialBivouacId) {
+            console.log(bivouac._id);
+            this.initialBivouacData = { bivouac, marker };
+          }
           markerCluster?.addLayer(marker);
         }
         this.markerCluster = markerCluster;

@@ -9,6 +9,7 @@ import { NotFoundComponent } from "./features/not-found/not-found.component";
 export const routes: Routes = [
   { path: "", redirectTo: "bivouacs-map", pathMatch: "full" },
   { path: "bivouacs-map", component: BivouacsMapComponent },
+  { path: "bivouacs-map/:id", component: BivouacsMapComponent },
   {
     path: "admin-dashboard",
     canActivate: [roleGuard],

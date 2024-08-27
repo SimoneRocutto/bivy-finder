@@ -1,8 +1,11 @@
+import { environment } from "./../../../../environments/environment.development";
 import {
+  AfterViewInit,
   ChangeDetectorRef,
   Component,
   ElementRef,
   Input,
+  OnInit,
   ViewChild,
 } from "@angular/core";
 import { Bivouac } from "../../../types/bivouac.type";
@@ -28,18 +31,18 @@ import { LatLngExpression, Map as LMap } from "leaflet";
     TranslocoDirective,
   ],
   template: `
-    <ng-container *transloco="let t">
-      <div
-        [ngClass]="!hidden && bivouac ? 'drawer-open' : ''"
-        class="drawer z-10 absolute top-0 left-0 w-auto h-full pointer-events-none"
-        #bivouacDetailSidebar
-      >
-        <input id="detail-drawer" type="checkbox" class="drawer-toggle" />
-        <div class="drawer-side h-full sticky pointer-events-none">
-          <div
-            class="relative p-0 w-96 min-h-full bg-base-200 text-base-content"
-            style="max-width: calc(100vw - 60px)"
-          >
+    <div
+      [ngClass]="!hidden && bivouac ? 'drawer-open' : ''"
+      class="drawer z-10 absolute top-0 left-0 w-auto h-full pointer-events-none"
+      #bivouacDetailSidebar
+    >
+      <input id="detail-drawer" type="checkbox" class="drawer-toggle" />
+      <div class="drawer-side h-full sticky pointer-events-none">
+        <div
+          class="relative p-0 w-96 min-h-full bg-base-200 text-base-content"
+          style="max-width: calc(100vw - 60px)"
+        >
+          <ng-container *transloco="let t">
             <ng-container *ngIf="bivouac">
               <div class="w-full h-48">
                 <img
@@ -66,6 +69,11 @@ import { LatLngExpression, Map as LMap } from "leaflet";
                         >favorite</i
                       >
                     </button>
+                    <app-copy-button
+                      [text]="bivouacsMapRoute + '/' + bivouac._id"
+                      [circularButton]="true"
+                      icon="share"
+                    ></app-copy-button>
                   </div>
                 </div>
                 <div
@@ -279,14 +287,14 @@ import { LatLngExpression, Map as LMap } from "leaflet";
                 </div>
               </div>
             </ng-container>
-          </div>
+          </ng-container>
         </div>
       </div>
-    </ng-container>
+    </div>
   `,
   styles: ``,
 })
-export class BivouacDetailSidebarComponent {
+export class BivouacDetailSidebarComponent implements AfterViewInit {
   @ViewChild("bivouacDetailSidebar")
   bivouacDetailSidebar!: ElementRef<HTMLDivElement>;
   @ViewChild("startingSpotsTab")
@@ -308,10 +316,18 @@ export class BivouacDetailSidebarComponent {
     );
   }
 
+  get bivouacsMapRoute() {
+    return environment.baseUrl + "/" + "bivouacs-map";
+  }
+
   constructor(
     private bivouacsMapService: BivouacsMapService,
     private changeDetector: ChangeDetectorRef
   ) {}
+
+  ngAfterViewInit(): void {
+    this.bivouacsMapService.bivouacSidebarRef = this.bivouacDetailSidebar;
+  }
 
   bivouacIsFavorite = (bivouacId: string) =>
     this.bivouacsMapService.bivouacIsFavorite(bivouacId);
@@ -344,15 +360,15 @@ export class BivouacDetailSidebarComponent {
   };
 
   scrollToLatLng = (latLng?: LatLngExpression | null) => {
-    if (!latLng) return;
-    // We are compensating for the sidebar width.
-    const { width } =
-      this.bivouacDetailSidebar.nativeElement.getBoundingClientRect();
-    const targetPoint = this.map?.project(latLng).subtract([width / 2, 0]);
-    if (!targetPoint) return;
-    const targetLatLng = this.map?.unproject(targetPoint);
-    if (!targetLatLng) return;
-    this.map?.flyTo(targetLatLng);
+    let zoom: number | null = null;
+    // We only zoom if the current zoom is less than the recommended zoom for bivouacs.
+    if (
+      this.bivouacsMapService.bivouacZoom >
+      (this.bivouacsMapService.map?.getZoom() ?? 0)
+    ) {
+      zoom = this.bivouacsMapService.bivouacZoom;
+    }
+    this.bivouacsMapService.scrollToLatLng(latLng, ...(zoom ? [zoom] : []));
   };
 
   // Todo scroll to the spot data (useful when we have several spots).

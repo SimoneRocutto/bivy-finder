@@ -7,13 +7,18 @@ import { TooltipComponent } from "../tooltip/tooltip.component";
   standalone: true,
   imports: [CommonModule, TooltipComponent],
   template: `
-    <app-tooltip label="Copied!" [disabled]="!justCopied" [forceOpen]="true">
+    <app-tooltip
+      [label]="successMessage"
+      [disabled]="!justCopied"
+      [forceOpen]="true"
+    >
       <button
         class="btn btn-neutral btn-sm"
+        [ngClass]="{ 'btn-circle': circularButton }"
         (click)="copyCoordinatesToClipboard()"
       >
         <i class="material-symbols-outlined text-lg">{{
-          justCopied ? "done" : "content_copy"
+          justCopied ? "done" : icon
         }}</i>
       </button>
     </app-tooltip>
@@ -22,6 +27,9 @@ import { TooltipComponent } from "../tooltip/tooltip.component";
 })
 export class CopyButtonComponent {
   @Input() text: string = "";
+  @Input() successMessage: string = "Copied!";
+  @Input() icon: string = "content_copy";
+  @Input() circularButton = false;
 
   justCopied = false;
 
