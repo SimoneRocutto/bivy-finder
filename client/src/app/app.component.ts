@@ -5,6 +5,8 @@ import { NavbarComponent } from "./ui-components/specific/navbar/navbar.componen
 import { SidebarComponent } from "./ui-components/specific/sidebar/sidebar.component";
 import { ToastBoxComponent } from "./ui-components/generic/toast-box/toast-box.component";
 import { AuthService } from "./services/auth.service";
+import "leaflet";
+import "leaflet.markercluster";
 
 @Component({
   selector: "app-root",
