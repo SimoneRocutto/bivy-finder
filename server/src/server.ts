@@ -14,7 +14,7 @@ import RedisStore from "connect-redis";
 import { connectToDatabase } from "./database/database";
 import { errorMiddlewares, middlewares } from "./middlewares";
 import { routers } from "./routes";
-import { sendError, sendFail } from "./helpers/http";
+import { sendError } from "./helpers/http";
 const { specs, swaggerUi } = require("./config/swagger");
 
 dotenv.config({ path: __dirname + "/config/.env" });
@@ -31,8 +31,7 @@ export const {
   AWS_DEFAULT_REGION,
   AWS_BUCKET_NAME,
   AWS_BUCKET_DIRECTORY,
-  REDIS_HOST,
-  REDIS_PORT,
+  REDIS_URL,
 } = process.env;
 if (!ATLAS_URI || !ATLAS_DB) {
   console.error(
@@ -59,10 +58,8 @@ if (
   process.exit(1);
 }
 
-if (!REDIS_HOST || !REDIS_PORT) {
-  console.error(
-    "REDIS_HOST or REDIS_PORT environment variable missing from config/.env"
-  );
+if (!REDIS_URL) {
+  console.error("REDIS_URL environment variable missing from config/.env");
 }
 
 // Todo move this to a config file if possible
@@ -81,10 +78,7 @@ connectToDatabase(ATLAS_URI)
 
     // Redis config
     const redisClient = redis.createClient({
-      socket: {
-        host: REDIS_HOST,
-        port: Number(REDIS_PORT),
-      },
+      url: REDIS_URL,
     });
     redisClient.on("error", function (err) {
       console.log("Could not establish a connection with redis. " + err);
