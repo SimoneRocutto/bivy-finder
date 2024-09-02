@@ -32,6 +32,7 @@ export const {
   AWS_BUCKET_NAME,
   AWS_BUCKET_DIRECTORY,
   REDIS_URL,
+  CLIENT_URL,
 } = process.env;
 if (!ATLAS_URI || !ATLAS_DB) {
   console.error(
@@ -106,7 +107,12 @@ connectToDatabase(ATLAS_URI)
         },
       })
     );
-    app.use(cors());
+    app.use(
+      cors({
+        origin: CLIENT_URL ?? "",
+        optionsSuccessStatus: 200,
+      })
+    );
     app.use((_req, res, next) => {
       console.log("DEBUG SESSION", _req.session);
       next();
