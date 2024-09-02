@@ -110,6 +110,7 @@ connectToDatabase(ATLAS_URI)
     app.use(
       cors({
         origin: CLIENT_URL ?? "",
+        credentials: true,
         optionsSuccessStatus: 200,
       })
     );
