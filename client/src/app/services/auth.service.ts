@@ -44,9 +44,9 @@ export class AuthService {
           if (res.body.data.userAuthenticated) {
             const { id, username, role } = res.body.data.user;
             this.setUser(id, username, role);
-            this.isLoading = false;
             this.userIsLoggedSubject.next(!!id);
           }
+          this.isLoading = false;
         } else {
           // Todo improve error handling
           console.error("Unknown error while authenticating.");
