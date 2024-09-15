@@ -78,13 +78,20 @@ import { tap } from "rxjs";
             </ul>
           </div> -->
           <!-- user area dropdown -->
-          <div class="dropdown dropdown-bottom dropdown-end">
+
+          <!-- This has to be converted into a component! -->
+          <div
+            class="dropdown dropdown-bottom dropdown-end"
+            (click)="closeDropdown()"
+            (blur)="onDropdownClose()"
+          >
             <div
               tabindex="0"
               role="button"
               class="btn m-1"
               [attr.aria-label]="t('navbar.user_area') | titlecase"
               [attr.title]="t('navbar.user_area') | titlecase"
+              (focus)="onDropdownOpen()"
             >
               <span class="material-symbols-outlined"> account_circle </span>
             </div>
@@ -164,5 +171,32 @@ export class NavbarComponent {
         this.loggedIn = res.body.data?.userAuthenticated;
       }
     });
+  };
+
+  //! Dropdown logic: this will be moved to its own component
+  dropdownOpen = false;
+
+  cooldown = 50;
+
+  cooldownIsOn = false;
+
+  timeout: any;
+
+  closeDropdown = () => {
+    if (this.dropdownOpen && !this.cooldownIsOn) {
+      (document.activeElement as HTMLElement)?.blur();
+    }
+  };
+
+  onDropdownOpen = () => {
+    this.dropdownOpen = true;
+    this.cooldownIsOn = true;
+    this.timeout = setTimeout(() => {
+      this.cooldownIsOn = false;
+    }, this.cooldown);
+  };
+
+  onDropdownClose = () => {
+    this.dropdownOpen = false;
   };
 }

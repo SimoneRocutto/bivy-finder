@@ -17,7 +17,10 @@ export interface ConfirmModalProps {
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div style="max-height: calc(100vh - 5em - 3rem)" class="flex flex-col">
+    <div
+      style="max-height: calc(100vh - 5em - 3rem); max-height: calc(100dvh - 5em - 3em)"
+      class="flex flex-col"
+    >
       <h3 class="text-lg font-bold">{{ title }}</h3>
       <!-- White space: pre makes it so that we can add line breaks in the content with \\n
        (only one slash) -->
