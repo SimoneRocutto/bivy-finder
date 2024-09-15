@@ -17,7 +17,7 @@ import { AuthService } from "./services/auth.service";
     ToastBoxComponent,
   ],
   template: `
-    <div class="min-h-screen min-h-dvh bg-gray-100" *ngIf="!isLoading">
+    <div class="min-h-dvh bg-gray-100" *ngIf="!isLoading">
       <app-sidebar>
         <app-navbar></app-navbar>
         <main class="relative z-0 flex flex-1 justify-center">

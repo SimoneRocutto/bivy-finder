@@ -15,7 +15,7 @@ import { AuthService } from "../../../services/auth.service";
         type="checkbox"
         class="drawer-toggle"
       />
-      <div class="drawer-content min-h-screen min-h-dvh flex flex-col">
+      <div class="drawer-content min-h-dvh flex flex-col">
         <!-- Main website content is projected in here -->
         <ng-content></ng-content>
       </div>
