@@ -7,7 +7,8 @@ import {
   ViewChild,
 } from "@angular/core";
 import { LeafletModule } from "@bluehalo/ngx-leaflet";
-import * as L from "leaflet";
+import "leaflet";
+import "leaflet.markercluster";
 import {
   Icon,
   LayerGroup,
@@ -21,7 +22,6 @@ import {
   MarkerClusterGroup,
   markerClusterGroup,
 } from "leaflet";
-import "leaflet.markercluster";
 import { Bivouac, BivouacType } from "../../types/bivouac.type";
 import { LeafletMarkerClusterModule } from "@bluehalo/ngx-leaflet-markercluster";
 import { Subscription, forkJoin, tap } from "rxjs";
