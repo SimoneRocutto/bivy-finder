@@ -176,7 +176,7 @@ export class NavbarComponent {
   //! Dropdown logic: this will be moved to its own component
   dropdownOpen = false;
 
-  cooldown = 50;
+  cooldown = 200;
 
   cooldownIsOn = false;
 
