@@ -15,7 +15,7 @@ import {
     <dialog
       #modal
       class="modal"
-      [ngClass]="{ 'w-screen h-screen sm:modal': fullOnSmallScreen }"
+      [ngClass]="{ 'w-screen h-screen h-dvh sm:modal': fullOnSmallScreen }"
     >
       <div
         class="modal-box"
