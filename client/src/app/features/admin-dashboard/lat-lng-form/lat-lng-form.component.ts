@@ -8,7 +8,7 @@ import {
 import { FormInputComponent } from "../../../ui-components/generic/form-input/form-input.component";
 import { TooltipComponent } from "../../../ui-components/generic/tooltip/tooltip.component";
 import { LatLngExpression } from "leaflet";
-import { LatLngFormGroup } from "../../../types/bivouac.type";
+import { LatLngFormGroup } from "../../../types/cabin.type";
 
 @Component({
   selector: "app-lat-lng-form",

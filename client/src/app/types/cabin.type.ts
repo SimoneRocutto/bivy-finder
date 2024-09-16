@@ -2,7 +2,7 @@ import { LatLngExpression } from "leaflet";
 import { NonNull } from "./misc.type";
 import { FormArray, FormControl, FormGroup } from "@angular/forms";
 
-export type BivouacType =
+export type CabinType =
   | "managed"
   | "require-keys"
   | "private"
@@ -11,7 +11,7 @@ export type BivouacType =
   | "incomplete"
   | "abandoned";
 
-export type BivouacMaterial = "stone" | "wood" | "metal" | "rock";
+export type CabinMaterial = "stone" | "wood" | "metal" | "rock";
 
 export type CostPer = "hour" | "day" | "week" | "month" | "forever";
 
@@ -48,24 +48,24 @@ export interface StartingSpot {
 // Allowing nulls because we cannot send undefined values through jsons.
 // Null means we want to delete the field. Undefined or key not present
 // means the field will not be sent.
-export interface NewBivouac {
+export interface NewCabin {
   name: string;
   description?: string | null;
   imageName?: string | null;
-  material?: BivouacMaterial | null;
-  type?: BivouacType | null;
+  material?: CabinMaterial | null;
+  type?: CabinType | null;
   latLng?: LatLngExpression | null;
   externalLinks?: string[] | null;
   startingSpots?: StartingSpot[];
 }
 
-export interface Bivouac extends NonNull<NewBivouac> {
+export interface Cabin extends NonNull<NewCabin> {
   _id: string;
   imageUrl?: string;
   favoritesCount?: number;
 }
 
-export const bivouacTypes: BivouacType[] = [
+export const cabinTypes: CabinType[] = [
   "managed",
   "require-keys",
   "private",
@@ -75,7 +75,7 @@ export const bivouacTypes: BivouacType[] = [
   "abandoned",
 ];
 
-export const bivouacMaterials: BivouacMaterial[] = [
+export const cabinMaterials: CabinMaterial[] = [
   "metal",
   "stone",
   "wood",

@@ -13,16 +13,16 @@ import {
   ReactiveFormsModule,
   Validators,
 } from "@angular/forms";
-import { BivouacService } from "../../../services/bivouac.service";
+import { CabinService } from "../../../services/cabin.service";
 import {
-  Bivouac,
-  BivouacMaterial,
-  BivouacType,
+  Cabin,
+  CabinMaterial,
+  CabinType,
   LatLngFormGroup,
-  NewBivouac,
-  bivouacMaterials,
-  bivouacTypes,
-} from "../../../types/bivouac.type";
+  NewCabin,
+  cabinMaterials,
+  cabinTypes,
+} from "../../../types/cabin.type";
 import { CommonModule } from "@angular/common";
 import { catchError, tap } from "rxjs";
 import { ToastService } from "../../../ui-components/generic/toast-box/toast.service";
@@ -34,7 +34,7 @@ import { FormInputComponent } from "../../../ui-components/generic/form-input/fo
 import { LatLngFormComponent } from "../lat-lng-form/lat-lng-form.component";
 
 @Component({
-  selector: "app-bivouac-form",
+  selector: "app-cabin-form",
   standalone: true,
   imports: [
     CommonModule,
@@ -46,14 +46,14 @@ import { LatLngFormComponent } from "../lat-lng-form/lat-lng-form.component";
     LatLngFormComponent,
   ],
   template: `<form
-    [formGroup]="bivouacForm"
+    [formGroup]="cabinForm"
     (ngSubmit)="submit()"
     class="flex flex-col"
   >
     <div class="flex flex-col gap-4 mb-6">
       <app-form-input
         label="name"
-        [formGroup]="bivouacForm"
+        [formGroup]="cabinForm"
         formControlName="name"
       ></app-form-input>
       <textarea
@@ -66,7 +66,7 @@ import { LatLngFormComponent } from "../lat-lng-form/lat-lng-form.component";
         formControlName="type"
       >
         <option [ngValue]="null">Type</option>
-        <option *ngFor="let type of bivouacTypes" [ngValue]="type">
+        <option *ngFor="let type of cabinTypes" [ngValue]="type">
           {{ type }}
         </option>
       </select>
@@ -75,19 +75,19 @@ import { LatLngFormComponent } from "../lat-lng-form/lat-lng-form.component";
         formControlName="material"
       >
         <option [ngValue]="null">Material</option>
-        <option *ngFor="let material of bivouacMaterials" [ngValue]="material">
+        <option *ngFor="let material of cabinMaterials" [ngValue]="material">
           {{ material }}
         </option>
       </select>
       <app-lat-lng-form></app-lat-lng-form>
       <div>
         <div class="mb-2">
-          External Links ({{ bivouacForm.value.externalLinks?.length ?? 0 }}/{{
+          External Links ({{ cabinForm.value.externalLinks?.length ?? 0 }}/{{
             maxExternalLinksCount
           }})
         </div>
         <app-items-list-input
-          [items]="bivouacForm.value.externalLinks"
+          [items]="cabinForm.value.externalLinks"
           [maxItems]="maxExternalLinksCount"
           [isLink]="true"
         ></app-items-list-input>
@@ -109,7 +109,7 @@ import { LatLngFormComponent } from "../lat-lng-form/lat-lng-form.component";
         >
         <ng-container
           *ngIf="
-            !imageWillBeDeleted && (temporaryImageUrl || bivouac?.imageUrl);
+            !imageWillBeDeleted && (temporaryImageUrl || cabin?.imageUrl);
             else noImage
           "
         >
@@ -124,9 +124,9 @@ import { LatLngFormComponent } from "../lat-lng-form/lat-lng-form.component";
             </div></ng-container
           >
           <img
-            [src]="temporaryImageUrl ?? bivouac?.imageUrl"
+            [src]="temporaryImageUrl ?? cabin?.imageUrl"
             [ngClass]="{ invisible: !imageLoaded }"
-            alt="Bivouac image"
+            alt="Cabin image"
             (load)="onImageLoaded()"
             class="absolute inset-0"
           />
@@ -167,7 +167,7 @@ import { LatLngFormComponent } from "../lat-lng-form/lat-lng-form.component";
       </button>
       <button
         type="submit"
-        [disabled]="!bivouacForm.valid || isSubmitting"
+        [disabled]="!cabinForm.valid || isSubmitting"
         class="btn btn-primary relative"
       >
         <div [ngClass]="{ invisible: isSubmitting }">Submit</div>
@@ -180,10 +180,10 @@ import { LatLngFormComponent } from "../lat-lng-form/lat-lng-form.component";
   </form>`,
   styles: ``,
 })
-export class BivouacFormComponent implements OnInit {
+export class CabinFormComponent implements OnInit {
   @ViewChild(LatLngFormComponent, { static: true })
   latLngForm!: LatLngFormComponent;
-  @Input() bivouac?: Bivouac;
+  @Input() cabin?: Cabin;
   @Output() onSubmit = new EventEmitter();
   @Output() onCreate = new EventEmitter<string>();
   @Output() onUpdate = new EventEmitter<string>();
@@ -198,11 +198,11 @@ export class BivouacFormComponent implements OnInit {
 
   newLink: string = "";
 
-  bivouacForm!: FormGroup<{
+  cabinForm!: FormGroup<{
     name: FormControl<string>;
     description: FormControl<string | null>;
-    type: FormControl<BivouacType | null>;
-    material: FormControl<BivouacMaterial | null>;
+    type: FormControl<CabinType | null>;
+    material: FormControl<CabinMaterial | null>;
     latLng: LatLngFormGroup;
     externalLinks: FormControl<string[] | null>;
   }>;
@@ -213,33 +213,33 @@ export class BivouacFormComponent implements OnInit {
   imageWillBeDeleted = false;
 
   get name() {
-    return this.bivouacForm.get("name")!;
+    return this.cabinForm.get("name")!;
   }
 
-  get bivouacTypes(): BivouacType[] {
-    return bivouacTypes;
+  get cabinTypes(): CabinType[] {
+    return cabinTypes;
   }
 
-  get bivouacMaterials(): BivouacMaterial[] {
-    return bivouacMaterials;
+  get cabinMaterials(): CabinMaterial[] {
+    return cabinMaterials;
   }
 
   /**
-   * Parses the form into a new bivouac object, ready to be used for create
+   * Parses the form into a new cabin object, ready to be used for create
    * or update operations.
    */
-  get parsedForm(): NewBivouac | null {
+  get parsedForm(): NewCabin | null {
     // Props that aren't altered in the form. We have to preserve them.
     const nonFormProps = ["imageName"];
     const nonFormPropsObj = nonFormProps.reduce((acc, curr) => {
-      const propValue = this.bivouac?.[curr];
+      const propValue = this.cabin?.[curr];
       if (propValue) {
         acc[curr] = propValue;
       }
       return acc;
     }, {});
 
-    const { name, ...optionalProps } = this.bivouacForm.value;
+    const { name, ...optionalProps } = this.cabinForm.value;
     if (!name) {
       return null;
     }
@@ -261,14 +261,14 @@ export class BivouacFormComponent implements OnInit {
   }
 
   constructor(
-    private bivouacsService: BivouacService,
+    private cabinsService: CabinService,
     private toastService: ToastService,
     private errorService: ErrorService,
     private modalService: ModalService
   ) {}
 
   ngOnInit(): void {
-    this.bivouacForm = new FormGroup({
+    this.cabinForm = new FormGroup({
       name: new FormControl("", {
         nonNullable: true,
         validators: [Validators.required],
@@ -283,15 +283,15 @@ export class BivouacFormComponent implements OnInit {
   }
 
   submit = () => {
-    if (!this.bivouacForm.valid || !this.parsedForm) {
+    if (!this.cabinForm.valid || !this.parsedForm) {
       this.toastService.createToast("Invalid form", "error");
       return;
     }
 
     this.isSubmitting = true;
     (this.isEdit()
-      ? this.updateBivouac(this.bivouac._id, this.parsedForm)
-      : this.createBivouac(this.parsedForm)
+      ? this.updateCabin(this.cabin._id, this.parsedForm)
+      : this.createCabin(this.parsedForm)
     )
       .pipe(
         catchError((e) =>
@@ -303,23 +303,23 @@ export class BivouacFormComponent implements OnInit {
       .subscribe();
   };
 
-  createBivouac = (bivouac: NewBivouac) =>
-    this.bivouacsService.createBivouac(bivouac, this.imageFile).pipe(
+  createCabin = (cabin: NewCabin) =>
+    this.cabinsService.createCabin(cabin, this.imageFile).pipe(
       tap((res) => {
         if (res.body?.status === "success") {
           const { id } = res.body.data;
-          this.toastService.createToast("Bivouac created", "success");
+          this.toastService.createToast("Cabin created", "success");
           this.onSubmit.emit();
           this.onCreate.emit(id);
         }
       })
     );
 
-  updateBivouac = (bivouacId: string, bivouac: NewBivouac) =>
-    this.bivouacsService.updateBivouac(bivouacId, bivouac, this.imageFile).pipe(
+  updateCabin = (cabinId: string, cabin: NewCabin) =>
+    this.cabinsService.updateCabin(cabinId, cabin, this.imageFile).pipe(
       tap((res) => {
         if (res.status === 204) {
-          this.toastService.createToast("Bivouac updated", "success");
+          this.toastService.createToast("Cabin updated", "success");
           this.onSubmit.emit();
           this.onUpdate.emit();
         }
@@ -346,7 +346,7 @@ export class BivouacFormComponent implements OnInit {
 
   pushLink = () => {
     if (!this.newLink) return;
-    this.bivouacForm.get("externalLinks")?.value?.push(this.newLink);
+    this.cabinForm.get("externalLinks")?.value?.push(this.newLink);
     this.newLink = "";
   };
 
@@ -358,21 +358,21 @@ export class BivouacFormComponent implements OnInit {
     this.imageLoaded = true;
   };
 
-  private isEdit(): this is { bivouac: Bivouac & { _id: string } } {
-    return !!this.bivouac?._id;
+  private isEdit(): this is { cabin: Cabin & { _id: string } } {
+    return !!this.cabin?._id;
   }
 
   /**
-   * If this is an update form, prefills the form with bivouac data.
+   * If this is an update form, prefills the form with cabin data.
    * Otherwise, the form is left empty.
    */
   private prefillForm = () => {
     if (this.isEdit()) {
       // patchValue should correctly handle all cases except for latLng
-      const { latLng, ...otherProps } = this.bivouac;
-      this.bivouacForm.patchValue({
+      const { latLng, ...otherProps } = this.cabin;
+      this.cabinForm.patchValue({
         ...otherProps,
-        externalLinks: this.bivouac.externalLinks ?? [],
+        externalLinks: this.cabin.externalLinks ?? [],
       });
       this.latLngForm.latLngFormGroup.patchValue({
         latitude: latLng?.[0],

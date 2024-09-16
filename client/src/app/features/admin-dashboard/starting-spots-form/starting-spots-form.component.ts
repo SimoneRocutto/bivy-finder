@@ -1,13 +1,13 @@
 import { CommonModule } from "@angular/common";
 import {
-  Bivouac,
+  Cabin,
   CarTransport,
-  NewBivouac,
+  NewCabin,
   PublicTransport,
   PublicTransportFormGroup,
   StartingSpot,
   StartingSpotFormGroup,
-} from "./../../../types/bivouac.type";
+} from "./../../../types/cabin.type";
 import {
   AfterViewInit,
   Component,
@@ -31,7 +31,7 @@ import { TooltipComponent } from "../../../ui-components/generic/tooltip/tooltip
 import { ModalService } from "../../../ui-components/generic/modal/modal.service";
 import { ToastService } from "../../../ui-components/generic/toast-box/toast.service";
 import { LatLngExpression } from "leaflet";
-import { BivouacService } from "../../../services/bivouac.service";
+import { CabinService } from "../../../services/cabin.service";
 import { catchError, tap } from "rxjs";
 import { ErrorService } from "../../../services/error.service";
 
@@ -362,7 +362,7 @@ import { ErrorService } from "../../../services/error.service";
   }`,
 })
 export class StartingSpotsFormComponent implements OnInit {
-  @Input() bivouac?: Bivouac;
+  @Input() cabin?: Cabin;
   @Output() onSubmit = new EventEmitter();
   @Output() onUpdate = new EventEmitter<string>();
 
@@ -454,7 +454,7 @@ export class StartingSpotsFormComponent implements OnInit {
   }
 
   constructor(
-    private bivouacsService: BivouacService,
+    private cabinsService: CabinService,
     private errorService: ErrorService,
     private modalService: ModalService,
     private toastService: ToastService
@@ -474,9 +474,9 @@ export class StartingSpotsFormComponent implements OnInit {
 
     this.isSubmitting = true;
 
-    this.updateBivouac(this.bivouac!._id, {
+    this.updateCabin(this.cabin!._id, {
       // Todo remove name from sent data! We are not updating it
-      name: this.bivouac!.name,
+      name: this.cabin!.name,
       startingSpots: this.parsedForm,
     })
       .pipe(
@@ -489,11 +489,11 @@ export class StartingSpotsFormComponent implements OnInit {
       .subscribe();
   };
 
-  updateBivouac = (bivouacId: string, bivouac: NewBivouac) =>
-    this.bivouacsService.updateBivouac(bivouacId, bivouac).pipe(
+  updateCabin = (cabinId: string, cabin: NewCabin) =>
+    this.cabinsService.updateCabin(cabinId, cabin).pipe(
       tap((res) => {
         if (res.status === 204) {
-          this.toastService.createToast("Bivouac updated", "success");
+          this.toastService.createToast("Cabin updated", "success");
           this.onSubmit.emit();
           this.onUpdate.emit();
         }
@@ -554,7 +554,7 @@ export class StartingSpotsFormComponent implements OnInit {
    * Otherwise, the form is left empty.
    */
   private prefillForm = () => {
-    for (const [i, spot] of (this.bivouac?.startingSpots ?? []).entries()) {
+    for (const [i, spot] of (this.cabin?.startingSpots ?? []).entries()) {
       const formGroup: StartingSpotFormGroup = this.initSpotForm();
       if (spot?.transport?.car) {
         const carGroup = this.initCarForm();

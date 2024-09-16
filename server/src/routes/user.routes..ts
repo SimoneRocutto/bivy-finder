@@ -18,7 +18,7 @@ userRouter.use(express.json());
  *       properties:
  *         username:
  *           type: string
- *         favoriteBivouacs:
+ *         favoriteCabins:
  *           type: array
  *           items:
  *             type: string
@@ -54,7 +54,7 @@ userRouter.get("/self", async (req, res) => {
     {
       _id: new ObjectId(userId),
     },
-    { projection: { _id: 0, favoriteBivouacs: 1 } }
+    { projection: { _id: 0, favoriteCabins: 1 } }
   );
 
   if (user) {

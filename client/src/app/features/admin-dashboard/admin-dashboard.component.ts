@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild } from "@angular/core";
-import { Bivouac } from "../../types/bivouac.type";
-import { BivouacService } from "../../services/bivouac.service";
+import { Cabin } from "../../types/cabin.type";
+import { CabinService } from "../../services/cabin.service";
 import { CommonModule } from "@angular/common";
 import { PaginationComponent } from "../../ui-components/generic/pagination/pagination.component";
 import { ToastService } from "../../ui-components/generic/toast-box/toast.service";
@@ -16,7 +16,7 @@ import {
   take,
   tap,
 } from "rxjs";
-import { BivouacFormComponent } from "./bivouac-form/bivouac-form.component";
+import { CabinFormComponent } from "./cabin-form/cabin-form.component";
 import { ErrorService } from "../../services/error.service";
 import { FormsModule } from "@angular/forms";
 import { TableComponent } from "../../ui-components/generic/table/table.component";
@@ -32,40 +32,40 @@ import { StartingSpotsFormComponent } from "./starting-spots-form/starting-spots
     <div class="sm:min-w-96 overflow-x-auto pt-4 pb-16">
       <div class="flex justify-end gap-4 mb-4 mx-4">
         <button class="btn btn-primary" (click)="openCreateModal()">
-          Add bivouac
+          Add cabin
         </button>
         <button
           (click)="openBulkDeleteModal()"
           class="btn btn-error"
-          [disabled]="selectedBivouacsIds.size < 1"
+          [disabled]="selectedCabinsIds.size < 1"
         >
           Delete bulk
         </button>
       </div>
       <app-table
-        [items]="bivouacs"
+        [items]="cabins"
         [beforeCell]="beforeCell"
         [afterCell]="afterCell"
         [pageSize]="pageSize"
         [columns]="columns"
         [isLoading]="isLoading"
       >
-        <ng-template #beforeCell let-bivouac>
+        <ng-template #beforeCell let-cabin>
           <td before class="w-16 flex justify-center items-center">
             <input
               type="checkbox"
               class="checkbox"
-              [checked]="bivouacIsSelected(bivouac)"
-              (change)="toggleBivouacSelection(bivouac)"
+              [checked]="cabinIsSelected(cabin)"
+              (change)="toggleCabinSelection(cabin)"
             /></td
         ></ng-template>
-        <ng-template #afterCell let-bivouac>
+        <ng-template #afterCell let-cabin>
           <td after>
-            <button (click)="openUpdateModal(bivouac)">
+            <button (click)="openUpdateModal(cabin)">
               <i class="material-symbols-outlined">edit</i></button
-            ><button (click)="openStartingSpotsModal(bivouac)">
+            ><button (click)="openStartingSpotsModal(cabin)">
               <i class="material-symbols-outlined">hiking</i></button
-            ><button (click)="openDeleteModal(bivouac)">
+            ><button (click)="openDeleteModal(cabin)">
               <i class="material-symbols-outlined">delete</i>
             </button>
           </td></ng-template
@@ -77,10 +77,10 @@ import { StartingSpotsFormComponent } from "./starting-spots-form/starting-spots
 })
 export class AdminDashboardComponent implements OnInit {
   isLoading = true;
-  bivouacs: Bivouac[] = [];
+  cabins: Cabin[] = [];
   pageSize = 50;
 
-  columns: TableColumn<Bivouac>[] = [
+  columns: TableColumn<Cabin>[] = [
     { prop: "name", name: "Name", filter: true, defaultSort: true },
     {
       prop: "type",
@@ -88,7 +88,7 @@ export class AdminDashboardComponent implements OnInit {
       filter: true,
       style: { textTransform: "capitalize" },
       transform: (type) =>
-        this.translationTransform(type as string, "bivouacs.types"),
+        this.translationTransform(type as string, "cabins.types"),
     },
     {
       prop: "material",
@@ -97,14 +97,14 @@ export class AdminDashboardComponent implements OnInit {
       filter: true,
       style: { textTransform: "capitalize" },
       transform: (material) =>
-        this.translationTransform(material as string, "bivouacs.materials"),
+        this.translationTransform(material as string, "cabins.materials"),
     },
   ];
 
-  selectedBivouacsIds: Set<Bivouac> = new Set();
+  selectedCabinsIds: Set<Cabin> = new Set();
 
   constructor(
-    private bivouacService: BivouacService,
+    private cabinService: CabinService,
     private toastService: ToastService,
     private modalService: ModalService,
     private errorService: ErrorService,
@@ -114,26 +114,26 @@ export class AdminDashboardComponent implements OnInit {
   @ViewChild(PaginationComponent) pagination!: PaginationComponent;
 
   ngOnInit() {
-    this.bivouacService.getBivouacs().subscribe((res) => {
+    this.cabinService.getCabins().subscribe((res) => {
       if (res.body?.status !== "success") {
         // Todo handle bad response
-        console.error("Unknown error while fetching bivouacs.");
+        console.error("Unknown error while fetching cabins.");
         return;
       }
-      this.bivouacs = res.body.data;
+      this.cabins = res.body.data;
       this.stopLoading();
     });
   }
 
   openCreateModal = () => {
     const newComponent = this.modalService.openModal(
-      BivouacFormComponent,
+      CabinFormComponent,
       {},
       { fullOnSmallScreen: true }
     );
     newComponent.instance.onCreate
       .pipe(
-        concatMap((bivouacId) => this.refreshAfterCreateOrUpdate(bivouacId)),
+        concatMap((cabinId) => this.refreshAfterCreateOrUpdate(cabinId)),
         take(1)
       )
       .subscribe(() => {
@@ -141,17 +141,17 @@ export class AdminDashboardComponent implements OnInit {
       });
   };
 
-  openUpdateModal = (bivouac: Bivouac) => {
+  openUpdateModal = (cabin: Cabin) => {
     const newComponent = this.modalService.openModal(
-      BivouacFormComponent,
+      CabinFormComponent,
       {
-        bivouac,
+        cabin,
       },
       { fullOnSmallScreen: true }
     );
     newComponent.instance.onUpdate
       .pipe(
-        concatMap(() => this.refreshAfterCreateOrUpdate(bivouac._id, bivouac)),
+        concatMap(() => this.refreshAfterCreateOrUpdate(cabin._id, cabin)),
         take(1)
       )
       .subscribe(() => {
@@ -159,17 +159,17 @@ export class AdminDashboardComponent implements OnInit {
       });
   };
 
-  openStartingSpotsModal = (bivouac: Bivouac) => {
+  openStartingSpotsModal = (cabin: Cabin) => {
     const newComponent = this.modalService.openModal(
       StartingSpotsFormComponent,
       {
-        bivouac,
+        cabin,
       },
       { fullOnSmallScreen: true }
     );
     newComponent.instance.onUpdate
       .pipe(
-        concatMap(() => this.refreshAfterCreateOrUpdate(bivouac._id, bivouac)),
+        concatMap(() => this.refreshAfterCreateOrUpdate(cabin._id, cabin)),
         take(1)
       )
       .subscribe(() => {
@@ -177,98 +177,95 @@ export class AdminDashboardComponent implements OnInit {
       });
   };
 
-  openDeleteModal = (bivouac: Bivouac) => {
+  openDeleteModal = (cabin: Cabin) => {
     this.modalService.openConfirmModal({
-      title: "Are you sure you want to delete this bivouac?",
-      content: bivouac.name,
+      title: "Are you sure you want to delete this cabin?",
+      content: cabin.name,
       confirmLabel: "Delete",
       cancelLabel: "Cancel",
-      onConfirmObs: () => this.deleteBivouac(bivouac),
+      onConfirmObs: () => this.deleteCabin(cabin),
     });
   };
 
   openBulkDeleteModal = () => {
-    const bivouacsList = Array.from(this.selectedBivouacsIds).reduce(
-      (acc, bivouac, i) => {
-        return acc.concat(i > 0 ? "\n" : "", bivouac.name);
+    const cabinsList = Array.from(this.selectedCabinsIds).reduce(
+      (acc, cabin, i) => {
+        return acc.concat(i > 0 ? "\n" : "", cabin.name);
       },
       ""
     );
     this.modalService.openConfirmModal({
-      title: "Are you sure you want to delete these bivouacs?",
-      content: bivouacsList,
+      title: "Are you sure you want to delete these cabins?",
+      content: cabinsList,
       confirmLabel: "Delete",
       cancelLabel: "Cancel",
-      onConfirmObs: () => this.deleteSelectedBivouacs(),
+      onConfirmObs: () => this.deleteSelectedCabins(),
     });
   };
 
-  toggleBivouacSelection = (bivouac: Bivouac) => {
-    if (this.bivouacIsSelected(bivouac)) {
-      this.deselectBivouac(bivouac);
+  toggleCabinSelection = (cabin: Cabin) => {
+    if (this.cabinIsSelected(cabin)) {
+      this.deselectCabin(cabin);
     } else {
-      this.selectBivouac(bivouac);
+      this.selectCabin(cabin);
     }
   };
 
-  bivouacIsSelected = (bivouac: Bivouac) => {
-    return this.selectedBivouacsIds.has(bivouac);
+  cabinIsSelected = (cabin: Cabin) => {
+    return this.selectedCabinsIds.has(cabin);
   };
 
   /**
-   * Refresh bivouacs list after create or update. The new/updated bivouac
+   * Refresh cabins list after create or update. The new/updated cabin
    * is fetched from the server and added to the list, to avoid refreshing
    * the whole list data.
-   * @param bivouacId
-   * @param bivouac Pass this only for update. Leave undefined for create.
+   * @param cabinId
+   * @param cabin Pass this only for update. Leave undefined for create.
    * @returns Observable
    */
   private refreshAfterCreateOrUpdate = (
-    bivouacId: string,
-    bivouac?: Bivouac
+    cabinId: string,
+    cabin?: Cabin
   ): Observable<any> =>
     // Todo improve api calls by using mongodb findOneAndUpdate: that allows us
-    // to get the updated bivouac without having to call the get api.
-    this.bivouacService.getBivouacById(bivouacId).pipe(
+    // to get the updated cabin without having to call the get api.
+    this.cabinService.getCabinById(cabinId).pipe(
       tap((res) => {
         if (res.status !== 200 || res.body?.status !== "success") {
-          const errorMessage = "Unknown error while getting bivouac.";
+          const errorMessage = "Unknown error while getting cabin.";
           console.error(errorMessage);
           this.toastService.createToast(errorMessage, "error");
           return;
         }
         // Todo use ngZone to avoid refreshing view in the middle of an update
-        if (bivouac) {
-          this.removeBivouacFromList(bivouac);
+        if (cabin) {
+          this.removeCabinFromList(cabin);
         }
         // @ts-ignore
-        this.bivouacs.push(res.body.data);
+        this.cabins.push(res.body.data);
         this.refreshPagination();
       }),
       catchError((res) => this.errorService.catchAll(res, true))
     );
 
-  private deleteBivouac = (bivouac: Bivouac) =>
-    this.bivouacService.deleteBivouac(bivouac._id).pipe(
+  private deleteCabin = (cabin: Cabin) =>
+    this.cabinService.deleteCabin(cabin._id).pipe(
       map((res) => {
         if (res.status !== 204) {
-          const errorMessage = "Unknown error while deleting bivouac.";
+          const errorMessage = "Unknown error while deleting cabin.";
           console.error(errorMessage);
           this.toastService.createToast(errorMessage, "error");
           return res;
         }
-        this.toastService.createToast(
-          "Bivouac deleted successfully.",
-          "success"
-        );
-        this.removeBivouacFromList(bivouac);
+        this.toastService.createToast("Cabin deleted successfully.", "success");
+        this.removeCabinFromList(cabin);
         return res;
       }),
       catchError((err) => {
-        let errorMessage = "Unknown error while deleting bivouac.";
+        let errorMessage = "Unknown error while deleting cabin.";
         if (err instanceof HttpErrorResponse && err.status === 404) {
           errorMessage =
-            "Oops, bivouac has already been deleted. Refresh the page to sync table data.";
+            "Oops, cabin has already been deleted. Refresh the page to sync table data.";
         }
         console.error(err);
         this.toastService.createToast(errorMessage, "error", 5000);
@@ -281,48 +278,46 @@ export class AdminDashboardComponent implements OnInit {
    * altering the items array with .push).
    */
   private refreshPagination = () => {
-    this.bivouacs = this.bivouacs.slice();
+    this.cabins = this.cabins.slice();
   };
 
   /**
-   * Removes bivouac from the client's bivouacs list.
-   * @param bivouac - bivouac to remove
+   * Removes cabin from the client's cabins list.
+   * @param cabin - cabin to remove
    */
-  private removeBivouacFromList = (bivouac: Bivouac) => {
-    this.bivouacs = this.bivouacs.filter((b) => b !== bivouac);
-    this.deselectBivouac(bivouac);
+  private removeCabinFromList = (cabin: Cabin) => {
+    this.cabins = this.cabins.filter((b) => b !== cabin);
+    this.deselectCabin(cabin);
   };
 
-  private deleteSelectedBivouacs = () => {
+  private deleteSelectedCabins = () => {
     return forkJoin(
-      Array.from(this.selectedBivouacsIds).map((bivouac) =>
-        this.bivouacService.deleteBivouac(bivouac._id).pipe(
+      Array.from(this.selectedCabinsIds).map((cabin) =>
+        this.cabinService.deleteCabin(cabin._id).pipe(
           catchError((err) => {
-            // Todo handle errors, maybe save info about which bivouacs failed to be deleted
+            // Todo handle errors, maybe save info about which cabins failed to be deleted
             return err;
           })
         )
       )
     ).pipe(
       tap(() => {
-        this.bivouacs = this.bivouacs.filter(
-          (b) => !this.selectedBivouacsIds.has(b)
-        );
-        this.deselectAllBivouacs();
+        this.cabins = this.cabins.filter((b) => !this.selectedCabinsIds.has(b));
+        this.deselectAllCabins();
       })
     );
   };
 
-  private selectBivouac = (bivouac: Bivouac) => {
-    this.selectedBivouacsIds.add(bivouac);
+  private selectCabin = (cabin: Cabin) => {
+    this.selectedCabinsIds.add(cabin);
   };
 
-  private deselectBivouac = (bivouac: Bivouac) => {
-    this.selectedBivouacsIds.delete(bivouac);
+  private deselectCabin = (cabin: Cabin) => {
+    this.selectedCabinsIds.delete(cabin);
   };
 
-  private deselectAllBivouacs = () => {
-    this.selectedBivouacsIds.clear();
+  private deselectAllCabins = () => {
+    this.selectedCabinsIds.clear();
   };
 
   private translationTransform = (item: string, translationPrefix: string) =>

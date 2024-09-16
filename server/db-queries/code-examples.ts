@@ -22,7 +22,7 @@ const duplicateCollectionProp = async (
   testing = false
 ) => {
   const aggregationPipeline = [
-    // Only include bivouacs with a description
+    // Only include cabins with a description
     {
       $match: {
         [sourceProp]: { $exists: true },

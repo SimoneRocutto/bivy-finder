@@ -1,5 +1,5 @@
 import { Component } from "@angular/core";
-import { BivouacsMapService } from "../bivouacs-map.service";
+import { CabinsMapService } from "../cabins-map.service";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { ModalService } from "../../../ui-components/generic/modal/modal.service";
@@ -11,11 +11,11 @@ import { ModalService } from "../../../ui-components/generic/modal/modal.service
   template: ` <div class="flex flex-col">
     <h3 class="font-lg font-bold mb-4">Filters</h3>
     <div class="flex flex-row gap-4 mb-6">
-      <div>Only open bivouacs</div>
+      <div>Only open cabins</div>
       <input
         type="checkbox"
         class="toggle"
-        [(ngModel)]="filters.onlyOpenBivouacs"
+        [(ngModel)]="filters.onlyOpenCabins"
       />
     </div>
     <div class="flex flex-row self-end gap-4">
@@ -24,7 +24,7 @@ import { ModalService } from "../../../ui-components/generic/modal/modal.service
       <button type="button" class="btn btn-error" (click)="closeModal()">
         Cancel
       </button>
-      <button type="button" class="btn btn-primary" (click)="filterBivouacs()">
+      <button type="button" class="btn btn-primary" (click)="filterCabins()">
         Submit
       </button>
     </div>
@@ -33,11 +33,11 @@ import { ModalService } from "../../../ui-components/generic/modal/modal.service
 })
 export class MapFiltersComponent {
   get filters() {
-    return this.bivouacsMapService.filters;
+    return this.cabinsMapService.filters;
   }
 
   constructor(
-    private bivouacsMapService: BivouacsMapService,
+    private cabinsMapService: CabinsMapService,
     private modalService: ModalService
   ) {}
 
@@ -45,8 +45,8 @@ export class MapFiltersComponent {
     this.modalService.close();
   };
 
-  filterBivouacs = () => {
-    this.bivouacsMapService.filterBivouacs();
+  filterCabins = () => {
+    this.cabinsMapService.filterCabins();
     this.modalService.close();
   };
 }

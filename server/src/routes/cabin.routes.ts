@@ -3,27 +3,27 @@ import { ClientSession, ObjectId } from "mongodb";
 import { collections, getClient } from "../database/database";
 import { sendFail, sendSuccess } from "../helpers/http";
 import {
-  BivouacInterface,
-  BivouacFormattedInterface as BivouacFormattedInterface,
-} from "../models/data/bivouac";
+  CabinInterface,
+  CabinFormattedInterface as CabinFormattedInterface,
+} from "../models/data/cabin";
 import { uploadImageToS3 } from "../helpers/s3";
 import { multerUploadImage } from "../helpers/multer";
 import {
-  deleteBivouacImageIfExists,
-  formatBivouac,
-  unformatBivouac,
-} from "../helpers/data/bivouacs";
+  deleteCabinImageIfExists,
+  formatCabin,
+  unformatCabin,
+} from "../helpers/data/cabins";
 import { checkAuth, checkRole } from "../middlewares/route-guards";
 import { CustomSession } from "../models/application/session";
 
-export const bivouacRouter = express.Router();
-bivouacRouter.use(express.json());
+export const cabinRouter = express.Router();
+cabinRouter.use(express.json());
 
 /**
  * @openapi
  * components:
  *   schemas:
- *     NewBivouac:
+ *     NewCabin:
  *       type: object
  *       required:
  *         name
@@ -58,20 +58,20 @@ bivouacRouter.use(express.json());
  *             type: number
  *           minItems: 3
  *           maxItems: 3
- *     Bivouac:
+ *     Cabin:
  *       allOf:
  *         - type: object
  *           properties:
  *             _id:
  *               type: string
- *         - $ref: '#/components/schemas/NewBivouac'
+ *         - $ref: '#/components/schemas/NewCabin'
  */
 
 /**
  * @openapi
- * /bivouacs/:
+ * /cabins/:
  *   get:
- *     description: Gets all bivouacs
+ *     description: Gets all cabins
  *     responses:
  *       200:
  *         description: Operation successful
@@ -80,28 +80,28 @@ bivouacRouter.use(express.json());
  *               schema:
  *                 type: array
  *                 items:
- *                   $ref: '#/components/schemas/Bivouac'
+ *                   $ref: '#/components/schemas/Cabin'
  */
-bivouacRouter.get("/", async (_req, res) => {
-  const bivouacs = (await collections?.bivouacs?.find({}).toArray()) ?? [];
-  const formattedBivouacs: BivouacFormattedInterface[] = await Promise.all(
-    (bivouacs as BivouacInterface[]).map(async (bivouac) => {
-      return formatBivouac(bivouac);
+cabinRouter.get("/", async (_req, res) => {
+  const cabins = (await collections?.cabins?.find({}).toArray()) ?? [];
+  const formattedCabins: CabinFormattedInterface[] = await Promise.all(
+    (cabins as CabinInterface[]).map(async (cabin) => {
+      return formatCabin(cabin);
     })
   );
 
-  sendSuccess(res, formattedBivouacs);
+  sendSuccess(res, formattedCabins);
 });
 
 /**
  * @openapi
- * /bivouacs/{id}:
+ * /cabins/{id}:
  *   get:
- *     description: Gets a bivouac by id
+ *     description: Gets a cabin by id
  *     parameters:
  *       - name: id
  *         in: path
- *         description: Bivouac id
+ *         description: Cabin id
  *         required: true
  *         schema:
  *           type: string
@@ -111,17 +111,17 @@ bivouacRouter.get("/", async (_req, res) => {
  *         content:
  *             application/json:
  *               schema:
- *                 $ref: '#/components/schemas/Bivouac'
+ *                 $ref: '#/components/schemas/Cabin'
  *       404:
  *         description: Resource not found
  */
-bivouacRouter.get("/:id", async (req, res) => {
+cabinRouter.get("/:id", async (req, res) => {
   const id = req?.params?.id;
   const query = { _id: new ObjectId(id) };
-  const bivouac = await collections?.bivouacs?.findOne(query);
+  const cabin = await collections?.cabins?.findOne(query);
 
-  if (bivouac) {
-    sendSuccess(res, await formatBivouac(bivouac));
+  if (cabin) {
+    sendSuccess(res, await formatCabin(cabin));
   } else {
     sendFail(res, null, 404);
   }
@@ -129,16 +129,16 @@ bivouacRouter.get("/:id", async (req, res) => {
 
 /**
  * @openapi
- * /bivouacs/:
+ * /cabins/:
  *   post:
- *     description: Creates a bivouac
+ *     description: Creates a cabin
  *     requestBody:
- *       description: Bivouac object that needs to be added to the database
+ *       description: Cabin object that needs to be added to the database
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/NewBivouac'
+ *             $ref: '#/components/schemas/NewCabin'
  *     responses:
  *       201:
  *         description: Operation successful
@@ -155,27 +155,27 @@ bivouacRouter.get("/:id", async (req, res) => {
  *         description: Unauthorized. Needs admin role
  */
 
-bivouacRouter.post(
+cabinRouter.post(
   "/",
   checkRole("admin"),
-  multerUploadImage.single("bivouacImage"),
+  multerUploadImage.single("cabinImage"),
   async (req, res) => {
-    let formattedBivouac: BivouacFormattedInterface;
+    let formattedCabin: CabinFormattedInterface;
     try {
-      formattedBivouac = JSON.parse(req?.body?.bivouac);
+      formattedCabin = JSON.parse(req?.body?.cabin);
     } catch (e) {
       console.error(e);
       sendFail(res, null, 400);
       return;
     }
 
-    const bivouac = unformatBivouac(formattedBivouac)[0];
+    const cabin = unformatCabin(formattedCabin)[0];
     const file = req?.file;
     if (file) {
-      bivouac.imageName = await uploadImageToS3(file);
+      cabin.imageName = await uploadImageToS3(file);
     }
 
-    const result = await collections?.bivouacs?.insertOne(bivouac);
+    const result = await collections?.cabins?.insertOne(cabin);
 
     if (result?.acknowledged) {
       sendSuccess(res, { id: result.insertedId }, 201);
@@ -187,13 +187,13 @@ bivouacRouter.post(
 
 /**
  * @openapi
- * /bivouacs/{id}:
+ * /cabins/{id}:
  *   put:
- *     description: Updates a bivouac
+ *     description: Updates a cabin
  *     parameters:
  *       - name: id
  *         in: path
- *         description: Bivouac id
+ *         description: Cabin id
  *         required: true
  *         schema:
  *           type: string
@@ -207,14 +207,14 @@ bivouacRouter.post(
  *       404:
  *         description: Resource not found
  */
-bivouacRouter.put(
+cabinRouter.put(
   "/:id",
   checkRole("admin"),
-  multerUploadImage.single("bivouacImage"),
+  multerUploadImage.single("cabinImage"),
   async (req, res) => {
-    let formattedBivouac: BivouacFormattedInterface;
+    let formattedCabin: CabinFormattedInterface;
     try {
-      formattedBivouac = JSON.parse(req?.body?.bivouac);
+      formattedCabin = JSON.parse(req?.body?.cabin);
     } catch (e) {
       console.error(e);
       sendFail(res, null, 400);
@@ -225,7 +225,7 @@ bivouacRouter.put(
 
     // Each prop that is null gets unset. To avoid
     // removing props, simply do not pass that prop.
-    const [bivouac, filteredProps] = unformatBivouac(formattedBivouac);
+    const [cabin, filteredProps] = unformatCabin(formattedCabin);
 
     // imageName === null means that the image should be deleted.
     // We'll also delete the image if a new image is uploaded (see below).
@@ -236,7 +236,7 @@ bivouacRouter.put(
       // If a new image is uploaded, delete the old one.
       deleteImage = true;
       try {
-        bivouac.imageName = await uploadImageToS3(file);
+        cabin.imageName = await uploadImageToS3(file);
       } catch (e) {
         console.error(e);
         sendFail(res, null, 400);
@@ -246,7 +246,7 @@ bivouacRouter.put(
     if (deleteImage) {
       //! If this block fails we potentially uploaded an image without using it (if we are updating the image).
       //Todo Fix this.
-      const errCode = await deleteBivouacImageIfExists(id);
+      const errCode = await deleteCabinImageIfExists(id);
       if (errCode) {
         sendFail(res, null, errCode);
         return;
@@ -255,8 +255,8 @@ bivouacRouter.put(
 
     // Update object in the db.
     const query = { _id: new ObjectId(id) };
-    const result = await collections?.bivouacs?.updateOne(query, [
-      { $set: bivouac },
+    const result = await collections?.cabins?.updateOne(query, [
+      { $set: cabin },
       ...(filteredProps.length < 1 ? [] : [{ $unset: filteredProps }]),
     ]);
 
@@ -272,13 +272,13 @@ bivouacRouter.put(
 
 /**
  * @openapi
- * /bivouacs/{id}:
+ * /cabins/{id}:
  *   delete:
- *     description: Deletes a bivouac
+ *     description: Deletes a cabin
  *     parameters:
  *       - name: id
  *         in: path
- *         description: Bivouac id
+ *         description: Cabin id
  *         required: true
  *         schema:
  *           type: string
@@ -292,20 +292,20 @@ bivouacRouter.put(
  *       404:
  *         description: Resource not found
  */
-bivouacRouter.delete("/:id", checkRole("admin"), async (req, res) => {
+cabinRouter.delete("/:id", checkRole("admin"), async (req, res) => {
   const id = req?.params?.id;
   const query = { _id: new ObjectId(id) };
 
-  const errCode = await deleteBivouacImageIfExists(id);
+  const errCode = await deleteCabinImageIfExists(id);
   if (errCode) {
     sendFail(res, null, errCode);
     return;
   }
 
-  const result = await collections?.bivouacs?.deleteOne(query);
+  const result = await collections?.cabins?.deleteOne(query);
 
   if (!result) {
-    // Failed to remove the bivouac.
+    // Failed to remove the cabin.
     sendFail(res, null, 400);
     return;
   } else if (!result.deletedCount) {
@@ -318,13 +318,13 @@ bivouacRouter.delete("/:id", checkRole("admin"), async (req, res) => {
 
 /**
  * @openapi
- * /bivouacs/favorite/{id}:
+ * /cabins/favorite/{id}:
  *   post:
- *     description: Favorites a bivouac
+ *     description: Favorites a cabin
  *     parameters:
  *       - name: id
  *         in: path
- *         description: Bivouac id
+ *         description: Cabin id
  *         required: true
  *         schema:
  *           type: string
@@ -343,22 +343,22 @@ bivouacRouter.delete("/:id", checkRole("admin"), async (req, res) => {
  *       403:
  *         description: Unauthorized. Needs login
  */
-bivouacRouter.post("/favorite/:id", checkAuth(), async (req, res) => {
+cabinRouter.post("/favorite/:id", checkAuth(), async (req, res) => {
   const { session }: { session: CustomSession } = req;
   const userId = session.userData?.id;
-  const bivouacId = req?.params?.id;
+  const cabinId = req?.params?.id;
 
-  if (!userId || !bivouacId) {
+  if (!userId || !cabinId) {
     sendFail(res, null, 400);
   }
 
-  const bivouacIsFavorite = await collections.users?.findOne({
+  const cabinIsFavorite = await collections.users?.findOne({
     _id: new ObjectId(userId),
-    "favoriteBivouacs.bivouacId": new ObjectId(bivouacId),
+    "favoriteCabins.cabinId": new ObjectId(cabinId),
   });
 
-  if (bivouacIsFavorite) {
-    return sendFail(res, { message: "Bivouac is already favorite." }, 400);
+  if (cabinIsFavorite) {
+    return sendFail(res, { message: "Cabin is already favorite." }, 400);
   }
 
   // Using a transaction to make sure both operation succeed together or
@@ -367,8 +367,8 @@ bivouacRouter.post("/favorite/:id", checkAuth(), async (req, res) => {
   const dbSession: ClientSession = client.startSession();
   try {
     await dbSession.withTransaction(async () => {
-      await collections?.bivouacs?.updateOne(
-        { _id: new ObjectId(bivouacId) },
+      await collections?.cabins?.updateOne(
+        { _id: new ObjectId(cabinId) },
         {
           $inc: {
             favoritesCount: 1,
@@ -380,8 +380,8 @@ bivouacRouter.post("/favorite/:id", checkAuth(), async (req, res) => {
         { _id: new ObjectId(userId) },
         {
           $push: {
-            favoriteBivouacs: {
-              bivouacId: new ObjectId(bivouacId),
+            favoriteCabins: {
+              cabinId: new ObjectId(cabinId),
               time: new Date(),
             },
           },
@@ -400,13 +400,13 @@ bivouacRouter.post("/favorite/:id", checkAuth(), async (req, res) => {
 
 /**
  * @openapi
- * /bivouacs/favorite/{id}:
+ * /cabins/favorite/{id}:
  *   delete:
- *     description: Unfavorites a bivouac
+ *     description: Unfavorites a cabin
  *     parameters:
  *       - name: id
  *         in: path
- *         description: Bivouac id
+ *         description: Cabin id
  *         required: true
  *         schema:
  *           type: string
@@ -418,22 +418,22 @@ bivouacRouter.post("/favorite/:id", checkAuth(), async (req, res) => {
  *       403:
  *         description: Unauthorized. Needs login
  */
-bivouacRouter.delete("/favorite/:id", checkAuth(), async (req, res) => {
+cabinRouter.delete("/favorite/:id", checkAuth(), async (req, res) => {
   const { session }: { session: CustomSession } = req;
   const userId = session.userData?.id;
-  const bivouacId = req?.params?.id;
+  const cabinId = req?.params?.id;
 
-  if (!userId || !bivouacId) {
+  if (!userId || !cabinId) {
     sendFail(res, null, 400);
   }
 
-  const bivouacIsFavorite = await collections.users?.findOne({
+  const cabinIsFavorite = await collections.users?.findOne({
     _id: new ObjectId(userId),
-    "favoriteBivouacs.bivouacId": new ObjectId(bivouacId),
+    "favoriteCabins.cabinId": new ObjectId(cabinId),
   });
 
-  if (!bivouacIsFavorite) {
-    return sendFail(res, { message: "Bivouac is already not favorite." }, 400);
+  if (!cabinIsFavorite) {
+    return sendFail(res, { message: "Cabin is already not favorite." }, 400);
   }
 
   // Using a transaction to make sure both operation succeed together or
@@ -442,8 +442,8 @@ bivouacRouter.delete("/favorite/:id", checkAuth(), async (req, res) => {
   const dbSession: ClientSession = client.startSession();
   try {
     await dbSession.withTransaction(async () => {
-      await collections?.bivouacs?.updateOne(
-        { _id: new ObjectId(bivouacId) },
+      await collections?.cabins?.updateOne(
+        { _id: new ObjectId(cabinId) },
         {
           $inc: {
             favoritesCount: -1,
@@ -455,8 +455,8 @@ bivouacRouter.delete("/favorite/:id", checkAuth(), async (req, res) => {
         { _id: new ObjectId(userId) },
         {
           $pull: {
-            favoriteBivouacs: {
-              bivouacId: new ObjectId(bivouacId),
+            favoriteCabins: {
+              cabinId: new ObjectId(cabinId),
             },
           },
         },

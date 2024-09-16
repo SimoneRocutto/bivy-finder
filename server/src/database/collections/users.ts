@@ -31,17 +31,17 @@ export const usersConfig: CollectionConfigInterface = {
             "is either 'admin' or null. May add extra values in the future",
           enum: ["admin"],
         },
-        favoriteBivouacs: {
+        favoriteCabins: {
           bsonType: "array",
           description: "must be an array of objects",
           items: {
             bsonType: "object",
-            required: ["bivouacId"],
+            required: ["cabinId"],
             properties: {
-              bivouacId: {
+              cabinId: {
                 bsonType: "objectId",
                 description:
-                  "is required and is an objectId referencing a bivouac",
+                  "is required and is an objectId referencing a cabin",
               },
               time: {
                 bsonType: "date",

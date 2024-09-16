@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { FormattedLatLng, UnformattedLatLng } from "../models/data/bivouac";
+import { FormattedLatLng, UnformattedLatLng } from "../models/data/cabin";
 import { Decimal128 } from "mongodb";
 /**
  * Remove all undefined and null properties from an object. Returned object keeps the same type

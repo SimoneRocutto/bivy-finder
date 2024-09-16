@@ -1,22 +1,22 @@
 import { ObjectId } from "mongodb";
 import {
-  BivouacFormattedInterface,
-  BivouacInterface,
+  CabinFormattedInterface,
+  CabinInterface,
   FormattedLatLng,
   StartingSpotFormattedInterface,
   StartingSpotInterface,
   UnformattedLatLng,
-} from "../../models/data/bivouac";
+} from "../../models/data/cabin";
 import { deleteImageFromS3, getImageUrlFromS3 } from "../s3";
 import { formatLatLng, objectFalsyFilter, unformatLatLng } from "../misc";
 import { collections } from "../../database/database";
 
-export const formatBivouac = async (
-  bivouac: BivouacInterface,
+export const formatCabin = async (
+  cabin: CabinInterface,
   getImageUrl: boolean = true
-): Promise<BivouacFormattedInterface> => {
+): Promise<CabinFormattedInterface> => {
   // Convert latLng to number
-  const { latLng, startingSpots, ...rest } = bivouac;
+  const { latLng, startingSpots, ...rest } = cabin;
   const parsedLatlng = formatLatLng(latLng);
 
   const parsedStartingSpots: StartingSpotFormattedInterface[] | undefined =
@@ -27,27 +27,27 @@ export const formatBivouac = async (
       latLng: formatLatLng(startingSpot.latLng) as FormattedLatLng,
     }));
 
-  const formattedBivouac: BivouacFormattedInterface = {
+  const formattedCabin: CabinFormattedInterface = {
     ...rest,
     latLng: parsedLatlng,
     ...(startingSpots ? { startingSpots: parsedStartingSpots } : undefined),
   };
 
   // Get image url
-  if (getImageUrl && bivouac.imageName) {
-    const url = await getImageUrlFromS3(bivouac.imageName);
+  if (getImageUrl && cabin.imageName) {
+    const url = await getImageUrlFromS3(cabin.imageName);
     if (url) {
-      formattedBivouac.imageUrl = url;
+      formattedCabin.imageUrl = url;
     }
   }
-  return formattedBivouac;
+  return formattedCabin;
 };
 
-export const unformatBivouac = (
-  bivouac: BivouacFormattedInterface
-): [BivouacInterface, string[]] => {
-  const [{ latLng: latLngRaw, startingSpots, ...cleanBivouac }, filteredProps] =
-    objectFalsyFilter(bivouac);
+export const unformatCabin = (
+  cabin: CabinFormattedInterface
+): [CabinInterface, string[]] => {
+  const [{ latLng: latLngRaw, startingSpots, ...cleanCabin }, filteredProps] =
+    objectFalsyFilter(cabin);
   const parsedStartingSpots: StartingSpotInterface[] | undefined =
     startingSpots?.map((startingSpot) => ({
       ...startingSpot,
@@ -57,7 +57,7 @@ export const unformatBivouac = (
 
   return [
     {
-      ...cleanBivouac,
+      ...cleanCabin,
       ...(latLng ? { latLng } : undefined),
       ...(parsedStartingSpots
         ? { startingSpots: parsedStartingSpots }
@@ -69,19 +69,19 @@ export const unformatBivouac = (
 
 /**
  *
- * @param bivouacId
+ * @param cabinId
  * @returns Null if no error, otherwise error code.
- * 400 if s3 delete fails, 404 if bivouac doesn't exist.
+ * 400 if s3 delete fails, 404 if cabin doesn't exist.
  */
-export const deleteBivouacImageIfExists = async (
-  bivouacId: string
+export const deleteCabinImageIfExists = async (
+  cabinId: string
 ): Promise<number | null> => {
-  const query = { _id: new ObjectId(bivouacId) };
-  const bivouac = await collections?.bivouacs?.findOne(query);
-  if (!bivouac) {
+  const query = { _id: new ObjectId(cabinId) };
+  const cabin = await collections?.cabins?.findOne(query);
+  if (!cabin) {
     return 404;
   }
-  const { imageName } = bivouac;
+  const { imageName } = cabin;
   if (imageName) {
     try {
       await deleteImageFromS3(imageName);

@@ -97,7 +97,7 @@ import { CommonModule } from "@angular/common";
 })
 export class PaginationComponent {
   // For now, I'll use frontend pagination because
-  // the total number of bivouacs is not that big,
+  // the total number of cabins is not that big,
   // and probably will never be.
   @Input() pageSize = 50;
   @Input() extraPageButtons = 2;

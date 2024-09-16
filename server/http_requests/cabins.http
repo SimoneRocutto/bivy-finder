@@ -1,0 +1,37 @@
+## File to use with REST Client on VSCode
+
+@baseUrl = http://127.0.0.1:5200
+@contentType = application/json
+
+### Get cabins list
+
+GET {{baseUrl}}/cabins
+
+### Get cabin by id
+
+#@prompt cabinId
+GET {{baseUrl}}/cabins/{{cabinId}}
+
+### Post cabin
+
+POST {{baseUrl}}/cabins
+Content-Type: {{contentType}}
+
+{
+    "name": "sample cabin"
+}
+
+### Update cabin
+
+#@prompt cabinId
+PUT {{baseUrl}}/cabins/{{cabinId}}
+Content-Type: {{contentType}}
+
+{
+    "name": "updated name"
+}
+
+### Delete cabin
+
+#@prompt cabinId
+DELETE {{baseUrl}}/cabins/{{cabinId}}

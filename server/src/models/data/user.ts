@@ -7,5 +7,5 @@ export interface UserInterface {
   password: string;
   role?: UserRole;
   _id?: mongodb.ObjectId;
-  favoriteBivouacs?: { bivouacId: mongodb.ObjectId; time: Date }[];
+  favoriteCabins?: { cabinId: mongodb.ObjectId; time: Date }[];
 }

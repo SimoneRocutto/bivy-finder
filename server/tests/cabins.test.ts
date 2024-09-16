@@ -5,7 +5,7 @@ import {
   ResponseInterface,
   SuccessResponseInterface,
 } from "../src/models/application/response";
-import { BivouacInterface } from "../src/models/data/bivouac";
+import { CabinInterface } from "../src/models/data/cabin";
 
 dotenv.config({ path: __dirname + "/./../src/config/.env" });
 
@@ -25,42 +25,42 @@ const expectSuccess = (
   return response.status === successCode && body?.status === "success";
 };
 
-describe("Bivouacs CRUD", () => {
-  const createdBivouac: BivouacInterface = {
+describe("Cabins CRUD", () => {
+  const createdCabin: CabinInterface = {
     name: "test",
     description: "test",
     imageUrl: "test",
     type: "abandoned",
     latLng: [0, 0, 0],
   };
-  const updatedBivouac: BivouacInterface = {
+  const updatedCabin: CabinInterface = {
     name: "test2",
     description: "test2",
     imageUrl: "test2",
     type: "incomplete",
     latLng: [1, 1, 1],
   };
-  let createdBivouacId: string;
+  let createdCabinId: string;
 
   /**
-   * Fetches a bivouac by its id and compares it to a given bivouac
-   * @param bivouacId
-   * @param comparedBivouac
+   * Fetches a cabin by its id and compares it to a given cabin
+   * @param cabinId
+   * @param comparedCabin
    */
-  const checkBivouac = (comparedBivouac: BivouacInterface | null) => {
+  const checkCabin = (comparedCabin: CabinInterface | null) => {
     let response: Response;
     let body: ResponseInterface;
 
     beforeAll(async () => {
-      response = await fetch(`${apiBaseUrl}/bivouacs/${createdBivouacId}`, {
+      response = await fetch(`${apiBaseUrl}/cabins/${createdCabinId}`, {
         method: "GET",
       });
       body = await response.json();
     }, BEFORE_ALL_TIMEOUT);
 
-    it("Should succeed and return the same bivouac", () => {
-      // comparedBivouac === null means we expect not to find the bivouac.
-      if (comparedBivouac === null) {
+    it("Should succeed and return the same cabin", () => {
+      // comparedCabin === null means we expect not to find the cabin.
+      if (comparedCabin === null) {
         expect(response.status).toBe(404);
         expect(body?.status).toBe("fail");
         return;
@@ -68,24 +68,24 @@ describe("Bivouacs CRUD", () => {
       if (!expectSuccess(response, body)) {
         return;
       }
-      const { _id, ...receivedBivouac } = body.data;
-      expect(_.isEqual(receivedBivouac, comparedBivouac)).toBe(true);
+      const { _id, ...receivedCabin } = body.data;
+      expect(_.isEqual(receivedCabin, comparedCabin)).toBe(true);
     });
   };
 
   // CREATE
-  describe("Create bivouacs", () => {
+  describe("Create cabins", () => {
     let response: Response;
     let body: ResponseInterface;
 
     beforeAll(async () => {
-      response = await fetch(`${apiBaseUrl}/bivouacs`, {
+      response = await fetch(`${apiBaseUrl}/cabins`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
         },
-        body: JSON.stringify(createdBivouac),
+        body: JSON.stringify(createdCabin),
       });
       body = await response.json();
     }, BEFORE_ALL_TIMEOUT);
@@ -95,30 +95,30 @@ describe("Bivouacs CRUD", () => {
         return;
       }
       expect(body.data.id).toBeDefined();
-      createdBivouacId = body.data.id;
+      createdCabinId = body.data.id;
     });
   });
 
   // GET ALL
-  describe.skip("Fetch bivouacs", () => {
+  describe.skip("Fetch cabins", () => {
     let response: Response;
     let body: ResponseInterface;
 
     beforeAll(async () => {
-      response = await fetch(`${apiBaseUrl}/bivouacs`, {
+      response = await fetch(`${apiBaseUrl}/cabins`, {
         method: "GET",
       });
       body = await response.json();
     }, BEFORE_ALL_TIMEOUT);
 
-    it("Should succeed and return an array of bivouacs", () => {
+    it("Should succeed and return an array of cabins", () => {
       if (!expectSuccess(response, body)) {
         return;
       }
       expect(Array.isArray(body.data)).toBe(true);
     });
 
-    // Not empty cause we just created one bivouac.
+    // Not empty cause we just created one cabin.
     it("The array should not be empty", () => {
       //? Find out if there's a way to exit early in vitest. It doesn't make sense
       // to test the array length if it's not an array (previous test failed).
@@ -129,22 +129,22 @@ describe("Bivouacs CRUD", () => {
   });
 
   // CHECK CREATION
-  describe("Fetch bivouac by id", () => {
-    checkBivouac(createdBivouac);
+  describe("Fetch cabin by id", () => {
+    checkCabin(createdCabin);
   });
 
   // UPDATE
-  describe("Update bivouac", () => {
+  describe("Update cabin", () => {
     let response: Response;
 
     beforeAll(async () => {
-      response = await fetch(`${apiBaseUrl}/bivouacs/${createdBivouacId}`, {
+      response = await fetch(`${apiBaseUrl}/cabins/${createdCabinId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
         },
-        body: JSON.stringify(updatedBivouac),
+        body: JSON.stringify(updatedCabin),
       });
     }, BEFORE_ALL_TIMEOUT);
 
@@ -154,16 +154,16 @@ describe("Bivouacs CRUD", () => {
     });
   });
 
-  describe("Fetch updated bivouac by id", () => {
-    checkBivouac(updatedBivouac);
+  describe("Fetch updated cabin by id", () => {
+    checkCabin(updatedCabin);
   });
 
   // DELETE
-  describe("Delete bivouac", () => {
+  describe("Delete cabin", () => {
     let response: Response;
 
     beforeAll(async () => {
-      response = await fetch(`${apiBaseUrl}/bivouacs/${createdBivouacId}`, {
+      response = await fetch(`${apiBaseUrl}/cabins/${createdCabinId}`, {
         method: "DELETE",
       });
     }, BEFORE_ALL_TIMEOUT);
@@ -175,7 +175,7 @@ describe("Bivouacs CRUD", () => {
   });
 
   // CHECK DELETION
-  describe("Fetch bivouac by id", () => {
-    checkBivouac(null);
+  describe("Fetch cabin by id", () => {
+    checkCabin(null);
   });
 });

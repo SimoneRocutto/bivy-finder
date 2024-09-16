@@ -1,5 +1,5 @@
-export interface FavoriteBivouac {
-  bivouacId: string;
+export interface FavoriteCabin {
+  cabinId: string;
   time: Date;
 }
 
@@ -10,5 +10,5 @@ export interface AuthUser {
 }
 
 export interface UserData {
-  favoriteBivouacs?: FavoriteBivouac[];
+  favoriteCabins?: FavoriteCabin[];
 }

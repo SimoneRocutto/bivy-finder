@@ -1,4 +1,4 @@
-import { BivouacInterface } from "../../models/data/bivouac";
+import { CabinInterface } from "../../models/data/cabin";
 import { collections } from "../database";
 import { CollectionConfigInterface } from "../../models/application/database";
 
@@ -24,11 +24,11 @@ const latLngSchema = {
     },
   ],
 };
-export const bivouacsConfig: CollectionConfigInterface = {
-  name: "bivouacs",
+export const cabinsConfig: CollectionConfigInterface = {
+  name: "cabins",
   init: (db) => {
-    const bivouacsCollection = db.collection<BivouacInterface>("bivouacs");
-    collections.bivouacs = bivouacsCollection;
+    const cabinsCollection = db.collection<CabinInterface>("cabins");
+    collections.cabins = cabinsCollection;
   },
   schema: {
     $jsonSchema: {

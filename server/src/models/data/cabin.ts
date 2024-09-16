@@ -1,6 +1,6 @@
 import { Decimal128, ObjectId } from "mongodb";
 
-type BivouacType =
+type CabinType =
   | "managed"
   | "require-keys"
   | "private"
@@ -9,7 +9,7 @@ type BivouacType =
   | "incomplete"
   | "abandoned";
 
-type BivouacMaterial = "stone" | "wood" | "metal" | "rock";
+type CabinMaterial = "stone" | "wood" | "metal" | "rock";
 
 type CostPer = "hour" | "day" | "week" | "month" | "forever";
 
@@ -48,20 +48,20 @@ export interface StartingSpotFormattedInterface
   latLng: FormattedLatLng;
 }
 
-export interface BivouacInterface {
+export interface CabinInterface {
   name: string;
   description?: string;
   imageName?: string;
-  type?: BivouacType;
-  material?: BivouacMaterial;
+  type?: CabinType;
+  material?: CabinMaterial;
   latLng?: UnformattedLatLng;
   favoritesCount?: number;
   startingSpots?: StartingSpotInterface[];
   _id?: ObjectId;
 }
 
-export interface BivouacFormattedInterface
-  extends Omit<BivouacInterface, "latLng" | "startingSpots"> {
+export interface CabinFormattedInterface
+  extends Omit<CabinInterface, "latLng" | "startingSpots"> {
   imageUrl?: string;
   latLng?: FormattedLatLng;
   startingSpots?: StartingSpotFormattedInterface[];

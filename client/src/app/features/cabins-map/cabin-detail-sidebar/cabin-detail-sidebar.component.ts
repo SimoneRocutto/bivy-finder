@@ -8,11 +8,11 @@ import {
   OnInit,
   ViewChild,
 } from "@angular/core";
-import { Bivouac } from "../../../types/bivouac.type";
+import { Cabin } from "../../../types/cabin.type";
 import { CommonModule } from "@angular/common";
 import { CopyButtonComponent } from "../../../ui-components/generic/copy-button/copy-button.component";
 import { finalize, tap } from "rxjs";
-import { BivouacsMapService } from "../bivouacs-map.service";
+import { CabinsMapService } from "../cabins-map.service";
 import { TranslocoDirective } from "@jsverse/transloco";
 import { CapitalizePipe } from "../../../pipes/capitalize.pipe";
 import { FormatTimePipe } from "../../../pipes/format-time.pipe";
@@ -20,7 +20,7 @@ import { CurrencySymbolPipe } from "../../../pipes/currency-symbol.pipe";
 import { LatLngExpression, Map as LMap } from "leaflet";
 
 @Component({
-  selector: "app-bivouac-detail-sidebar",
+  selector: "app-cabin-detail-sidebar",
   standalone: true,
   imports: [
     CommonModule,
@@ -32,9 +32,9 @@ import { LatLngExpression, Map as LMap } from "leaflet";
   ],
   template: `
     <div
-      [ngClass]="!hidden && bivouac ? 'drawer-open' : ''"
+      [ngClass]="!hidden && cabin ? 'drawer-open' : ''"
       class="drawer z-10 absolute top-0 left-0 w-auto h-full pointer-events-none"
-      #bivouacDetailSidebar
+      #cabinDetailSidebar
     >
       <input id="detail-drawer" type="checkbox" class="drawer-toggle" />
       <div class="drawer-side h-full sticky pointer-events-none">
@@ -43,34 +43,34 @@ import { LatLngExpression, Map as LMap } from "leaflet";
           style="max-width: calc(100vw - 60px)"
         >
           <ng-container *transloco="let t">
-            <ng-container *ngIf="bivouac">
+            <ng-container *ngIf="cabin">
               <div class="w-full h-48">
                 <img
-                  [src]="bivouac.imageUrl"
-                  alt="Bivouac image"
+                  [src]="cabin.imageUrl"
+                  alt="Cabin image"
                   class="w-full h-full"
                 />
               </div>
               <div class="p-4">
                 <div class="flex flex-row justify-between items-center">
-                  <h3 class="text-lg font-semibold">{{ bivouac.name }}</h3>
+                  <h3 class="text-lg font-semibold">{{ cabin.name }}</h3>
                   <div class="flex flex-row items-center">
-                    <div>{{ bivouacsCount }}</div>
+                    <div>{{ cabinsCount }}</div>
                     <button
                       class="btn btn-ghost"
-                      (click)="toggleFavorite(bivouac._id)"
+                      (click)="toggleFavorite(cabin._id)"
                     >
                       <i
                         class="material-symbols-outlined"
                         [ngClass]="{
                           'material-symbols--filled text-red-500':
-                            bivouacIsFavorite(bivouac._id)
+                            cabinIsFavorite(cabin._id)
                         }"
                         >favorite</i
                       >
                     </button>
                     <app-copy-button
-                      [text]="bivouacsMapRoute + '/' + bivouac._id"
+                      [text]="cabinsMapRoute + '/' + cabin._id"
                       [circularButton]="true"
                       icon="share"
                     ></app-copy-button>
@@ -83,11 +83,11 @@ import { LatLngExpression, Map as LMap } from "leaflet";
                 >
                   <input
                     type="radio"
-                    name="bivouac_tabs"
+                    name="cabin_tabs"
                     role="tab"
                     class="tab whitespace-nowrap"
                     [attr.aria-label]="
-                      t('bivouacs.map.tabs.overview') | capitalize
+                      t('cabins.map.tabs.overview') | capitalize
                     "
                     checked="checked"
                   />
@@ -97,31 +97,31 @@ import { LatLngExpression, Map as LMap } from "leaflet";
                   >
                     <div>
                       <p class="whitespace-pre-line">
-                        {{ bivouac.description }}
+                        {{ cabin.description }}
                       </p>
                       <div class="divider"></div>
                       <div>
-                        <p>Type: {{ bivouac.type }}</p>
-                        <p>Material: {{ bivouac.material }}</p>
+                        <p>Type: {{ cabin.type }}</p>
+                        <p>Material: {{ cabin.material }}</p>
                         <div class="flex flex-row items-center gap-4">
                           <div>
-                            {{ bivouac.latLng?.[0] | number : '1.5-5'}},
-                            {{ bivouac.latLng?.[1] | number : '1.5-5'}}
+                            {{ cabin.latLng?.[0] | number : '1.5-5'}},
+                            {{ cabin.latLng?.[1] | number : '1.5-5'}}
                           </div>
                           <app-copy-button
-                            [text]="bivouac.latLng?.[0] + ', ' + bivouac.latLng?.[1]"
+                            [text]="cabin.latLng?.[0] + ', ' + cabin.latLng?.[1]"
                           ></app-copy-button>
                         </div>
                       </div>
                       <ng-container
-                        *ngIf="bivouac?.externalLinks?.length ?? 0 > 0"
+                        *ngIf="cabin?.externalLinks?.length ?? 0 > 0"
                       >
                         <div class="divider"></div>
                         <div>
                           <a
                             [href]="link"
                             target="_blank"
-                            *ngFor="let link of bivouac?.externalLinks"
+                            *ngFor="let link of cabin?.externalLinks"
                             class="link-info flex flex-row gap-1"
                             ><i class="material-symbols-outlined text-lg"
                               >ungroup</i
@@ -135,11 +135,11 @@ import { LatLngExpression, Map as LMap } from "leaflet";
                   <input
                     #startingSpotsTab
                     type="radio"
-                    name="bivouac_tabs"
+                    name="cabin_tabs"
                     role="tab"
                     class="tab"
                     [attr.aria-label]="
-                      t('bivouacs.map.tabs.starting_spots') | capitalize
+                      t('cabins.map.tabs.starting_spots') | capitalize
                     "
                   />
                   <div
@@ -148,10 +148,7 @@ import { LatLngExpression, Map as LMap } from "leaflet";
                   >
                     <div class="flex flex-col">
                       <ng-content
-                        *ngFor="
-                          let spot of bivouac?.startingSpots;
-                          let i = index
-                        "
+                        *ngFor="let spot of cabin?.startingSpots; let i = index"
                       >
                         <div class="divider" *ngIf="i > 0"></div>
                         <div class="flex flex-col gap-2">
@@ -294,60 +291,60 @@ import { LatLngExpression, Map as LMap } from "leaflet";
   `,
   styles: ``,
 })
-export class BivouacDetailSidebarComponent implements AfterViewInit {
-  @ViewChild("bivouacDetailSidebar")
-  bivouacDetailSidebar!: ElementRef<HTMLDivElement>;
+export class CabinDetailSidebarComponent implements AfterViewInit {
+  @ViewChild("cabinDetailSidebar")
+  cabinDetailSidebar!: ElementRef<HTMLDivElement>;
   @ViewChild("startingSpotsTab")
   startingSpotsTab!: ElementRef<HTMLInputElement>;
-  @Input() bivouac?: Bivouac | null;
+  @Input() cabin?: Cabin | null;
   @Input() map?: LMap | null;
   @Input() hidden?: boolean = true;
 
   favoriteIsLoading = false;
 
-  get bivouacsCount() {
-    if (!this.bivouac) return 0;
-    const hasBeenFavorited = this.bivouacsMapService.bivouacHasBeenFavorited(
-      this.bivouac._id
+  get cabinsCount() {
+    if (!this.cabin) return 0;
+    const hasBeenFavorited = this.cabinsMapService.cabinHasBeenFavorited(
+      this.cabin._id
     );
     return (
-      (this.bivouac?.favoritesCount ?? 0) +
+      (this.cabin?.favoritesCount ?? 0) +
       (hasBeenFavorited === true ? 1 : hasBeenFavorited === false ? -1 : 0)
     );
   }
 
-  get bivouacsMapRoute() {
-    return environment.baseUrl + "/" + "bivouacs-map";
+  get cabinsMapRoute() {
+    return environment.baseUrl + "/" + "cabins-map";
   }
 
   constructor(
-    private bivouacsMapService: BivouacsMapService,
+    private cabinsMapService: CabinsMapService,
     private changeDetector: ChangeDetectorRef
   ) {}
 
   ngAfterViewInit(): void {
-    this.bivouacsMapService.bivouacSidebarRef = this.bivouacDetailSidebar;
+    this.cabinsMapService.cabinSidebarRef = this.cabinDetailSidebar;
   }
 
-  bivouacIsFavorite = (bivouacId: string) =>
-    this.bivouacsMapService.bivouacIsFavorite(bivouacId);
+  cabinIsFavorite = (cabinId: string) =>
+    this.cabinsMapService.cabinIsFavorite(cabinId);
 
-  toggleFavorite = (bivouacId: string) => {
+  toggleFavorite = (cabinId: string) => {
     if (this.favoriteIsLoading) {
       return;
     }
     this.favoriteIsLoading = true;
-    const bivouacIsFavorite = this.bivouacIsFavorite(bivouacId);
-    (bivouacIsFavorite
-      ? this.bivouacsMapService.unfavoriteBivouac(bivouacId).pipe(
+    const cabinIsFavorite = this.cabinIsFavorite(cabinId);
+    (cabinIsFavorite
+      ? this.cabinsMapService.unfavoriteCabin(cabinId).pipe(
           tap((res) => {
             if (res.status === 204) {
-              this.bivouacsMapService.unfavoriteBivouac(bivouacId);
+              this.cabinsMapService.unfavoriteCabin(cabinId);
               this.changeDetector.detectChanges();
             }
           })
         )
-      : this.bivouacsMapService.favoriteBivouac(bivouacId).pipe(
+      : this.cabinsMapService.favoriteCabin(cabinId).pipe(
           tap((res) => {
             if (res.body?.status === "success") {
               this.changeDetector.detectChanges();
@@ -361,14 +358,14 @@ export class BivouacDetailSidebarComponent implements AfterViewInit {
 
   scrollToLatLng = (latLng?: LatLngExpression | null) => {
     let zoom: number | null = null;
-    // We only zoom if the current zoom is less than the recommended zoom for bivouacs.
+    // We only zoom if the current zoom is less than the recommended zoom for cabins.
     if (
-      this.bivouacsMapService.bivouacZoom >
-      (this.bivouacsMapService.map?.getZoom() ?? 0)
+      this.cabinsMapService.cabinZoom >
+      (this.cabinsMapService.map?.getZoom() ?? 0)
     ) {
-      zoom = this.bivouacsMapService.bivouacZoom;
+      zoom = this.cabinsMapService.cabinZoom;
     }
-    this.bivouacsMapService.scrollToLatLng(latLng, ...(zoom ? [zoom] : []));
+    this.cabinsMapService.scrollToLatLng(latLng, ...(zoom ? [zoom] : []));
   };
 
   // Todo scroll to the spot data (useful when we have several spots).

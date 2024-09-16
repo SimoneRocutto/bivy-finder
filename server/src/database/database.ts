@@ -1,6 +1,6 @@
 import * as mongodb from "mongodb";
 import { UserInterface } from "../models/data/user";
-import { BivouacInterface } from "../models/data/bivouac";
+import { CabinInterface } from "../models/data/cabin";
 import { collectionsConfigs } from "./collections";
 import { ATLAS_DB } from "../server";
 
@@ -8,7 +8,7 @@ let _client: mongodb.MongoClient;
 
 export const collections: {
   users?: mongodb.Collection<UserInterface>;
-  bivouacs?: mongodb.Collection<BivouacInterface>;
+  cabins?: mongodb.Collection<CabinInterface>;
 } = {};
 
 export const connectToDatabase = async (uri: string) => {

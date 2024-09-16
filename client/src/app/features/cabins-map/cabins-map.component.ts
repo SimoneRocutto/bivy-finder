@@ -1,5 +1,5 @@
-import { BivouacDetailSidebarComponent } from "./bivouac-detail-sidebar/bivouac-detail-sidebar.component";
-import { BivouacService } from "../../services/bivouac.service";
+import { CabinDetailSidebarComponent } from "./cabin-detail-sidebar/cabin-detail-sidebar.component";
+import { CabinService } from "../../services/cabin.service";
 import {
   ChangeDetectorRef,
   Component,
@@ -22,10 +22,10 @@ import {
   MarkerClusterGroup,
   markerClusterGroup,
 } from "leaflet";
-import { Bivouac, BivouacType } from "../../types/bivouac.type";
+import { Cabin, CabinType } from "../../types/cabin.type";
 import { LeafletMarkerClusterModule } from "@bluehalo/ngx-leaflet-markercluster";
 import { Subscription, forkJoin, tap } from "rxjs";
-import { BivouacsMapService } from "./bivouacs-map.service";
+import { CabinsMapService } from "./cabins-map.service";
 import { GlyphOptions, glyph } from "../../helpers/leaflet/Leaflet.Icon.Glyph";
 import { CommonModule } from "@angular/common";
 import { ActivatedRoute } from "@angular/router";
@@ -33,21 +33,21 @@ import { ModalService } from "../../ui-components/generic/modal/modal.service";
 import { MapFiltersComponent } from "./map-filters/map-filters.component";
 
 @Component({
-  selector: "app-bivouacs-map",
+  selector: "app-cabins-map",
   standalone: true,
   imports: [
     CommonModule,
     LeafletModule,
     LeafletMarkerClusterModule,
-    BivouacDetailSidebarComponent,
+    CabinDetailSidebarComponent,
   ],
   template: `
-    <app-bivouac-detail-sidebar
+    <app-cabin-detail-sidebar
       *ngIf="map"
-      [bivouac]="selectedBivouac.data"
+      [cabin]="selectedCabin.data"
       [map]="map"
       [hidden]="detailHidden"
-    ></app-bivouac-detail-sidebar>
+    ></app-cabin-detail-sidebar>
     <div
       style="height: 100%; width: 100vw"
       class="z-0"
@@ -71,31 +71,31 @@ import { MapFiltersComponent } from "./map-filters/map-filters.component";
     </div>
   `,
 })
-export class BivouacsMapComponent implements OnDestroy {
-  @ViewChild(BivouacDetailSidebarComponent)
-  bivouacDetailSidebar!: BivouacDetailSidebarComponent;
+export class CabinsMapComponent implements OnDestroy {
+  @ViewChild(CabinDetailSidebarComponent)
+  cabinDetailSidebar!: CabinDetailSidebarComponent;
 
   get map() {
-    return this.bivouacsMapService.map;
+    return this.cabinsMapService.map;
   }
 
   // Marker cluster allows to avoid loading every marker at once,
   // optimizing performance.
   markerCluster?: MarkerClusterGroup;
 
-  selectedBivouac: { data: Bivouac | null; marker: Marker | null } = {
+  selectedCabin: { data: Cabin | null; marker: Marker | null } = {
     data: null,
     marker: null,
   };
 
   detailHidden?: boolean = true;
 
-  bivouacs: Bivouac[] = [];
+  cabins: Cabin[] = [];
 
   private initialZoom = 8;
 
-  private get bivouacZoom() {
-    return this.bivouacsMapService.bivouacZoom;
+  private get cabinZoom() {
+    return this.cabinsMapService.cabinZoom;
   }
 
   private getMarkerIcon = (
@@ -125,20 +125,20 @@ export class BivouacsMapComponent implements OnDestroy {
     center: latLng(45.47606840909091, 9.146797684437137),
   };
 
-  initialBivouacData?: { bivouac: Bivouac; marker: Marker };
+  initialCabinData?: { cabin: Cabin; marker: Marker };
 
-  initialBivouacId?: string;
+  initialCabinId?: string;
 
   private refreshSubscription?: Subscription;
 
   constructor(
-    private bivouacService: BivouacService,
-    private bivouacsMapService: BivouacsMapService,
+    private cabinService: CabinService,
+    private cabinsMapService: CabinsMapService,
     private changeDetector: ChangeDetectorRef,
     private modalService: ModalService,
     private route: ActivatedRoute
   ) {
-    this.initialBivouacId = this.route.snapshot.paramMap.get("id") ?? undefined;
+    this.initialCabinId = this.route.snapshot.paramMap.get("id") ?? undefined;
     this.loadData();
   }
 
@@ -148,14 +148,14 @@ export class BivouacsMapComponent implements OnDestroy {
 
   onMapReady = (map: LMap) => {
     map.attributionControl.setPrefix("");
-    this.bivouacsMapService.map = map;
+    this.cabinsMapService.map = map;
     control.zoom({ position: "bottomright" }).addTo(map);
     this.changeDetector.detectChanges();
   };
 
-  // Close bivouac detail when user clicks on the map.
+  // Close cabin detail when user clicks on the map.
   onMapClick = (event) => {
-    this.unselectBivouac();
+    this.unselectCabin();
   };
 
   openFilterModal = () => {
@@ -163,7 +163,7 @@ export class BivouacsMapComponent implements OnDestroy {
   };
 
   private loadData = () => {
-    forkJoin([this.bivouacsMapService.loadFavorites(), this.loadBivouacs()])
+    forkJoin([this.cabinsMapService.loadFavorites(), this.loadCabins()])
       .pipe(
         tap(() => {
           this.onLoad();
@@ -176,54 +176,54 @@ export class BivouacsMapComponent implements OnDestroy {
    * Fires after all data has been loaded.
    */
   private onLoad = () => {
-    // If a route param has been passed, pan to the bivouac with that id.
-    if (this.initialBivouacData) {
-      this.selectBivouac(
-        this.initialBivouacData.bivouac,
-        this.initialBivouacData.marker
+    // If a route param has been passed, pan to the cabin with that id.
+    if (this.initialCabinData) {
+      this.selectCabin(
+        this.initialCabinData.cabin,
+        this.initialCabinData.marker
       );
-      const { latLng } = this.initialBivouacData.bivouac;
+      const { latLng } = this.initialCabinData.cabin;
       if (latLng) {
-        this.bivouacsMapService.scrollToLatLng(latLng, this.bivouacZoom, false);
+        this.cabinsMapService.scrollToLatLng(latLng, this.cabinZoom, false);
       }
     }
 
     this.refreshSubscription =
-      this.bivouacsMapService.refreshBivouacsSubject.subscribe(() => {
-        this.refreshBivouacs();
+      this.cabinsMapService.refreshCabinsSubject.subscribe(() => {
+        this.refreshCabins();
       });
   };
 
-  private selectBivouac = (bivouac: Bivouac, marker?: Marker) => {
-    if (this.selectedBivouac?.data === bivouac) {
+  private selectCabin = (cabin: Cabin, marker?: Marker) => {
+    if (this.selectedCabin?.data === cabin) {
       return;
     }
 
-    this.unselectBivouac(false);
+    this.unselectCabin(false);
 
     if (marker) {
-      this.selectedBivouac.marker = marker;
+      this.selectedCabin.marker = marker;
       this.highlightMarker(marker);
     }
 
     this.detailHidden = false;
-    this.selectedBivouac.data = bivouac;
+    this.selectedCabin.data = cabin;
 
-    if (bivouac?.startingSpots?.length ?? 0 > 0) {
-      this.showBivouacStartingSpots(bivouac);
+    if (cabin?.startingSpots?.length ?? 0 > 0) {
+      this.showCabinStartingSpots(cabin);
     }
   };
 
-  private unselectBivouac = (hideBar: boolean = true) => {
+  private unselectCabin = (hideBar: boolean = true) => {
     this.detailHidden = hideBar;
-    const { marker, data: bivouac } = this.selectedBivouac;
-    this.selectedBivouac = {
+    const { marker, data: cabin } = this.selectedCabin;
+    this.selectedCabin = {
       data: null,
       marker: null,
     };
     this.resetStartingSpotsLayer();
     if (marker) {
-      this.unhighlightMarker(marker, bivouac ?? undefined);
+      this.unhighlightMarker(marker, cabin ?? undefined);
     }
   };
 
@@ -245,14 +245,14 @@ export class BivouacsMapComponent implements OnDestroy {
    * Restores original highlighted marker conditions.
    * @param marker The marker to unhighlight
    */
-  private unhighlightMarker = (marker: Marker, bivouac?: Bivouac) => {
-    marker.setIcon(this.getMarkerIcon(this.getMarkerColor(bivouac?.type)));
+  private unhighlightMarker = (marker: Marker, cabin?: Cabin) => {
+    marker.setIcon(this.getMarkerIcon(this.getMarkerColor(cabin?.type)));
     marker.setZIndexOffset(0);
     this.markerCluster?.addLayer(marker);
   };
 
-  private showBivouacStartingSpots = (bivouac: Bivouac) => {
-    for (const [key, spot] of (bivouac?.startingSpots ?? []).entries()) {
+  private showCabinStartingSpots = (cabin: Cabin) => {
+    for (const [key, spot] of (cabin?.startingSpots ?? []).entries()) {
       const latLng = spot.latLng;
       if (!latLng) {
         continue;
@@ -281,46 +281,46 @@ export class BivouacsMapComponent implements OnDestroy {
   };
 
   private selectStartingSpot = (spotNumber: number) => {
-    this.bivouacDetailSidebar?.showSpotDetails(spotNumber);
+    this.cabinDetailSidebar?.showSpotDetails(spotNumber);
     return;
   };
 
-  private loadBivouacs = () =>
-    this.bivouacService.getBivouacs().pipe(
+  private loadCabins = () =>
+    this.cabinService.getCabins().pipe(
       tap((res) => {
         if (res.body?.status !== "success") {
           console.error("Unknown error");
           return;
         }
-        this.bivouacs = res.body.data;
-        this.refreshBivouacs(true);
+        this.cabins = res.body.data;
+        this.refreshCabins(true);
       })
     );
 
-  private refreshBivouacs = (firstLoad = false) => {
+  private refreshCabins = (firstLoad = false) => {
     const markerCluster = markerClusterGroup({ maxClusterRadius: 45 });
-    const filteredBivouacs = this.bivouacs.filter((bivouac) => {
+    const filteredCabins = this.cabins.filter((cabin) => {
       if (
-        this.bivouacsMapService.filters.onlyOpenBivouacs &&
-        !["open", "out-of-lombardy"].includes(bivouac.type ?? "")
+        this.cabinsMapService.filters.onlyOpenCabins &&
+        !["open", "out-of-lombardy"].includes(cabin.type ?? "")
       ) {
         return false;
       }
       return true;
     });
-    for (const bivouac of filteredBivouacs) {
+    for (const cabin of filteredCabins) {
       // No latLng data => no marker on the map
-      if (!bivouac?.latLng) {
+      if (!cabin?.latLng) {
         continue;
       }
-      const marker = new Marker(bivouac.latLng, {
-        icon: this.getMarkerIcon(this.getMarkerColor(bivouac.type)),
+      const marker = new Marker(cabin.latLng, {
+        icon: this.getMarkerIcon(this.getMarkerColor(cabin.type)),
       }).addEventListener("click", () => {
-        this.selectBivouac(bivouac, marker);
+        this.selectCabin(cabin, marker);
         this.changeDetector.detectChanges();
       });
-      if (firstLoad && bivouac._id === this.initialBivouacId) {
-        this.initialBivouacData = { bivouac, marker };
+      if (firstLoad && cabin._id === this.initialCabinId) {
+        this.initialCabinData = { cabin, marker };
       }
       markerCluster?.addLayer(marker);
     }
@@ -328,11 +328,11 @@ export class BivouacsMapComponent implements OnDestroy {
   };
 
   private getMarkerColor = (
-    bivouacType?: BivouacType
+    cabinType?: CabinType
   ): GlyphOptions["markerColor"] =>
-    ["managed", "require-keys"].includes(bivouacType ?? "")
+    ["managed", "require-keys"].includes(cabinType ?? "")
       ? "green"
-      : ["private", "incomplete", "abandoned"].includes(bivouacType ?? "")
+      : ["private", "incomplete", "abandoned"].includes(cabinType ?? "")
       ? "purple"
       : "blue";
 }
