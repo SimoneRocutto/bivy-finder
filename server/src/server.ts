@@ -103,7 +103,7 @@ connectToDatabase(ATLAS_URI)
           httpOnly: true,
           // Todo change to true for production
           secure: ENVIRONMENT === "production" ? true : false,
-          sameSite: "strict",
+          sameSite: "none",
           maxAge: 1000 * 60 * 60 * 24 * 7,
         },
       })
