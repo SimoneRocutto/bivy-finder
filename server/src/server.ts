@@ -33,6 +33,7 @@ export const {
   AWS_BUCKET_DIRECTORY,
   REDIS_URL,
   CLIENT_URL,
+  ENVIRONMENT,
 } = process.env;
 if (!ATLAS_URI || !ATLAS_DB) {
   console.error(
@@ -101,7 +102,7 @@ connectToDatabase(ATLAS_URI)
         cookie: {
           httpOnly: true,
           // Todo change to true for production
-          secure: false,
+          secure: ENVIRONMENT === "production" ? true : false,
           sameSite: "strict",
           maxAge: 1000 * 60 * 60 * 24 * 7,
         },
