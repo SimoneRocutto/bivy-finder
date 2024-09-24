@@ -48,6 +48,7 @@ userRouter.get("/self", async (req, res) => {
   const userId = session.userData?.id;
   if (!userId) {
     sendFail(res, null, 400);
+    return;
   }
 
   const user = await collections?.users?.findOne(
