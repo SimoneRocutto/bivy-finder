@@ -101,9 +101,8 @@ connectToDatabase(ATLAS_URI)
         saveUninitialized: false,
         cookie: {
           httpOnly: true,
-          // Todo change to true for production
           secure: ENVIRONMENT === "production" ? true : false,
-          sameSite: "none",
+          sameSite: false,
           maxAge: 1000 * 60 * 60 * 24 * 7,
         },
       })
