@@ -102,7 +102,7 @@ connectToDatabase(ATLAS_URI)
         cookie: {
           httpOnly: true,
           secure: ENVIRONMENT === "production" ? true : false,
-          sameSite: false,
+          sameSite: "strict",
           maxAge: 1000 * 60 * 60 * 24 * 7,
         },
       })
