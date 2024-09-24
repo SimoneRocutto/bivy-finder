@@ -77,7 +77,7 @@ export const s3 = new S3Client({
 connectToDatabase(ATLAS_URI)
   .then(async () => {
     const app = express();
-
+    app.set("trust proxy", true);
     // Redis config
     const redisClient = redis.createClient({
       url: REDIS_URL,
