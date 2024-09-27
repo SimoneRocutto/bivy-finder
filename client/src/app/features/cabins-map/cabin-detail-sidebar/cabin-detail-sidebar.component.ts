@@ -70,11 +70,11 @@ import { ToastService } from "../../../ui-components/generic/toast-box/toast.ser
                       >
                     </button>
                     <button
-                      class="btn btn-ghost"
+                      class="btn btn-neutral btn-sm btn-circle"
                       (click)="shareCabin(cabin)"
                       *ngIf="canShare; else shareCopyButton"
                     >
-                      <i class="material-symbols-outlined">share</i>
+                      <i class="material-symbols-outlined text-lg">share</i>
                     </button>
                     <ng-template #shareCopyButton>
                       <app-copy-button
@@ -345,7 +345,6 @@ export class CabinDetailSidebarComponent implements AfterViewInit {
       url: this.getCabinLink(cabin._id),
     };
     if (!navigator?.canShare(data)) {
-      this.toastService.createToast("Cannot share", "error");
       return;
     }
     navigator.share(data);
