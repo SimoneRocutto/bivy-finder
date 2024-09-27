@@ -44,7 +44,7 @@ export class SidebarComponent {
   @ViewChild("drawerCheckbox") drawerCheckbox?: ElementRef<HTMLElement>;
   menuItems: { title: string; url: string; role?: string }[] = [
     { title: "Map", url: "/cabins-map" },
-    { title: "Admin Dashboard", url: "/admin-dashboard", role: "admin" },
+    { title: "Cabins List", url: "/cabins-list" },
   ];
 
   constructor(private authService: AuthService) {}

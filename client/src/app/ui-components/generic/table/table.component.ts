@@ -39,7 +39,7 @@ import { sortObjectsByProp } from "../../../helpers/misc";
       <table class="table" [ngClass]="{ 'table-zebra-zebra': !isLoading }">
         <thead>
           <tr class="flex flex-row">
-            <th class="w-16"></th>
+            <th class="w-16" *ngIf="beforeCell"></th>
             <ng-container *ngFor="let col of columns">
               <th *ngIf="!col.hidden" class="flex-1">
                 <button (click)="sortItems(col.prop)">{{ col.name }}</button>

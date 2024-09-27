@@ -10,7 +10,6 @@ import {
   Observable,
   catchError,
   concatMap,
-  filter,
   forkJoin,
   map,
   take,
@@ -23,14 +22,23 @@ import { TableComponent } from "../../ui-components/generic/table/table.componen
 import { TableColumn } from "../../ui-components/generic/table/table.type";
 import { TranslocoService } from "@jsverse/transloco";
 import { StartingSpotsFormComponent } from "./starting-spots-form/starting-spots-form.component";
+import { AuthService } from "../../services/auth.service";
+import { RouterModule } from "@angular/router";
+import { CabinsMapService } from "../cabins-map/cabins-map.service";
 
 @Component({
-  selector: "app-admin-dashboard",
+  selector: "app-cabins-list",
   standalone: true,
-  imports: [CommonModule, FormsModule, PaginationComponent, TableComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    PaginationComponent,
+    TableComponent,
+    RouterModule,
+  ],
   template: `
     <div class="sm:min-w-96 overflow-x-auto pt-4 pb-16">
-      <div class="flex justify-end gap-4 mb-4 mx-4">
+      <div *ngIf="userIsAdmin" class="flex justify-end gap-4 mb-4 mx-4">
         <button class="btn btn-primary" (click)="openCreateModal()">
           Add cabin
         </button>
@@ -44,7 +52,7 @@ import { StartingSpotsFormComponent } from "./starting-spots-form/starting-spots
       </div>
       <app-table
         [items]="cabins"
-        [beforeCell]="beforeCell"
+        [beforeCell]="userIsAdmin ? beforeCell : null"
         [afterCell]="afterCell"
         [pageSize]="pageSize"
         [columns]="columns"
@@ -61,13 +69,20 @@ import { StartingSpotsFormComponent } from "./starting-spots-form/starting-spots
         ></ng-template>
         <ng-template #afterCell let-cabin>
           <td after>
-            <button (click)="openUpdateModal(cabin)">
-              <i class="material-symbols-outlined">edit</i></button
-            ><button (click)="openStartingSpotsModal(cabin)">
-              <i class="material-symbols-outlined">hiking</i></button
-            ><button (click)="openDeleteModal(cabin)">
-              <i class="material-symbols-outlined">delete</i>
-            </button>
+            <ng-container *ngIf="userIsAdmin">
+              <button (click)="openUpdateModal(cabin)">
+                <i class="material-symbols-outlined">edit</i></button
+              ><button (click)="openStartingSpotsModal(cabin)">
+                <i class="material-symbols-outlined">hiking</i></button
+              ><button (click)="openDeleteModal(cabin)">
+                <i class="material-symbols-outlined">delete</i>
+              </button>
+            </ng-container>
+            <a [routerLink]="getCabinLink(cabin._id)">
+              <button>
+                <i class="material-symbols-outlined">map</i>
+              </button>
+            </a>
           </td></ng-template
         ></app-table
       >
@@ -75,7 +90,8 @@ import { StartingSpotsFormComponent } from "./starting-spots-form/starting-spots
   `,
   styles: ``,
 })
-export class AdminDashboardComponent implements OnInit {
+export class CabinsListComponent implements OnInit {
+  userIsAdmin = false;
   isLoading = true;
   cabins: Cabin[] = [];
   pageSize = 50;
@@ -104,16 +120,20 @@ export class AdminDashboardComponent implements OnInit {
   selectedCabinsIds: Set<Cabin> = new Set();
 
   constructor(
+    private authService: AuthService,
     private cabinService: CabinService,
     private toastService: ToastService,
     private modalService: ModalService,
     private errorService: ErrorService,
-    private translocoService: TranslocoService
+    private translocoService: TranslocoService,
+    private cabinsMapService: CabinsMapService
   ) {}
 
   @ViewChild(PaginationComponent) pagination!: PaginationComponent;
 
   ngOnInit() {
+    this.userIsAdmin = this.authService.loggedUser.role === "admin";
+
     this.cabinService.getCabins().subscribe((res) => {
       if (res.body?.status !== "success") {
         // Todo handle bad response
@@ -124,6 +144,8 @@ export class AdminDashboardComponent implements OnInit {
       this.stopLoading();
     });
   }
+
+  getCabinLink = (id: string) => this.cabinsMapService.getCabinLink(id, false);
 
   openCreateModal = () => {
     const newComponent = this.modalService.openModal(
