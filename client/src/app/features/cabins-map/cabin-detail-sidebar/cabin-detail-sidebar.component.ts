@@ -1,11 +1,9 @@
-import { environment } from "./../../../../environments/environment";
 import {
   AfterViewInit,
   ChangeDetectorRef,
   Component,
   ElementRef,
   Input,
-  OnInit,
   ViewChild,
 } from "@angular/core";
 import { Cabin } from "../../../types/cabin.type";
@@ -71,11 +69,20 @@ import { ToastService } from "../../../ui-components/generic/toast-box/toast.ser
                         >favorite</i
                       >
                     </button>
-                    <app-copy-button
-                      [text]="getCabinLink(cabin._id)"
-                      [circularButton]="true"
-                      icon="share"
-                    ></app-copy-button>
+                    <button
+                      class="btn btn-ghost"
+                      (click)="shareCabin(cabin)"
+                      *ngIf="canShare; else shareCopyButton"
+                    >
+                      <i class="material-symbols-outlined">share</i>
+                    </button>
+                    <ng-template #shareCopyButton>
+                      <app-copy-button
+                        [text]="getCabinLink(cabin._id)"
+                        [circularButton]="true"
+                        icon="share"
+                      ></app-copy-button>
+                    </ng-template>
                   </div>
                 </div>
                 <div
@@ -304,6 +311,10 @@ export class CabinDetailSidebarComponent implements AfterViewInit {
 
   favoriteIsLoading = false;
 
+  get canShare() {
+    return navigator?.canShare ? navigator.canShare() : false;
+  }
+
   get cabinsCount() {
     if (!this.cabin) return 0;
     const hasBeenFavorited = this.cabinsMapService.cabinHasBeenFavorited(
@@ -327,6 +338,16 @@ export class CabinDetailSidebarComponent implements AfterViewInit {
   }
 
   getCabinLink = (id: string) => this.cabinsMapService.getCabinLink(id, true);
+
+  shareCabin = (cabin: Cabin) => {
+    if (!this.canShare) {
+      return;
+    }
+    navigator.share({
+      title: `${cabin.name}`,
+      url: this.getCabinLink(cabin._id),
+    });
+  };
 
   cabinIsFavorite = (cabinId: string) =>
     this.cabinsMapService.cabinIsFavorite(cabinId);
