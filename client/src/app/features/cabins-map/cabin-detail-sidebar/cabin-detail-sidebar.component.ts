@@ -312,7 +312,7 @@ export class CabinDetailSidebarComponent implements AfterViewInit {
   favoriteIsLoading = false;
 
   get canShare() {
-    return navigator?.canShare ? navigator.canShare() : false;
+    return !!navigator?.canShare;
   }
 
   get cabinsCount() {
@@ -340,13 +340,15 @@ export class CabinDetailSidebarComponent implements AfterViewInit {
   getCabinLink = (id: string) => this.cabinsMapService.getCabinLink(id, true);
 
   shareCabin = (cabin: Cabin) => {
-    if (!this.canShare) {
-      return;
-    }
-    navigator.share({
+    const data = {
       title: `${cabin.name}`,
       url: this.getCabinLink(cabin._id),
-    });
+    };
+    if (!navigator?.canShare(data)) {
+      this.toastService.createToast("Cannot share", "error");
+      return;
+    }
+    navigator.share(data);
   };
 
   cabinIsFavorite = (cabinId: string) =>
