@@ -4,6 +4,7 @@ import { UserService } from "../../services/user.service";
 import { Subject, of, tap } from "rxjs";
 import { CabinService } from "../../services/cabin.service";
 import { LatLngExpression, Map as LMap } from "leaflet";
+import { environment } from "../../../environments/environment";
 
 @Injectable({
   providedIn: "root",
@@ -34,6 +35,9 @@ export class CabinsMapService {
     private cabinService: CabinService,
     private userService: UserService
   ) {}
+
+  getCabinLink = (id: string, absolute: boolean) =>
+    absolute ? `${environment.baseUrl}/cabins-map/${id}` : `/cabins-map/${id}`;
 
   /**
    * Loads user favorites, initializing the favoriteCabins property.

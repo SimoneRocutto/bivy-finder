@@ -18,6 +18,8 @@ import { CapitalizePipe } from "../../../pipes/capitalize.pipe";
 import { FormatTimePipe } from "../../../pipes/format-time.pipe";
 import { CurrencySymbolPipe } from "../../../pipes/currency-symbol.pipe";
 import { LatLngExpression, Map as LMap } from "leaflet";
+import { AuthService } from "../../../services/auth.service";
+import { ToastService } from "../../../ui-components/generic/toast-box/toast.service";
 
 @Component({
   selector: "app-cabin-detail-sidebar",
@@ -70,7 +72,7 @@ import { LatLngExpression, Map as LMap } from "leaflet";
                       >
                     </button>
                     <app-copy-button
-                      [text]="cabinsMapRoute + '/' + cabin._id"
+                      [text]="getCabinLink(cabin._id)"
                       [circularButton]="true"
                       icon="share"
                     ></app-copy-button>
@@ -313,23 +315,29 @@ export class CabinDetailSidebarComponent implements AfterViewInit {
     );
   }
 
-  get cabinsMapRoute() {
-    return environment.baseUrl + "/" + "cabins-map";
-  }
-
   constructor(
+    private authService: AuthService,
     private cabinsMapService: CabinsMapService,
-    private changeDetector: ChangeDetectorRef
+    private changeDetector: ChangeDetectorRef,
+    private toastService: ToastService
   ) {}
 
   ngAfterViewInit(): void {
     this.cabinsMapService.cabinSidebarRef = this.cabinDetailSidebar;
   }
 
+  getCabinLink = (id: string) => this.cabinsMapService.getCabinLink(id, true);
+
   cabinIsFavorite = (cabinId: string) =>
     this.cabinsMapService.cabinIsFavorite(cabinId);
 
   toggleFavorite = (cabinId: string) => {
+    if (!this.authService.userIsLogged) {
+      this.toastService.createToast(
+        "You have to be logged in to perform this action",
+        "info"
+      );
+    }
     if (this.favoriteIsLoading) {
       return;
     }
