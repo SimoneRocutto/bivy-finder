@@ -19,7 +19,7 @@ import { AuthService } from "../../../services/auth.service";
         <!-- Main website content is projected in here -->
         <ng-content></ng-content>
       </div>
-      <div class="drawer-side">
+      <div class="drawer-side z-20">
         <label
           for="my-drawer-3"
           aria-label="close sidebar"
