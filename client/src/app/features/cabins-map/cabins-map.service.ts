@@ -62,6 +62,12 @@ export class CabinsMapService {
     });
   };
 
+  moveCupertinoDetailPane = (breakpoint: "bottom" | "middle" | "top") => {
+    if (this.detailCupertinoPane) {
+      this.detailCupertinoPane.moveToBreak(breakpoint);
+    }
+  };
+
   getCabinLink = (id: string, absolute: boolean) =>
     absolute ? `${environment.baseUrl}/cabins-map/${id}` : `/cabins-map/${id}`;
 
@@ -158,7 +164,7 @@ export class CabinsMapService {
     latLng?: LatLngExpression | null,
     zoom?: number,
     animate: boolean = true,
-    cupertinoBreak?: "middle" | "bottom"
+    cupertinoBreak?: "middle" | "bottom" | "top"
   ) => {
     if (!latLng) return;
     let targetLatLng = latLng;
@@ -187,7 +193,7 @@ export class CabinsMapService {
       if (!targetPoint) return;
       targetLatLng = this.map?.unproject(targetPoint, zoom) as LatLngExpression;
       if (!targetLatLng) return;
-      this.detailCupertinoPane?.moveToBreak(cupertinoBreak);
+      this.moveCupertinoDetailPane(cupertinoBreak);
     }
 
     this.map?.flyTo(targetLatLng, zoom, { animate, duration: 1 });
@@ -196,7 +202,7 @@ export class CabinsMapService {
   // Todo scroll to the spot data (useful when we have several spots).
   showSpotDetails = (spotNumber: number) => {
     if (this.startingSpotsTab?.first?.nativeElement) {
-      this.detailCupertinoPane?.moveToBreak("top");
+      this.moveCupertinoDetailPane("top");
       this.startingSpotsTab.first.nativeElement.checked = true;
     }
   };
