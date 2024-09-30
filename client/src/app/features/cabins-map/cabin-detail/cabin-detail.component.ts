@@ -16,7 +16,7 @@ import { TranslocoDirective } from "@jsverse/transloco";
 import { CapitalizePipe } from "../../../pipes/capitalize.pipe";
 import { FormatTimePipe } from "../../../pipes/format-time.pipe";
 import { CurrencySymbolPipe } from "../../../pipes/currency-symbol.pipe";
-import { LatLngExpression, Map as LMap } from "leaflet";
+import { latLngBounds, LatLngExpression, Map as LMap } from "leaflet";
 import { AuthService } from "../../../services/auth.service";
 import { ToastService } from "../../../ui-components/generic/toast-box/toast.service";
 import { CupertinoPane } from "cupertino-pane";
@@ -160,7 +160,9 @@ import { ScreenService } from "../../../services/screen.service";
                       </div>
                       <button
                         class="badge bg-purple-700 text-gray-200 w-10 h-10 text-xl font-semibold"
-                        (click)="scrollToLatLng(spot.latLng)"
+                        (click)="
+                          scrollToStartingSpot(cabin.latLng, spot.latLng)
+                        "
                       >
                         {{ i + 1 }}
                       </button>
@@ -373,15 +375,18 @@ export class CabinDetailComponent implements AfterViewInit {
       .subscribe();
   };
 
-  scrollToLatLng = (latLng?: LatLngExpression | null) => {
-    let zoom: number | undefined;
-    // We only zoom if the current zoom is less than the recommended zoom for cabins.
-    if (
-      this.cabinsMapService.cabinZoom >
-      (this.cabinsMapService.map?.getZoom() ?? 0)
-    ) {
-      zoom = this.cabinsMapService.cabinZoom;
+  scrollToStartingSpot = (
+    cabinLatLng?: LatLngExpression,
+    // Todo get rid of null type
+    spotLatLng?: LatLngExpression | null
+  ) => {
+    if (cabinLatLng == null || spotLatLng == null) {
+      return;
     }
-    this.cabinsMapService.scrollToLatLng(latLng, zoom, true, "bottom");
+
+    this.cabinsMapService.scrollToBounds(
+      latLngBounds(cabinLatLng, spotLatLng),
+      "bottom"
+    );
   };
 }

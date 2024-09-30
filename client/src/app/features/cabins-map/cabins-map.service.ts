@@ -3,7 +3,7 @@ import { AuthService } from "../../services/auth.service";
 import { UserService } from "../../services/user.service";
 import { Subject, of, tap } from "rxjs";
 import { CabinService } from "../../services/cabin.service";
-import { LatLngExpression, Map as LMap } from "leaflet";
+import { LatLngBoundsExpression, LatLngExpression, Map as LMap } from "leaflet";
 import { environment } from "../../../environments/environment";
 import { CupertinoPane } from "cupertino-pane";
 
@@ -171,7 +171,50 @@ export class CabinsMapService {
     if (!latLng) return;
     let targetLatLng = latLng;
 
-    // Compensating sidebar width (for large screens)
+    const transposedLatLng = this.compensateCabinDetails(
+      latLng,
+      zoom,
+      cupertinoBreak
+    );
+    if (transposedLatLng) {
+      targetLatLng = transposedLatLng;
+    }
+
+    this.map?.flyTo(targetLatLng, zoom, { animate, duration: 1 });
+  };
+
+  /**
+   * Moves the map so that the specified bounds are shown in the map.
+   * @param bounds Bounds of the destination area we want to show.
+   * @param cupertinoBreak Small screens only - which break the cupertino pane
+   * should reach after the transition.
+   */
+  scrollToBounds = (
+    bounds: LatLngBoundsExpression,
+    cupertinoBreak?: "bottom" | "middle" | "top"
+  ) => {
+    if (cupertinoBreak) {
+      this.moveCupertinoDetailPane(cupertinoBreak);
+    }
+
+    const sidebarWidth =
+      this.cabinSidebarRef?.nativeElement?.getBoundingClientRect()?.width ?? 0;
+    const paneHeight =
+      this.detailCupertinoPane && cupertinoBreak
+        ? this.detailCupertinoPaneSizes[cupertinoBreak]
+        : 0;
+
+    this.map?.flyToBounds(bounds, {
+      paddingTopLeft: [sidebarWidth, 0],
+      paddingBottomRight: [0, paneHeight],
+    });
+  };
+
+  private compensateCabinDetails = (
+    latLng: LatLngExpression,
+    zoom?: number,
+    cupertinoBreak?: "bottom" | "middle" | "top"
+  ) => {
     const width =
       this.cabinSidebarRef?.nativeElement?.getBoundingClientRect()?.width;
     if (width) {
@@ -180,8 +223,7 @@ export class CabinsMapService {
         ?.project(latLng, zoom)
         .subtract([width / 2, 0]);
       if (!targetPoint) return;
-      targetLatLng = this.map?.unproject(targetPoint, zoom) as LatLngExpression;
-      if (!targetLatLng) return;
+      return this.map?.unproject(targetPoint, zoom) as LatLngExpression;
     }
 
     // Compensating cupertino pane height (for small screens)
@@ -193,12 +235,11 @@ export class CabinsMapService {
           (-1 / 2) * this.detailCupertinoPaneSizes[cupertinoBreak],
         ]);
       if (!targetPoint) return;
-      targetLatLng = this.map?.unproject(targetPoint, zoom) as LatLngExpression;
-      if (!targetLatLng) return;
       this.moveCupertinoDetailPane(cupertinoBreak);
+      return this.map?.unproject(targetPoint, zoom) as LatLngExpression;
     }
 
-    this.map?.flyTo(targetLatLng, zoom, { animate, duration: 1 });
+    return null;
   };
 
   showOverview = () => {
