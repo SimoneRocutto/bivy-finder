@@ -23,6 +23,7 @@
     "@jsverse/transloco": "^7.2.1",
     "@jsverse/transloco-preload-langs": "^7.0.1",
     "@types/leaflet.markercluster": "^1.5.4",
+    "cupertino-pane": "^1.4.21",
     "leaflet": "^1.9.4",
     "leaflet.markercluster": "^1.5.3",
     "rxjs": "~7.8.0",
