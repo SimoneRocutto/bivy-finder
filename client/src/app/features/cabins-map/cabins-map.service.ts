@@ -1,10 +1,11 @@
-import { ElementRef, Injectable } from "@angular/core";
+import { ElementRef, Injectable, QueryList } from "@angular/core";
 import { AuthService } from "../../services/auth.service";
 import { UserService } from "../../services/user.service";
 import { Subject, of, tap } from "rxjs";
 import { CabinService } from "../../services/cabin.service";
 import { LatLngExpression, Map as LMap } from "leaflet";
 import { environment } from "../../../environments/environment";
+import { CupertinoPane } from "cupertino-pane";
 
 @Injectable({
   providedIn: "root",
@@ -30,11 +31,36 @@ export class CabinsMapService {
 
   refreshCabinsSubject = new Subject();
 
+  startingSpotsTab?: QueryList<ElementRef<HTMLInputElement>>;
+
+  // Bottom drawer used instead of the sidebar for small screens
+  detailCupertinoPane?: CupertinoPane;
+
+  detailCupertinoPaneSizes = {
+    middle: 300,
+    bottom: 80,
+  };
+
   constructor(
     private authService: AuthService,
     private cabinService: CabinService,
     private userService: UserService
   ) {}
+
+  initCupertinoDetailPane = () => {
+    this.detailCupertinoPane = new CupertinoPane(".cupertino-pane", {
+      parentElement: "body",
+      breaks: {
+        middle: {
+          enabled: true,
+          height: this.detailCupertinoPaneSizes.middle,
+          bounce: true,
+        },
+        bottom: { enabled: true, height: this.detailCupertinoPaneSizes.bottom },
+      },
+      buttonDestroy: false,
+    });
+  };
 
   getCabinLink = (id: string, absolute: boolean) =>
     absolute ? `${environment.baseUrl}/cabins-map/${id}` : `/cabins-map/${id}`;
@@ -119,13 +145,25 @@ export class CabinsMapService {
 
   cabinIsFavorite = (cabinId: string) => this.favoriteCabins.has(cabinId);
 
+  /**
+   * Moves the map to the specified coordinates.
+   * @param latLng Coordinates of the destination point.
+   * @param zoom Zoom level that will be reached after the transition.
+   * @param animate Whether to animate the transition.
+   * @param cupertinoBreak Small screens only - which break the cupertino pane
+   * should reach after the transition.
+   * @returns
+   */
   scrollToLatLng = (
     latLng?: LatLngExpression | null,
     zoom?: number,
-    animate: boolean = true
+    animate: boolean = true,
+    cupertinoBreak?: "middle" | "bottom"
   ) => {
     if (!latLng) return;
     let targetLatLng = latLng;
+
+    // Compensating sidebar width (for large screens)
     const width =
       this.cabinSidebarRef?.nativeElement?.getBoundingClientRect()?.width;
     if (width) {
@@ -137,7 +175,30 @@ export class CabinsMapService {
       targetLatLng = this.map?.unproject(targetPoint, zoom) as LatLngExpression;
       if (!targetLatLng) return;
     }
+
+    // Compensating cupertino pane height (for small screens)
+    if (this.detailCupertinoPane && cupertinoBreak) {
+      const targetPoint = this.map
+        ?.project(latLng, zoom)
+        .subtract([
+          0,
+          (-1 / 2) * this.detailCupertinoPaneSizes[cupertinoBreak],
+        ]);
+      if (!targetPoint) return;
+      targetLatLng = this.map?.unproject(targetPoint, zoom) as LatLngExpression;
+      if (!targetLatLng) return;
+      this.detailCupertinoPane?.moveToBreak(cupertinoBreak);
+    }
+
     this.map?.flyTo(targetLatLng, zoom, { animate, duration: 1 });
+  };
+
+  // Todo scroll to the spot data (useful when we have several spots).
+  showSpotDetails = (spotNumber: number) => {
+    if (this.startingSpotsTab?.first?.nativeElement) {
+      this.detailCupertinoPane?.moveToBreak("top");
+      this.startingSpotsTab.first.nativeElement.checked = true;
+    }
   };
 
   // Filters
