@@ -196,6 +196,9 @@ export class CabinsMapService {
     if (cupertinoBreak) {
       this.moveCupertinoDetailPane(cupertinoBreak);
     }
+    const xPadding = 40;
+    // This is more in order to make the top marker appear on the map (markers are more tall than wide).
+    const yPadding = 100;
 
     const sidebarWidth =
       this.cabinSidebarRef?.nativeElement?.getBoundingClientRect()?.width ?? 0;
@@ -205,8 +208,8 @@ export class CabinsMapService {
         : 0;
 
     this.map?.flyToBounds(bounds, {
-      paddingTopLeft: [sidebarWidth, 0],
-      paddingBottomRight: [0, paneHeight],
+      paddingTopLeft: [sidebarWidth + xPadding, yPadding],
+      paddingBottomRight: [xPadding, paneHeight + yPadding],
     });
   };
 
