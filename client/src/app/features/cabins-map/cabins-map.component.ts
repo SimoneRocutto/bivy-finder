@@ -218,6 +218,7 @@ export class CabinsMapComponent implements OnDestroy {
       this.showCabinStartingSpots(cabin);
     }
 
+    this.cabinsMapService.showOverview();
     this.cabinsMapService.moveCupertinoDetailPane("middle");
   };
 

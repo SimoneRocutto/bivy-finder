@@ -31,6 +31,8 @@ export class CabinsMapService {
 
   refreshCabinsSubject = new Subject();
 
+  // Tabs from cabin-detail component
+  overviewTab?: QueryList<ElementRef<HTMLInputElement>>;
   startingSpotsTab?: QueryList<ElementRef<HTMLInputElement>>;
 
   // Bottom drawer used instead of the sidebar for small screens
@@ -197,6 +199,12 @@ export class CabinsMapService {
     }
 
     this.map?.flyTo(targetLatLng, zoom, { animate, duration: 1 });
+  };
+
+  showOverview = () => {
+    if (this.overviewTab?.first?.nativeElement) {
+      this.overviewTab.first.nativeElement.checked = true;
+    }
   };
 
   // Todo scroll to the spot data (useful when we have several spots).

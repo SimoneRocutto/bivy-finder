@@ -82,6 +82,7 @@ import { ScreenService } from "../../../services/screen.service";
             style="word-break: break-word;"
           >
             <input
+              #overviewTab
               type="radio"
               name="cabin_tabs"
               role="tab"
@@ -280,6 +281,8 @@ export class CabinDetailComponent implements AfterViewInit {
   // startingSpotsTab.first
   @ViewChildren("startingSpotsTab")
   startingSpotsTab!: QueryList<ElementRef<HTMLInputElement>>;
+  @ViewChildren("overviewTab")
+  overviewTab!: QueryList<ElementRef<HTMLInputElement>>;
   @Input() cabin?: Cabin | null;
   @Input() map?: LMap | null;
 
@@ -317,6 +320,7 @@ export class CabinDetailComponent implements AfterViewInit {
   }
 
   ngAfterViewInit(): void {
+    this.cabinsMapService.overviewTab = this.overviewTab;
     this.cabinsMapService.startingSpotsTab = this.startingSpotsTab;
   }
 
