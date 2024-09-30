@@ -184,7 +184,12 @@ export class CabinsMapComponent implements OnDestroy {
       );
       const { latLng } = this.initialCabinData.cabin;
       if (latLng) {
-        this.cabinsMapService.scrollToLatLng(latLng, this.cabinZoom, false);
+        this.cabinsMapService.scrollToLatLng(
+          latLng,
+          this.cabinZoom,
+          false,
+          "middle"
+        );
       }
     }
 
@@ -281,8 +286,7 @@ export class CabinsMapComponent implements OnDestroy {
   };
 
   private selectStartingSpot = (spotNumber: number) => {
-    this.cabinDetailSidebar?.showSpotDetails(spotNumber);
-    return;
+    this.cabinsMapService.showSpotDetails(spotNumber);
   };
 
   private loadCabins = () =>
