@@ -21,6 +21,7 @@ import { AuthService } from "../../../services/auth.service";
 import { ToastService } from "../../../ui-components/generic/toast-box/toast.service";
 import { CupertinoPane } from "cupertino-pane";
 import { ScreenService } from "../../../services/screen.service";
+import { RouterModule } from "@angular/router";
 
 @Component({
   selector: "app-cabin-detail",
@@ -31,6 +32,7 @@ import { ScreenService } from "../../../services/screen.service";
     CapitalizePipe,
     CurrencySymbolPipe,
     FormatTimePipe,
+    RouterModule,
     TranslocoDirective,
   ],
   template: `
@@ -102,14 +104,26 @@ import { ScreenService } from "../../../services/screen.service";
                 <div>
                   <p>Type: {{ cabin.type }}</p>
                   <p>Material: {{ cabin.material }}</p>
-                  <div class="flex flex-row items-center gap-4">
+                  <div class="flex flex-row items-center justify-between">
                     <div>
                       {{ cabin.latLng?.[0] | number : '1.5-5'}},
                       {{ cabin.latLng?.[1] | number : '1.5-5'}}
                     </div>
-                    <app-copy-button
-                      [text]="cabin.latLng?.[0] + ', ' + cabin.latLng?.[1]"
-                    ></app-copy-button>
+                    <div class="flex flex-row items-center gap-4">
+                      <app-copy-button
+                        [text]="cabin.latLng?.[0] + ', ' + cabin.latLng?.[1]"
+                      ></app-copy-button>
+                      <a
+                        [href]="getExternalMapLink(cabin.latLng)"
+                        target="_blank"
+                      >
+                        <button class="btn btn-neutral btn-sm">
+                          <i class="material-symbols-outlined text-lg"
+                            >location_on</i
+                          >
+                        </button>
+                      </a>
+                    </div>
                   </div>
                 </div>
                 <ng-container *ngIf="cabin?.externalLinks?.length ?? 0 > 0">
@@ -169,14 +183,28 @@ import { ScreenService } from "../../../services/screen.service";
                     </div>
                     <div class="flex flex-row items-center gap-6">
                       <i class="material-symbols-outlined">explore</i>
-                      <div class="flex flex-row items-center gap-4">
+                      <div
+                        class="flex flex-row items-center justify-between flex-1"
+                      >
                         <div>
                           {{ spot?.latLng?.[0] | number : '1.5-5'}},
                           {{ spot?.latLng?.[1] | number : '1.5-5'}}
                         </div>
-                        <app-copy-button
-                          [text]="spot?.latLng?.[0] + ', ' + spot?.latLng?.[1]"
-                        ></app-copy-button>
+                        <div class="flex flex-row items-center gap-4">
+                          <app-copy-button
+                            [text]="spot?.latLng?.[0] + ', ' + spot?.latLng?.[1]"
+                          ></app-copy-button>
+                          <a
+                            [href]="getExternalMapLink(spot.latLng)"
+                            target="_blank"
+                          >
+                            <button class="btn btn-neutral btn-sm">
+                              <i class="material-symbols-outlined text-lg"
+                                >location_on</i
+                              >
+                            </button>
+                          </a>
+                        </div>
                       </div>
                     </div>
                     <div class="flex flex-col gap-4 my-4">
@@ -388,5 +416,21 @@ export class CabinDetailComponent implements AfterViewInit {
       latLngBounds(cabinLatLng, spotLatLng),
       "bottom"
     );
+  };
+
+  getExternalMapLink = (latLng?: LatLngExpression | null): string => {
+    const lat = latLng?.[0];
+    const lng = latLng?.[1];
+    if (lat == null || lng == null) return "";
+    if (
+      /* if we're on iOS, open in Apple Maps */
+      navigator.platform.indexOf("iPhone") != -1 ||
+      navigator.platform.indexOf("iPad") != -1 ||
+      navigator.platform.indexOf("iPod") != -1
+    ) {
+      return `maps://maps.google.com/maps?daddr=${lat},${lng}&amp;ll=`;
+    } /* else use Google */ else {
+      return `https://maps.google.com/maps?daddr=${lat},${lng}&amp;ll=`;
+    }
   };
 }
