@@ -1,5 +1,6 @@
 import * as dotenv from "dotenv";
 import express from "express";
+import helmet from "helmet";
 import { S3Client } from "@aws-sdk/client-s3";
 // Don't know yet if it's possible to use import syntax here.
 // This module allows to handle async errors without having to
@@ -107,6 +108,7 @@ connectToDatabase(ATLAS_URI)
         },
       })
     );
+    app.use(helmet());
     app.use(
       cors({
         origin: CLIENT_URL ?? "",
