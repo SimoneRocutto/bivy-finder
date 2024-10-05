@@ -16,6 +16,7 @@ import { connectToDatabase } from "./database/database";
 import { errorMiddlewares, middlewares } from "./middlewares";
 import { routers } from "./routes";
 import { sendError } from "./helpers/http";
+import { RateLimiterRedis } from "rate-limiter-flexible";
 const { specs, swaggerUi } = require("./config/swagger");
 
 dotenv.config({ path: __dirname + "/config/.env" });
@@ -65,7 +66,7 @@ if (!REDIS_URL) {
   console.error("REDIS_URL environment variable missing from config/.env");
 }
 
-// Todo move this to a config file if possible
+// Todo move these to a config file if possible
 // Now creating the S3 instance which will be used in uploading photo to s3 bucket.
 export const s3 = new S3Client({
   credentials: {
@@ -74,15 +75,21 @@ export const s3 = new S3Client({
   },
   region: process.env.AWS_DEFAULT_REGION,
 });
+export const redisClient = redis.createClient({
+  url: REDIS_URL,
+});
+// Limits requests by one specific IP.
+export const rateLimiterRedis = new RateLimiterRedis({
+  storeClient: redisClient,
+  points: 10, // Number of points
+  duration: 1, // Per second
+});
 
 connectToDatabase(ATLAS_URI)
   .then(async () => {
     const app = express();
     app.set("trust proxy", 1);
     // Redis config
-    const redisClient = redis.createClient({
-      url: REDIS_URL,
-    });
     redisClient.on("error", function (err) {
       console.log("Could not establish a connection with redis. " + err);
     });
