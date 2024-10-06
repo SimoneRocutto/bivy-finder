@@ -45,6 +45,7 @@ export class SidebarComponent {
   menuItems: { title: string; url: string; role?: string }[] = [
     { title: "Map", url: "/cabins-map" },
     { title: "Cabins List", url: "/cabins-list" },
+    { title: "Privacy Policy", url: "/privacy-policy" },
   ];
 
   constructor(private authService: AuthService) {}
