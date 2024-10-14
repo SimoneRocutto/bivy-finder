@@ -16,10 +16,13 @@ import { TooltipComponent } from "../tooltip/tooltip.component";
         class="btn btn-neutral btn-sm"
         [ngClass]="{ 'btn-circle': circularButton }"
         (click)="copyCoordinatesToClipboard()"
+        data-testid="copy-button"
       >
-        <i class="material-symbols-outlined text-lg">{{
-          justCopied ? "done" : icon
-        }}</i>
+        <i
+          data-testid="copy-button-icon"
+          class="material-symbols-outlined text-lg"
+          >{{ justCopied ? "done" : icon }}</i
+        >
       </button>
     </app-tooltip>
   `,
@@ -33,9 +36,9 @@ export class CopyButtonComponent {
 
   justCopied = false;
 
-  copyTimeout?: ReturnType<typeof setTimeout>;
+  private copyTimeout?: ReturnType<typeof setTimeout>;
 
-  animationDuration = 2000;
+  private animationDuration = 2000;
 
   constructor(private changeDetector: ChangeDetectorRef) {}
 

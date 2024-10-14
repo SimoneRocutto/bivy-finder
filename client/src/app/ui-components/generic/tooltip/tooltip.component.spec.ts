@@ -1,63 +1,52 @@
-import { ComponentFixture, TestBed } from "@angular/core/testing";
-
 import { TooltipComponent } from "./tooltip.component";
-import { By } from "@angular/platform-browser";
+import { getBefore } from "../../../../../test-helpers";
+import { byTestId, createComponentFactory, Spectator } from "@ngneat/spectator";
 
-const getElementStyle = (element: HTMLElement, pseudoElement?: string) =>
-  window.getComputedStyle(element, pseudoElement);
-/**
- * Gets the computed style of the ::before pseudoelement at this moment in time.
- * @param element Element which has the ::before pseudoelement.
- */
-const getBefore = (element: HTMLElement) => getElementStyle(element, ":before");
-/**
- * Gets the computed style of the ::after pseudoelement at this moment in time.
- * @param element Element which has the ::after pseudoelement.
- */
-const getAfter = (element: HTMLElement) => getElementStyle(element, ":after");
-
-// TODO Test hover events for opening and closing (I couldn't get it to work)
+// TODO Test hover events for opening and closing (I couldn't get it to work).
+// The difficult part is testing before pseudoelement style, which we can only
+// access with window.getComputedStyle.
 describe("TooltipComponent", () => {
-  let component: TooltipComponent;
-  let fixture: ComponentFixture<TooltipComponent>;
-  const sampleLabel = "prova label";
-  let labelDiv: HTMLDivElement;
+  const createComponent = createComponentFactory({
+    component: TooltipComponent,
+    shallow: true,
+  });
+  let spectator: Spectator<TooltipComponent>;
+  const sampleLabel = "label test";
+  const noLabelDivText = "No label div found.";
+  let labelDiv: HTMLDivElement | null;
 
   beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [TooltipComponent],
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(TooltipComponent);
-    component = fixture.componentInstance;
-    component.label = sampleLabel;
-    fixture.detectChanges();
-    labelDiv = fixture.debugElement.query(
-      By.css('[data-testid="tooltip"]')
-    ).nativeElement;
-  });
-
-  it("should create", () => {
-    expect(component).toBeTruthy();
+    spectator = createComponent({
+      props: {
+        label: sampleLabel,
+      },
+    });
+    labelDiv = spectator.query(byTestId("tooltip"));
   });
 
   it("renders the tooltip with the label", () => {
+    if (!labelDiv) {
+      throw noLabelDivText;
+    }
     const style = getBefore(labelDiv);
-    // Content also contains starting and ending quotes (""), so we slice them out.
     expect(style.content.slice(1, -1)).toBe(sampleLabel);
   });
 
   it("can be forced open", () => {
-    component.forceOpen = true;
-    fixture.detectChanges();
+    if (!labelDiv) {
+      throw noLabelDivText;
+    }
+    spectator.setInput({ forceOpen: true });
     const opacity = getBefore(labelDiv).opacity;
-    expect(Number(opacity)).toBe(1);
+    expect(opacity).toBe("1");
   });
 
   it("can be disabled", () => {
-    component.disabled = true;
-    fixture.detectChanges();
+    if (!labelDiv) {
+      throw noLabelDivText;
+    }
+    spectator.setInput({ disabled: true });
     const opacity = getBefore(labelDiv).opacity;
-    expect(Number(opacity)).toBe(0);
+    expect(opacity).toBe("0");
   });
 });

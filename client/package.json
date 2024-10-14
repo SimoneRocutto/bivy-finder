@@ -22,6 +22,7 @@
     "@bluehalo/ngx-leaflet-markercluster": "^18.0.1",
     "@jsverse/transloco": "^7.2.1",
     "@jsverse/transloco-preload-langs": "^7.0.1",
+    "@ngneat/spectator": "^19.0.0",
     "@types/leaflet.markercluster": "^1.5.4",
     "cupertino-pane": "^1.4.21",
     "leaflet": "^1.9.4",
