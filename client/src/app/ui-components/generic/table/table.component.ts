@@ -230,7 +230,8 @@ export class TableComponent<TableItem extends { [key: string]: any }>
     switch (typeof item) {
       case "string":
         return item;
-      case "number" || "object":
+      case "number":
+      case "object":
         return item + "";
       default:
         return "";
