@@ -19,8 +19,8 @@ import { CommonModule } from "@angular/common";
       }"
     >
       <app-pagination-button
-        (onClick)="setPage(pageNumber - 1)"
-        [disabled]="pageNumber <= 1"
+        (onClick)="setPage(_pageNumber - 1)"
+        [disabled]="_pageNumber <= 1"
         [buttonWidth]="buttonWidth"
         ><</app-pagination-button
       >
@@ -31,21 +31,21 @@ import { CommonModule } from "@angular/common";
           <app-pagination-number-button
             *ngFor="let e of [].constructor(pagesCount); let i = index"
             [buttonPageNumber]="i + 1"
-            [currentPageNumber]="pageNumber"
+            [currentPageNumber]="_pageNumber"
             [buttonWidth]="buttonWidth"
             (onClick)="setPage($event)"
           ></app-pagination-number-button>
         </ng-container>
         <ng-template #compactPagination>
-          <ng-container *ngIf="pageNumber > extraPageButtons + 1">
+          <ng-container *ngIf="_pageNumber > extraPageButtons + 1">
             <app-pagination-number-button
               [buttonPageNumber]="1"
-              [currentPageNumber]="pageNumber"
+              [currentPageNumber]="_pageNumber"
               [buttonWidth]="buttonWidth"
               (onClick)="setPage($event)"
             ></app-pagination-number-button>
             <app-pagination-button
-              *ngIf="pageNumber > extraPageButtons + 2"
+              *ngIf="_pageNumber > extraPageButtons + 2"
               [disabled]="true"
               [buttonWidth]="buttonWidth"
             >
@@ -58,13 +58,13 @@ import { CommonModule } from "@angular/common";
               let i = index
             "
             [buttonPageNumber]="limitPageNumber + i"
-            [currentPageNumber]="pageNumber"
+            [currentPageNumber]="_pageNumber"
             [buttonWidth]="buttonWidth"
             (onClick)="setPage($event)"
           ></app-pagination-number-button>
-          <ng-container *ngIf="pageNumber < pagesCount - extraPageButtons">
+          <ng-container *ngIf="_pageNumber < pagesCount - extraPageButtons">
             <app-pagination-button
-              *ngIf="pageNumber < pagesCount - extraPageButtons - 1"
+              *ngIf="_pageNumber < pagesCount - extraPageButtons - 1"
               [disabled]="true"
               [buttonWidth]="buttonWidth"
             >
@@ -72,7 +72,7 @@ import { CommonModule } from "@angular/common";
             </app-pagination-button>
             <app-pagination-number-button
               [buttonPageNumber]="pagesCount"
-              [currentPageNumber]="pageNumber"
+              [currentPageNumber]="_pageNumber"
               [buttonWidth]="buttonWidth"
               (onClick)="setPage($event)"
             ></app-pagination-number-button>
@@ -80,12 +80,12 @@ import { CommonModule } from "@angular/common";
         </ng-template>
       </div>
       <ng-template #skeleton
-        ><div class="skeleton grow mx-12"></div
+        ><div data-testid="skeleton" class="skeleton grow mx-12"></div
       ></ng-template>
       <app-pagination-button
-        [disabled]="pageNumber >= pagesCount"
+        [disabled]="_pageNumber >= pagesCount"
         [buttonWidth]="buttonWidth"
-        (onClick)="setPage(pageNumber + 1)"
+        (onClick)="setPage(_pageNumber + 1)"
         >></app-pagination-button
       >
     </div>
@@ -101,26 +101,33 @@ export class PaginationComponent {
   // and probably will never be.
   @Input() pageSize = 50;
   @Input() extraPageButtons = 2;
-  @Input() items: any[] = [];
-  @Input() shownItems: any[] = [];
+  _items: any[] = [];
+  @Input() set items(items: any[]) {
+    this._items = items;
+    this.refreshItems();
+  }
   @Output() onPageChange = new EventEmitter<any[]>();
   @Output() pageNumberChange = new EventEmitter<number>();
-  @Input() pageNumber = 1;
+
+  _pageNumber = 1;
+  @Input() set pageNumber(pageNumber: number) {
+    this.setPage(pageNumber, true);
+  }
   @Input() isLoading = false;
 
   /**  Width of each button (rem) */
   buttonWidth = 3;
 
   get limitPageNumber() {
-    return this.pageNumber - this.extraPageButtons < 1
+    return this._pageNumber - this.extraPageButtons < 1
       ? 1
-      : this.pageNumber + this.extraPageButtons > this.pagesCount
+      : this._pageNumber + this.extraPageButtons > this.pagesCount
       ? this.pagesCount - 2 * this.extraPageButtons
-      : this.pageNumber - this.extraPageButtons;
+      : this._pageNumber - this.extraPageButtons;
   }
 
   get pagesCount() {
-    const count = Math.ceil(this.items.length / this.pageSize);
+    const count = Math.ceil(this._items.length / this.pageSize);
     // We need at least one page
     return count > 0 ? count : 1;
   }
@@ -135,12 +142,26 @@ export class PaginationComponent {
     return pageNumber;
   };
 
-  setPage = (inputPageNumber: number) => {
-    const pageNumber = this.fixPageNumber(inputPageNumber);
-    this.pageNumber = pageNumber;
+  /**
+   * Sets page number.
+   * @param inputPageNumber Page number we want to set.
+   * @param noFix If false, page number is bound to be between 1 and the max page
+   * number. This causes some problems when the items are not loaded yet: that's when
+   * it can be useful to set it to true.
+   */
+  setPage = (inputPageNumber: number, noFix = false) => {
+    let pageNumber = inputPageNumber;
+    if (!noFix) {
+      pageNumber = this.fixPageNumber(inputPageNumber);
+    }
+    this._pageNumber = pageNumber;
     this.pageNumberChange.emit(pageNumber);
+    this.refreshItems(pageNumber);
+  };
+
+  private refreshItems = (pageNumber = this._pageNumber) => {
     this.onPageChange.emit(
-      this.items.slice(
+      this._items.slice(
         (pageNumber - 1) * this.pageSize,
         pageNumber * this.pageSize
       )

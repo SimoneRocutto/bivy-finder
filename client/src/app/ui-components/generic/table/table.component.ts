@@ -5,7 +5,6 @@ import {
   OnDestroy,
   OnInit,
   TemplateRef,
-  ViewChild,
 } from "@angular/core";
 import { PaginationComponent } from "../pagination/pagination.component";
 import { FormsModule } from "@angular/forms";
@@ -111,7 +110,9 @@ import { sortObjectsByProp } from "../../../helpers/misc";
 export class TableComponent<TableItem extends { [key: string]: any }>
   implements OnInit, OnDestroy
 {
-  @ViewChild(PaginationComponent) pagination!: PaginationComponent;
+  // TODO Performance - Refactor the HTML so that the two pagination components
+  // are not executing the same code every time items or page number change.
+  // For example, we could use a dedicated service.
   @Input() beforeCell: TemplateRef<any> | null = null;
   @Input() afterCell: TemplateRef<any> | null = null;
   @Input() pageSize = 50;
@@ -136,9 +137,7 @@ export class TableComponent<TableItem extends { [key: string]: any }>
     this.filterItems(false);
     // If items are less than before, pageNumber could be more than max
     const sortProp = this.currentSortProp ?? this.defaultSortProp;
-    if (!sortProp) {
-      this.softRefreshPage(false, false);
-    } else {
+    if (sortProp) {
       this.sortItems(sortProp, true, false);
     }
   }
@@ -197,7 +196,7 @@ export class TableComponent<TableItem extends { [key: string]: any }>
       );
     }
     if (refresh) {
-      this.softRefreshPage(false, true);
+      this.resetPage();
     }
   };
 
@@ -218,7 +217,9 @@ export class TableComponent<TableItem extends { [key: string]: any }>
     this.sortItemsSimple(prop, reverseSort);
     this.currentSortProp = prop;
     this.reverseSort = reverseSort;
-    this.softRefreshPage(false, resetPage);
+    if (resetPage) {
+      this.resetPage();
+    }
   };
 
   /**
@@ -238,24 +239,8 @@ export class TableComponent<TableItem extends { [key: string]: any }>
     }
   };
 
-  /**
-   * Refreshes the current pagination page. "Soft" means
-   * that we are not refetching the list of items from the backend.
-   * @param sort - whether to sort the items
-   */
-  private softRefreshPage = (
-    sort: boolean = false,
-    resetPage: boolean = false
-  ) => {
-    setTimeout(() => {
-      if (sort) {
-        this.sortItemsSimple();
-      }
-      if (resetPage) {
-        this.pageNumber = 1;
-      }
-      this.pagination.setPage(this.pageNumber);
-    }, 0);
+  private resetPage = () => {
+    this.pageNumber = 1;
   };
 
   /**
@@ -273,7 +258,13 @@ export class TableComponent<TableItem extends { [key: string]: any }>
       const transform = this.columns.find(
         (col) => col.prop === prop
       )?.transform;
-      sortObjectsByProp(this.filteredItems, prop, reverse, transform);
+
+      this.filteredItems = sortObjectsByProp(
+        this.filteredItems,
+        prop,
+        reverse,
+        transform
+      );
     }
   };
 }
