@@ -19,9 +19,10 @@ import { CommonModule } from "@angular/common";
       }"
     >
       <app-pagination-button
-        (onClick)="setPage(_pageNumber - 1)"
-        [disabled]="_pageNumber <= 1"
+        (onClick)="setPage(pageNumber - 1)"
+        [disabled]="pageNumber <= 1"
         [buttonWidth]="buttonWidth"
+        data-testid="prev-button"
         ><</app-pagination-button
       >
       <div *ngIf="!isLoading; else skeleton">
@@ -31,21 +32,21 @@ import { CommonModule } from "@angular/common";
           <app-pagination-number-button
             *ngFor="let e of [].constructor(pagesCount); let i = index"
             [buttonPageNumber]="i + 1"
-            [currentPageNumber]="_pageNumber"
+            [currentPageNumber]="pageNumber"
             [buttonWidth]="buttonWidth"
             (onClick)="setPage($event)"
           ></app-pagination-number-button>
         </ng-container>
         <ng-template #compactPagination>
-          <ng-container *ngIf="_pageNumber > extraPageButtons + 1">
+          <ng-container *ngIf="pageNumber > extraPageButtons + 1">
             <app-pagination-number-button
               [buttonPageNumber]="1"
-              [currentPageNumber]="_pageNumber"
+              [currentPageNumber]="pageNumber"
               [buttonWidth]="buttonWidth"
               (onClick)="setPage($event)"
             ></app-pagination-number-button>
             <app-pagination-button
-              *ngIf="_pageNumber > extraPageButtons + 2"
+              *ngIf="pageNumber > extraPageButtons + 2"
               [disabled]="true"
               [buttonWidth]="buttonWidth"
             >
@@ -58,13 +59,13 @@ import { CommonModule } from "@angular/common";
               let i = index
             "
             [buttonPageNumber]="limitPageNumber + i"
-            [currentPageNumber]="_pageNumber"
+            [currentPageNumber]="pageNumber"
             [buttonWidth]="buttonWidth"
             (onClick)="setPage($event)"
           ></app-pagination-number-button>
-          <ng-container *ngIf="_pageNumber < pagesCount - extraPageButtons">
+          <ng-container *ngIf="pageNumber < pagesCount - extraPageButtons">
             <app-pagination-button
-              *ngIf="_pageNumber < pagesCount - extraPageButtons - 1"
+              *ngIf="pageNumber < pagesCount - extraPageButtons - 1"
               [disabled]="true"
               [buttonWidth]="buttonWidth"
             >
@@ -72,7 +73,7 @@ import { CommonModule } from "@angular/common";
             </app-pagination-button>
             <app-pagination-number-button
               [buttonPageNumber]="pagesCount"
-              [currentPageNumber]="_pageNumber"
+              [currentPageNumber]="pageNumber"
               [buttonWidth]="buttonWidth"
               (onClick)="setPage($event)"
             ></app-pagination-number-button>
@@ -83,9 +84,10 @@ import { CommonModule } from "@angular/common";
         ><div data-testid="skeleton" class="skeleton grow mx-12"></div
       ></ng-template>
       <app-pagination-button
-        [disabled]="_pageNumber >= pagesCount"
+        [disabled]="pageNumber >= pagesCount"
         [buttonWidth]="buttonWidth"
-        (onClick)="setPage(_pageNumber + 1)"
+        (onClick)="setPage(pageNumber + 1)"
+        data-testid="next-button"
         >></app-pagination-button
       >
     </div>
@@ -101,18 +103,26 @@ export class PaginationComponent {
   // and probably will never be.
   @Input() pageSize = 50;
   @Input() extraPageButtons = 2;
-  _items: any[] = [];
+  private _items: any[] = [];
+  get items() {
+    return this._items;
+  }
   @Input() set items(items: any[]) {
     this._items = items;
     this.refreshItems();
   }
-  @Output() onPageChange = new EventEmitter<any[]>();
+
+  @Output() shownItemsChange = new EventEmitter<any[]>();
   @Output() pageNumberChange = new EventEmitter<number>();
 
-  _pageNumber = 1;
+  private _pageNumber = 1;
+  get pageNumber() {
+    return this._pageNumber;
+  }
   @Input() set pageNumber(pageNumber: number) {
     this.setPage(pageNumber, true);
   }
+
   @Input() isLoading = false;
 
   /**  Width of each button (rem) */
@@ -160,7 +170,7 @@ export class PaginationComponent {
   };
 
   private refreshItems = (pageNumber = this._pageNumber) => {
-    this.onPageChange.emit(
+    this.shownItemsChange.emit(
       this._items.slice(
         (pageNumber - 1) * this.pageSize,
         pageNumber * this.pageSize

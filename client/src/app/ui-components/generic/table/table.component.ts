@@ -32,7 +32,7 @@ import { sortObjectsByProp } from "../../../helpers/misc";
       [pageSize]="pageSize"
       [isLoading]="isLoading"
       [extraPageButtons]="extraPageButtons"
-      (onPageChange)="setShownItems($event)"
+      (shownItemsChange)="setShownItems($event)"
     ></app-pagination>
     <div class="my-6 max-w-screen">
       <table class="table" [ngClass]="{ 'table-zebra-zebra': !isLoading }">
@@ -100,7 +100,7 @@ import { sortObjectsByProp } from "../../../helpers/misc";
       [(pageNumber)]="pageNumber"
       [isLoading]="isLoading"
       [extraPageButtons]="extraPageButtons"
-      (onPageChange)="setShownItems($event)"
+      (shownItemsChange)="setShownItems($event)"
     ></app-pagination>
   `,
   styles: `.max-w-screen {
