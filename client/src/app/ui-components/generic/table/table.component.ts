@@ -41,7 +41,7 @@ import { sortObjectsByProp } from "../../../helpers/misc";
             <th class="w-16" *ngIf="beforeCell"></th>
             <ng-container *ngFor="let col of columns">
               <th *ngIf="!col.hidden" class="flex-1">
-                <button (click)="sortItems(col.prop)">{{ col.name }}</button>
+                <button (click)="sortItems(col.prop)" data-testid="sort-button">{{ col.name }}</button>
               </th>
             </ng-container>
             <th class="flex-1" *ngIf="afterCell"></th>
@@ -80,6 +80,7 @@ import { sortObjectsByProp } from "../../../helpers/misc";
 
           <ng-template #skeleton>
             <tr
+              data-testid="table-row-skeleton"
               *ngFor="let item of [].constructor(pageSize)"
               class="w-full flex flex-row gap-4 my-6"
             >

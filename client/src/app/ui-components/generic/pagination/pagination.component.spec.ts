@@ -36,7 +36,7 @@ describe("PaginationComponent", () => {
 
   it("shows skeleton when loading", () => {
     spectator.setInput({ isLoading: true });
-    expect(spectator.query(byTestId("skeleton"))).toBeTruthy();
+    expect(spectator.query(byTestId("pagination-skeleton"))).toBeTruthy();
   });
 
   it("shows the correct page", () => {

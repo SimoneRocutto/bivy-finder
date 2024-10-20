@@ -81,7 +81,10 @@ import { CommonModule } from "@angular/common";
         </ng-template>
       </div>
       <ng-template #skeleton
-        ><div data-testid="skeleton" class="skeleton grow mx-12"></div
+        ><div
+          data-testid="pagination-skeleton"
+          class="skeleton grow mx-12"
+        ></div
       ></ng-template>
       <app-pagination-button
         [disabled]="pageNumber >= pagesCount"
