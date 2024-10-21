@@ -88,7 +88,7 @@ fdescribe("ToastBoxComponent integration test", () => {
     expectToastToBeAbsent(toast);
   });
 
-  fit("dismisses toast when clicking dismiss button", () => {
+  it("dismisses toast when clicking dismiss button", () => {
     const toast = service.createToast("Sample text", "info", 1000);
     spectator.fixture.detectChanges();
 
