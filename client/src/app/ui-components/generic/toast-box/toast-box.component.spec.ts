@@ -9,7 +9,7 @@ import { ToastService } from "./toast.service";
 import { Toast } from "./toast.type";
 import { asyncTimeout } from "../../../../../test-helpers";
 
-fdescribe("ToastBoxComponent integration test", () => {
+describe("ToastBoxComponent integration test", () => {
   const createComponent = createComponentFactory({
     component: ToastBoxComponent,
     shallow: false,
