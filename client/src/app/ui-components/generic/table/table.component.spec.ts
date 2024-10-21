@@ -3,7 +3,7 @@ import { TableComponent } from "./table.component";
 import { PaginationComponent } from "../pagination/pagination.component";
 import { TableColumn } from "./table.type";
 
-fdescribe("TableComponent", () => {
+describe("TableComponent", () => {
   const createComponent = createComponentFactory({
     component: TableComponent,
     shallow: true,
