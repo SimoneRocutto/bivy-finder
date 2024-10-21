@@ -15,6 +15,7 @@ export class ToastService {
     setTimeout(() => {
       this.dismissToast(toast);
     }, duration);
+    return toast;
   }
 
   dismissToast(toast: Toast) {

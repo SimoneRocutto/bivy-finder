@@ -20,11 +20,13 @@ import { ToastService } from "./toast.service";
             ? 'alert-success'
             : 'alert-info'
         "
+        data-testid="toast"
       >
-        <span>{{ toast.message }}</span>
+        <span data-testid="toast-message">{{ toast.message }}</span>
         <app-icon-button
           (onClick)="dismissToast(toast)"
           iconName="close"
+          data-testid="close-toast-button"
         ></app-icon-button>
       </div>
     </div>
