@@ -20,6 +20,7 @@ export interface ConfirmModalProps {
     <div
       style="max-height: calc(100vh - 5em - 3rem); max-height: calc(100dvh - 5em - 3em)"
       class="flex flex-col"
+      data-testid="confirm-modal"
     >
       <h3 class="text-lg font-bold">{{ title }}</h3>
       <!-- White space: pre makes it so that we can add line breaks in the content with \\n
@@ -34,6 +35,7 @@ export interface ConfirmModalProps {
               [disabled]="isSubmitting"
               class="btn btn-error"
               (click)="onCancel()"
+              data-testid="cancel-button"
             >
               {{ cancelLabel }}
             </button>
@@ -41,6 +43,7 @@ export interface ConfirmModalProps {
               type="submit"
               [disabled]="isSubmitting"
               class="btn btn-primary relative"
+              data-testid="confirm-button"
             >
               <div [ngClass]="{ invisible: isSubmitting }">
                 {{ confirmLabel }}
