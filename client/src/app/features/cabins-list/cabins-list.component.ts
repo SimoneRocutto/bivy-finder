@@ -153,7 +153,7 @@ export class CabinsListComponent implements OnInit {
       {},
       { fullOnSmallScreen: true }
     );
-    newComponent.instance.onCreate
+    newComponent.content.instance.onCreate
       .pipe(
         concatMap((cabinId) => this.refreshAfterCreateOrUpdate(cabinId)),
         take(1)
@@ -171,7 +171,7 @@ export class CabinsListComponent implements OnInit {
       },
       { fullOnSmallScreen: true }
     );
-    newComponent.instance.onUpdate
+    newComponent.content.instance.onUpdate
       .pipe(
         concatMap(() => this.refreshAfterCreateOrUpdate(cabin._id, cabin)),
         take(1)
@@ -189,7 +189,7 @@ export class CabinsListComponent implements OnInit {
       },
       { fullOnSmallScreen: true }
     );
-    newComponent.instance.onUpdate
+    newComponent.content.instance.onUpdate
       .pipe(
         concatMap(() => this.refreshAfterCreateOrUpdate(cabin._id, cabin)),
         take(1)
