@@ -63,6 +63,7 @@ import { MapFiltersComponent } from "./map-filters/map-filters.component";
         class="absolute top-0 right-0 p-4"
         style="z-index: 500"
         (click)="openFilterModal()"
+        data-testid="open-map-filters-button"
       >
         <button class="btn btn-primary">
           <i class="material-symbols-outlined">filter_alt</i>

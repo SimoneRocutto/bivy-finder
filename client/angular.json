@@ -95,7 +95,8 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "local": {
-              "buildTarget": "client:build:local"
+              "buildTarget": "client:build:local",
+              "proxyConfig": "./proxy.conf.json"
             },
             "development": {
               "buildTarget": "client:build:development"
@@ -123,8 +124,42 @@
             "scripts": [],
             "karmaConfig": "karma.conf.js"
           }
+        },
+        "cypress-run": {
+          "builder": "@cypress/schematic:cypress",
+          "options": {
+            "devServerTarget": "client:serve"
+          },
+          "configurations": {
+            "production": {
+              "devServerTarget": "client:serve:production"
+            }
+          }
+        },
+        "cypress-open": {
+          "builder": "@cypress/schematic:cypress",
+          "options": {
+            "watch": true,
+            "headless": false
+          }
+        },
+        "e2e": {
+          "builder": "@cypress/schematic:cypress",
+          "options": {
+            "devServerTarget": "client:serve",
+            "watch": true,
+            "headless": false
+          },
+          "configurations": {
+            "production": {
+              "devServerTarget": "client:serve:production"
+            }
+          }
         }
       }
     }
+  },
+  "cli": {
+    "schematicCollections": ["@cypress/schematic", "@schematics/angular"]
   }
 }

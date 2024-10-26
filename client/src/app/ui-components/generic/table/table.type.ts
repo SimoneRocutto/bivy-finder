@@ -7,7 +7,7 @@
  * - transform: function to transform the prop before displaying it
  */
 interface TableColumnCommon<T extends { [key: string]: any }> {
-  prop: keyof T;
+  prop: Extract<keyof T, string>;
   filter?: boolean;
   defaultSort?: boolean;
   style?: {

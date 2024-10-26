@@ -14,6 +14,7 @@ import { AuthService } from "../../../services/auth.service";
         id="my-drawer-3"
         type="checkbox"
         class="drawer-toggle"
+        data-testid="sidebar-toggle"
       />
       <div class="drawer-content min-h-dvh flex flex-col">
         <!-- Main website content is projected in here -->
@@ -24,14 +25,21 @@ import { AuthService } from "../../../services/auth.service";
           for="my-drawer-3"
           aria-label="close sidebar"
           class="drawer-overlay"
+          data-testid="sidebar-overlay"
         ></label>
-        <ul class="menu p-4 w-80 min-h-full bg-base-200">
+        <ul
+          class="menu p-4 w-80 min-h-full bg-base-200"
+          data-testid="sidebar-content"
+        >
           <!-- Sidebar list -->
           <ng-container *ngFor="let item of menuItems">
             <li *ngIf="!item.role || item.role === userRole">
-              <a [routerLink]="[item.url]" (click)="closeSidebar()">{{
-                item.title
-              }}</a>
+              <a
+                [routerLink]="[item.url]"
+                (click)="closeSidebar()"
+                data-testid="sidebar-link"
+                >{{ item.title }}</a
+              >
             </li>
           </ng-container>
         </ul>

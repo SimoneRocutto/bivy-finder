@@ -41,4 +41,7 @@ testem.log
 .DS_Store
 Thumbs.db
 
+# Cypress
+cypress/screenshots
+
 src/assets/cabins.json

@@ -23,7 +23,7 @@ import { tap } from "rxjs";
     <ng-container *transloco="let t">
       <div class="navbar bg-base-100 grid grid-cols-3">
         <div>
-          <div class="flex-none">
+          <button class="flex-none" data-testid="sidebar-toggle-button">
             <label
               for="my-drawer-3"
               aria-label="open sidebar"
@@ -43,7 +43,7 @@ import { tap } from "rxjs";
                 ></path>
               </svg>
             </label>
-          </div>
+          </button>
         </div>
         <div class="flex flex-row justify-center">
           <a routerLink="/">
@@ -80,10 +80,11 @@ import { tap } from "rxjs";
           <!-- user area dropdown -->
 
           <!-- This has to be converted into a component! -->
-          <div
+          <button
             class="dropdown dropdown-bottom dropdown-end"
             (click)="closeDropdown()"
             (blur)="onDropdownClose()"
+            data-testid="user-area-button"
           >
             <div
               tabindex="0"
@@ -98,6 +99,7 @@ import { tap } from "rxjs";
             <ul
               tabindex="0"
               class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-36"
+              data-testid="user-area-dropdown"
             >
               <li *ngIf="userIsLogged">
                 <div>{{ loggedUser.username }}</div>
@@ -118,7 +120,7 @@ import { tap } from "rxjs";
                 </a>
               </li>
             </ul>
-          </div>
+          </button>
         </div>
       </div>
     </ng-container>

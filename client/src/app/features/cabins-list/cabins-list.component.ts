@@ -79,7 +79,7 @@ import { CabinsMapService } from "../cabins-map/cabins-map.service";
               </button>
             </ng-container>
             <a [routerLink]="getCabinLink(cabin._id)">
-              <button>
+              <button data-testid="cabins-list-map-button">
                 <i class="material-symbols-outlined">map</i>
               </button>
             </a>

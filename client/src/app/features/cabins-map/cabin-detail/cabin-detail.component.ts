@@ -41,9 +41,12 @@ import { RouterModule } from "@angular/router";
         <div
           class="flex flex-col gap-4"
           [ngClass]="{ 'flex-col-reverse': isLargeScreen }"
+          data-testid="cabin-detail-head"
         >
           <div class="flex flex-row justify-between items-center px-4">
-            <h3 class="text-lg font-semibold">{{ cabin.name }}</h3>
+            <h3 class="text-lg font-semibold" data-testid="cabin-detail-name">
+              {{ cabin.name }}
+            </h3>
             <div class="flex flex-row items-center">
               <div>{{ cabinsCount }}</div>
               <button class="btn btn-ghost" (click)="toggleFavorite(cabin._id)">
@@ -77,7 +80,7 @@ import { RouterModule } from "@angular/router";
             <img [src]="cabin.imageUrl" alt="Cabin image" />
           </div>
         </div>
-        <div class="p-4">
+        <div class="p-4" data-testid="cabin-detail-body">
           <div
             role="tablist"
             class="tabs tabs-bordered"
