@@ -29,9 +29,10 @@ jobs:
       - name: actions-setup-redis
         uses: shogo82148/actions-setup-redis@v1.35.1
       - run: npm install
-      - run: npm run test-ci
+      - run: cd ../server && npm install
       - name: Cypress.io
         uses: cypress-io/github-action@v6.7.6
         with:
-          start: cd ../server && npm install && npm start
+          start: cd ../server && npm start
           wait-on: "http://localhost:5200"
+      - run: npm run test-ci
