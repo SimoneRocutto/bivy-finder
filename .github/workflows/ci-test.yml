@@ -33,5 +33,5 @@ jobs:
       - name: Cypress.io
         uses: cypress-io/github-action@v6.7.6
         with:
-          start: cd ../server && npm start
+          start: cd ../server && npm install && npm start
           wait-on: "http://localhost:5200"
