@@ -4,25 +4,24 @@ jobs:
   test:
     runs-on: ubuntu-latest
     environment: test
+    env:
+      ATLAS_URI: ${{ secrets.ATLAS_URI }}
+      ATLAS_DB: ${{ secrets.ATLAS_DB }}
+      SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_ACCESS_KEY_SECRET: ${{ secrets.AWS_ACCESS_KEY_SECRET }}
+      AWS_BUCKET_NAME: ${{ secrets.AWS_BUCKET_NAME }}
+      AWS_BUCKET_DIRECTORY: ${{ secrets.AWS_BUCKET_DIRECTORY }}
+      AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+      REDIS_URL: ${{ secrets.REDIS_URL }}
+      BASE_SERVER_URL: "http://localhost/"
+      PORT: 5200
     defaults:
       run:
         working-directory: client
     steps:
       - name: Checkout
         uses: actions/checkout@v4.2.2
-      - name: Use environment variables
-        env:
-          ATLAS_URI: ${{ secrets.ATLAS_URI }}
-          ATLAS_DB: ${{ secrets.ATLAS_DB }}
-          SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_ACCESS_KEY_SECRET: ${{ secrets.AWS_ACCESS_KEY_SECRET }}
-          AWS_BUCKET_NAME: ${{ secrets.AWS_BUCKET_NAME }}
-          AWS_BUCKET_DIRECTORY: ${{ secrets.AWS_BUCKET_DIRECTORY }}
-          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
-          REDIS_URL: ${{ secrets.REDIS_URL }}
-          BASE_SERVER_URL: "http://localhost/"
-          PORT: 5200
       - name: Setup Node.js environment
         uses: actions/setup-node@v4.1.0
         with:
