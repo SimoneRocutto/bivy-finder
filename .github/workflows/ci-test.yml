@@ -26,10 +26,13 @@ jobs:
         uses: actions/setup-node@v4.1.0
         with:
           node-version: "20.12.x"
+          cache-dependency-path: "client"
       - name: actions-setup-redis
         uses: shogo82148/actions-setup-redis@v1.35.1
       - run: npm install
       - run: cd ../server && npm install
       - name: Cypress.io
         uses: cypress-io/github-action@v6.7.6
+        with:
+          browser: chrome
       - run: npm run test-ci
