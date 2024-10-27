@@ -1,9 +1,14 @@
 name: ci-test
 on: push
 jobs:
-  hello-world-job:
+  test:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repository code
-        uses: actions/checkout@v3
-      - run: echo "hello world"
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v4.1.0
+        with:
+          node-version: "20.12.x"
+      - run: npm install
+      - run: npm run test-ci
