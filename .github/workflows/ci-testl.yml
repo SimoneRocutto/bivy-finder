@@ -10,5 +10,6 @@ jobs:
         uses: actions/setup-node@v4.1.0
         with:
           node-version: "20.12.x"
+      - run: cd client
       - run: npm install
       - run: npm run test-ci
