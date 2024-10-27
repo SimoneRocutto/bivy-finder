@@ -32,7 +32,4 @@ jobs:
       - run: cd ../server && npm install
       - name: Cypress.io
         uses: cypress-io/github-action@v6.7.6
-        with:
-          start: cd ../server && npm start
-          wait-on: "http://localhost:5200"
       - run: npm run test-ci
