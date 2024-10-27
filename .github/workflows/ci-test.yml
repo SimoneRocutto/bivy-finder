@@ -34,5 +34,5 @@ jobs:
         uses: cypress-io/github-action@v6.7.6
         with:
           browser: chrome
-          install: false
+          project: client
       - run: npm run test-ci
