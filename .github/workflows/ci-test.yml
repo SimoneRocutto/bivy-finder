@@ -30,11 +30,14 @@ jobs:
         uses: shogo82148/actions-setup-redis@v1.35.1
       - run: npm install
       - run: cd ../server && npm install
+      - name: Start server in the background
+        run: npm start &
+        with:
+          working-directory: server
       - name: Cypress.io
         uses: cypress-io/github-action@v6.7.6
         with:
           browser: chrome
           working-directory: client
-          start: cd ../server && npm start
           wait-on: "http://localhost:5200"
       - run: npm run test-ci
