@@ -25,7 +25,7 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v4.1.0
         with:
-          node-version: "20.12.x"
+          node-version: "16.x"
       - name: Setup Redis
         uses: shogo82148/actions-setup-redis@v1.35.1
       - name: Client npm install
