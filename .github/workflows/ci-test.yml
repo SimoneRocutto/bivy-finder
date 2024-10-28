@@ -38,5 +38,5 @@ jobs:
         with:
           browser: chrome
           working-directory: client
-          start: npm run start-server
+          start: npm run start-server, npm start
       - run: npm run test-ci
