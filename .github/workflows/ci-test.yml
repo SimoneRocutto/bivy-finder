@@ -39,5 +39,4 @@ jobs:
           browser: chrome
           working-directory: client
           start: npm run start-server
-          wait-on: "http://localhost:5201"
       - run: npm run test-ci
