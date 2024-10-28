@@ -34,7 +34,7 @@ jobs:
         run: npm install
         working-directory: server
       - name: Start server in the background
-        run: npm run start-no-nodemon &
+        run: npm run start-no-nodemon
         working-directory: server
       - name: Cypress.io
         uses: cypress-io/github-action@v6.7.6
