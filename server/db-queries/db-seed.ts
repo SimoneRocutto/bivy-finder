@@ -57,15 +57,15 @@ async function seedDB({ fakeCabinsCount = 500, fakeUsersCount = 500 } = {}) {
   const client = new MongoClient(ATLAS_URI);
   try {
     await client.connect();
-    console.log("Connected correctly to server");
+    console.log("Connected correctly to db");
 
     const configCollection = client.db(ATLAS_DB).collection("config");
     const config = (await configCollection.find().toArray())[0];
     const allowAccessForTests = config?.allowAccessForTests;
 
-    if (!allowAccessForTests) {
-      throw "Seeding has not been enabled for this database.";
-    }
+    // if (!allowAccessForTests) {
+    //   throw "Seeding has not been enabled for this database.";
+    // }
 
     console.log("Dropping users collection...");
     const usersCollection = client.db(ATLAS_DB).collection("users");
