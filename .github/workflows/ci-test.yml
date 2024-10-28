@@ -32,8 +32,7 @@ jobs:
       - run: cd ../server && npm install
       - name: Start server in the background
         run: npm start &
-        with:
-          working-directory: server
+        working-directory: server
       - name: Cypress.io
         uses: cypress-io/github-action@v6.7.6
         with:
