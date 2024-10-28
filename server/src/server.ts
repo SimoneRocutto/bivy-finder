@@ -36,6 +36,7 @@ export const {
   REDIS_URL,
   CLIENT_URL,
   ENVIRONMENT,
+  DEBUG_SESSION,
 } = process.env;
 if (!ATLAS_URI || !ATLAS_DB) {
   console.error(
@@ -124,7 +125,9 @@ connectToDatabase(ATLAS_URI)
       })
     );
     app.use((_req, res, next) => {
-      console.log("DEBUG SESSION", _req.session);
+      if (Number(DEBUG_SESSION) === 1) {
+        console.log("DEBUG SESSION", _req.session);
+      }
       next();
     });
 
