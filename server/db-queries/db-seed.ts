@@ -206,4 +206,4 @@ async function seedDB({ fakeCabinsCount = 500, fakeUsersCount = 500 } = {}) {
   }
 }
 
-seedDB({ fakeCabinsCount: 0, fakeUsersCount: 0 });
+seedDB();
