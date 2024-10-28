@@ -30,15 +30,16 @@ jobs:
         uses: shogo82148/actions-setup-redis@v1.35.1
       - name: Client npm install
         run: npm install
+      - name: Test client build
+        run: npm run build
+      - name: Launch client unit tests
+        run: npm run test-ci
       - name: Server npm install
         run: npm install
         working-directory: server
-      - name: Test client build
-        run: npm run build
       - name: Cypress.io
         uses: cypress-io/github-action@v6.7.6
         with:
           browser: chrome
           working-directory: client
           start: npm run start-server, npm start
-      - run: npm run test-ci
