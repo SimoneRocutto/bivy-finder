@@ -26,7 +26,7 @@ jobs:
         uses: actions/setup-node@v4.1.0
         with:
           node-version: "20.12.x"
-      - name: actions-setup-redis
+      - name: Setup Redis
         uses: shogo82148/actions-setup-redis@v1.35.1
       - name: Client npm install
         run: npm install
@@ -34,7 +34,7 @@ jobs:
         run: npm install
         working-directory: server
       - name: Start server in the background
-        run: npm start-no-nodemon &
+        run: npm run start-no-nodemon &
         working-directory: server
       - name: Cypress.io
         uses: cypress-io/github-action@v6.7.6
