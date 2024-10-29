@@ -110,7 +110,10 @@ import { tap } from "rxjs";
                 </button>
               </li>
               <li *ngIf="!userIsLogged">
-                <a routerLink="/login">
+                <a
+                  routerLink="/login"
+                  [queryParams]="{ returnUrl: currentUrl }"
+                >
                   {{ t("auth.login") | titlecase }}
                 </a>
               </li>
@@ -134,6 +137,10 @@ export class NavbarComponent {
 
   get userIsLogged() {
     return this.authService.userIsLogged;
+  }
+
+  get currentUrl() {
+    return this.router.url;
   }
 
   constructor(private authService: AuthService, private router: Router) {}
