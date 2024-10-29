@@ -26,20 +26,20 @@ jobs:
         uses: actions/setup-node@v4.1.0
         with:
           node-version: "20.12.x"
-      - name: Server npm install
-        run: npm install
-        working-directory: server
-      - name: Database seeding
-        run: npm run db-seed
-        working-directory: server
-      - name: Setup Redis
-        uses: shogo82148/actions-setup-redis@v1.35.1
       - name: Client npm install
         run: npm install
       - name: Test client build
         run: npm run build
       - name: Launch client unit tests
         run: npm run test-ci
+      - name: Setup Redis
+        uses: shogo82148/actions-setup-redis@v1.35.1
+      - name: Server npm install
+        run: npm install
+        working-directory: server
+      - name: Database seeding
+        run: npm run db-seed
+        working-directory: server
       - name: Cypress.io
         uses: cypress-io/github-action@v6.7.6
         with:
