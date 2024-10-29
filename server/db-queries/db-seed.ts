@@ -55,6 +55,7 @@ async function seedDB({ fakeCabinsCount = 500, fakeUsersCount = 500 } = {}) {
   }
   console.log("Connecting to db...");
   const client = new MongoClient(ATLAS_URI);
+
   try {
     await client.connect();
     console.log("Connected correctly to db");
@@ -196,6 +197,10 @@ async function seedDB({ fakeCabinsCount = 500, fakeUsersCount = 500 } = {}) {
     if (cabinsCheckCount !== fakeCabinsCount) {
       throw "Cabins count expectation failed.";
     }
+
+    const cabinsCollectionTest = client.db(ATLAS_DB).collection("cabins");
+    const check = await cabinsCollectionTest.find().toArray();
+    console.log(check);
 
     console.log("Database seeded!");
     client.close();
