@@ -60,6 +60,10 @@ async function seedDB({ fakeCabinsCount = 500, fakeUsersCount = 500 } = {}) {
     await client.connect();
     console.log("Connected correctly to db");
 
+    const cabinsCollectionTest = client.db(ATLAS_DB).collection("cabins");
+    const check = await cabinsCollectionTest.find().toArray();
+    console.log(check);
+
     const configCollection = client.db(ATLAS_DB).collection("config");
     const config = (await configCollection.find().toArray())[0];
     const allowAccessForTests = config?.allowAccessForTests;
@@ -197,10 +201,6 @@ async function seedDB({ fakeCabinsCount = 500, fakeUsersCount = 500 } = {}) {
     if (cabinsCheckCount !== fakeCabinsCount) {
       throw "Cabins count expectation failed.";
     }
-
-    const cabinsCollectionTest = client.db(ATLAS_DB).collection("cabins");
-    const check = await cabinsCollectionTest.find().toArray();
-    console.log(check);
 
     console.log("Database seeded!");
     client.close();
