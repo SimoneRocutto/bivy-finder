@@ -2,7 +2,7 @@ import { CommonModule } from "@angular/common";
 import { Component } from "@angular/core";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { AuthService } from "../../../services/auth.service";
-import { TranslocoDirective } from "@jsverse/transloco";
+import { TranslocoPipe } from "@jsverse/transloco";
 import { catchError, finalize, tap } from "rxjs";
 import { ActivatedRoute, Router } from "@angular/router";
 import { ToastService } from "../../../ui-components/generic/toast-box/toast.service";
@@ -14,44 +14,46 @@ import { FormInputComponent } from "../../../ui-components/generic/form-input/fo
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    TranslocoDirective,
+    TranslocoPipe,
     FormInputComponent,
   ],
   template: `
-    <ng-container *transloco="let t">
-      <form
+    <!--  Using Transloco pipe instead of directive because that was causing 
+      change detection issues with Cypress!  -->
+    <form
+      [formGroup]="loginForm"
+      (ngSubmit)="onLoginFormSubmit()"
+      class="flex flex-col grow max-w-72 gap-2 mt-4 mx-8"
+    >
+      <app-form-input
+        iconName="person"
+        [label]="'auth.username' | transloco"
         [formGroup]="loginForm"
-        (ngSubmit)="onLoginFormSubmit()"
-        class="flex flex-col grow max-w-72 gap-2 mt-4 mx-8"
+        formControlName="username"
+        data-testid="login-username"
+      ></app-form-input>
+      <app-form-input
+        iconName="key"
+        [label]="'auth.password' | transloco"
+        [formGroup]="loginForm"
+        type="password"
+        formControlName="password"
+        data-testid="login-password"
+      ></app-form-input>
+      <button
+        type="submit"
+        [disabled]="!loginForm.valid || isSubmitting"
+        class="btn btn-primary"
       >
-        <app-form-input
-          iconName="person"
-          [label]="t('auth.username')"
-          [formGroup]="loginForm"
-          formControlName="username"
-        ></app-form-input>
-        <app-form-input
-          iconName="key"
-          [label]="t('auth.password')"
-          [formGroup]="loginForm"
-          type="password"
-          formControlName="password"
-        ></app-form-input>
-        <button
-          type="submit"
-          [disabled]="!loginForm.valid || isSubmitting"
-          class="btn btn-primary"
-        >
-          <div [ngClass]="{ invisible: isSubmitting }">
-            {{ t("common.submit") | titlecase }}
-          </div>
-          <span
-            *ngIf="isSubmitting"
-            class="loading loading-dots loading-md absolute"
-          ></span>
-        </button>
-      </form>
-    </ng-container>
+        <div [ngClass]="{ invisible: isSubmitting }">
+          {{ "common.submit" | transloco }}
+        </div>
+        <span
+          *ngIf="isSubmitting"
+          class="loading loading-dots loading-md absolute"
+        ></span>
+      </button>
+    </form>
   `,
   styles: `:host {
     display: flex;

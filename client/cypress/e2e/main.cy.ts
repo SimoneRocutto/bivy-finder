@@ -1,4 +1,13 @@
 describe("Cabins map", () => {
+  const clickUserAreaLink = (label: string) => {
+    cy.byTestId("user-area-button").click();
+    const loginLink = cy
+      .byTestId("user-area-dropdown")
+      .find("li")
+      .contains(label, { matchCase: false });
+    loginLink.click();
+  };
+
   beforeEach(() => {
     cy.intercept("/api/auth/check-login").as("checkLogin");
     cy.visit("/");
@@ -24,7 +33,7 @@ describe("Cabins map", () => {
     cy.byTestId("sidebar-content").should("not.be.visible");
   });
 
-  it.only("Changes page when clicking on sidebar links", () => {
+  it("Changes page when clicking on sidebar links", () => {
     cy.byTestId("sidebar-content").should("not.be.visible");
     cy.byTestId("sidebar-toggle-button").click();
     cy.byTestId("sidebar-link").contains("Cabins List").click();
@@ -39,5 +48,15 @@ describe("Cabins map", () => {
     cy.byTestId("user-area-dropdown").should("be.visible");
     cy.get("body").click();
     cy.byTestId("user-area-dropdown").should("not.be.visible");
+  });
+
+  it("Goes to login page", () => {
+    clickUserAreaLink("login");
+    cy.expectUrl("/login");
+  });
+
+  it("Goes to signup page", () => {
+    clickUserAreaLink("sign up");
+    cy.expectUrl("/sign-up");
   });
 });
