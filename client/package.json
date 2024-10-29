@@ -10,7 +10,8 @@
     "test-ci": "ng test --no-watch --no-progress --browsers=ChromeHeadless",
     "cypress:open": "ng run client:cypress-open",
     "cypress:run": "ng run client:cypress-run",
-    "start-server": "cd ../server && npm run start-no-nodemon"
+    "start-server": "cd ../server && npm run start-no-nodemon",
+    "e2e-open": "cd ../server && npm run db-seed && cd ../client && npm run cypress:open"
   },
   "private": true,
   "dependencies": {
