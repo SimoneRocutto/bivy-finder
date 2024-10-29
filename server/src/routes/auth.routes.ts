@@ -83,21 +83,14 @@ authRouter.post("/login", bodyParser.json(), async (_req, res, next) => {
 authRouter.post("/logout", bodyParser.json(), async (_req, res, next) => {
   const { session }: { session: CustomSession } = _req;
   session.userData = undefined;
-  // I copied this code from the express-session docs, I honestly don't
-  // know why we are doing this instead of _req.session.destroy.
-  _req.session.save(function (err) {
+
+  _req.session.destroy(function (err) {
     if (err) {
       next(err);
     }
 
-    // regenerate the session, which is good practice to help
-    // guard against forms of session fixation
-    _req.session.regenerate(function (err) {
-      if (err) {
-        next(err);
-      }
-      sendSuccess(res, null);
-    });
+    res.clearCookie("uniqueSessionId");
+    sendSuccess(res, null);
   });
 });
 
