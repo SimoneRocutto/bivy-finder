@@ -1,6 +1,8 @@
 import { Environment } from "../app/types/environment.type";
 
+const base = "http://localhost:4200";
+
 export const environment: Environment = {
-  baseUrl: "http://localhost:4200",
-  apiUrl: "http://localhost:4200/api",
+  baseUrl: base,
+  apiUrl: base + "/api",
 };
