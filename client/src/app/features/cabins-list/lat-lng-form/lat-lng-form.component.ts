@@ -26,6 +26,7 @@ import { LatLngFormGroup } from "../../../types/cabin.type";
           [min]="-90"
           [max]="90"
           (paste)="fillCoordinates($event)"
+          data-testid="latitude"
         ></app-form-input>
       </app-tooltip>
       <app-form-input
@@ -36,6 +37,7 @@ import { LatLngFormGroup } from "../../../types/cabin.type";
         [step]="latLngPrecision"
         [min]="-180"
         [max]="180"
+        data-testid="longitude"
       ></app-form-input>
       <app-form-input
         label="altitude"
@@ -43,6 +45,7 @@ import { LatLngFormGroup } from "../../../types/cabin.type";
         formControlName="altitude"
         type="number"
         [step]="latLngPrecision"
+        data-testid="altitude"
       ></app-form-input>
     </form>
   `,

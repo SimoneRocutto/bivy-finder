@@ -49,21 +49,25 @@ import { LatLngFormComponent } from "../lat-lng-form/lat-lng-form.component";
     [formGroup]="cabinForm"
     (ngSubmit)="submit()"
     class="flex flex-col"
+    data-testid="cabin-form"
   >
     <div class="flex flex-col gap-4 mb-6">
       <app-form-input
         label="name"
         [formGroup]="cabinForm"
         formControlName="name"
+        data-testid="name"
       ></app-form-input>
       <textarea
         formControlName="description"
         class="textarea textarea-bordered grow"
         placeholder="Description"
+        data-testid="description"
       ></textarea>
       <select
         class="select select-bordered w-full max-w-xs"
         formControlName="type"
+        data-testid="type"
       >
         <option [ngValue]="null">Type</option>
         <option *ngFor="let type of cabinTypes" [ngValue]="type">
@@ -73,13 +77,14 @@ import { LatLngFormComponent } from "../lat-lng-form/lat-lng-form.component";
       <select
         class="select select-bordered w-full max-w-xs"
         formControlName="material"
+        data-testid="material"
       >
         <option [ngValue]="null">Material</option>
         <option *ngFor="let material of cabinMaterials" [ngValue]="material">
           {{ material }}
         </option>
       </select>
-      <app-lat-lng-form></app-lat-lng-form>
+      <app-lat-lng-form data-testid="latlng"></app-lat-lng-form>
       <div>
         <div class="mb-2">
           External Links ({{ cabinForm.value.externalLinks?.length ?? 0 }}/{{
@@ -90,6 +95,7 @@ import { LatLngFormComponent } from "../lat-lng-form/lat-lng-form.component";
           [items]="cabinForm.value.externalLinks"
           [maxItems]="maxExternalLinksCount"
           [isLink]="true"
+          data-testid="external-links"
         ></app-items-list-input>
       </div>
       <div class="relative overflow-hidden">
@@ -102,6 +108,7 @@ import { LatLngFormComponent } from "../lat-lng-form/lat-lng-form.component";
               (click)="fileUploader.click()"
               type="button"
               class="btn btn-primary"
+              data-testid="image-button"
             >
               <i class="material-symbols-outlined">upload</i>
             </button>
@@ -137,10 +144,16 @@ import { LatLngFormComponent } from "../lat-lng-form/lat-lng-form.component";
               (click)="fileUploader.click()"
               type="button"
               class="btn btn-primary"
+              data-testid="image-button"
             >
               <i class="material-symbols-outlined">upload</i>
             </button>
-            <button (click)="removeImage()" type="button" class="btn btn-error">
+            <button
+              (click)="removeImage()"
+              type="button"
+              class="btn btn-error"
+              data-testid="remove-image-button"
+            >
               <i class="material-symbols-outlined">delete</i>
             </button>
           </div>
@@ -162,6 +175,7 @@ import { LatLngFormComponent } from "../lat-lng-form/lat-lng-form.component";
         class="btn btn-error"
         (click)="closeModal()"
         [disabled]="isSubmitting"
+        data-testid="cancel-button"
       >
         Cancel
       </button>

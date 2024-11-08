@@ -45,7 +45,6 @@ declare namespace Cypress {
   interface Chainable {
     /**
      * Get one or more DOM elements by test id.
-     *
      * @param id The test id
      * @param options The same options as cy.get
      */
@@ -59,6 +58,11 @@ declare namespace Cypress {
       >
     ): Cypress.Chainable<JQuery<E>>;
 
+    /**
+     * Finds one or more DOM elements by test id. It works like Cypress.Chainable.find.
+     * @param id The test id
+     * @param options The same options as cy.find
+     */
     findByTestId<E extends Node = HTMLElement>(
       id: string,
       options?: Partial<
@@ -69,6 +73,10 @@ declare namespace Cypress {
       >
     ): Cypress.Chainable<JQuery<E>>;
 
+    /**
+     * Checks whether current url matches expected pattern.
+     * @param pattern Pattern that url has to match. Uses Cypress.minimatch behind the scenes.
+     */
     expectUrl<E extends Node = HTMLElement>(
       pattern: string
     ): Cypress.Chainable<Location>;
@@ -90,7 +98,9 @@ Cypress.Commands.add(
 
 Cypress.Commands.add(
   "findByTestId",
+  { prevSubject: true },
   <E extends Node = HTMLElement>(
+    subject: Cypress.Chainable<HTMLElement>,
     id: string,
     options?: Partial<
       Cypress.Loggable &
@@ -98,7 +108,8 @@ Cypress.Commands.add(
         Cypress.Withinable &
         Cypress.Shadow
     >
-  ): Cypress.Chainable<JQuery<E>> => cy.find(`[data-testid="${id}"]`, options)
+  ): Cypress.Chainable<JQuery<E>> =>
+    subject.find(`[data-testid="${id}"]`, options)
 );
 
 Cypress.Commands.add(

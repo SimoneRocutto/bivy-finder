@@ -1,13 +1,6 @@
-describe("Cabins map", () => {
-  const clickUserAreaLink = (label: string) => {
-    cy.byTestId("user-area-button").click();
-    const loginLink = cy
-      .byTestId("user-area-dropdown")
-      .find("li")
-      .contains(label, { matchCase: false });
-    loginLink.click();
-  };
+import { clickUserAreaLink } from "../helpers/main";
 
+describe("Cabins map", () => {
   beforeEach(() => {
     cy.intercept("/api/auth/check-login").as("checkLogin");
     cy.visit("/");

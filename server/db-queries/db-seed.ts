@@ -14,6 +14,7 @@ import {
 import { unformatLatLng } from "../src/helpers/misc";
 import { MongoClient } from "mongodb";
 import { exit } from "process";
+import * as fs from "fs";
 
 const encryptPassword = async (rawPassword) => {
   const salt = await bcrypt.genSalt();
@@ -43,16 +44,33 @@ async function seedDB({ fakeCabinsCount = 500, fakeUsersCount = 500 } = {}) {
   // TODO Add schema validation
   // TODO Write function for single collection seeding
 
-  console.log("starting");
+  console.log("Starting");
+  console.log("Retrieving fixtures data");
 
-  dotenv.config({ path: __dirname + "/../src/config/.env" });
+  let admin: UserInterface;
+  try {
+    admin = JSON.parse(
+      fs.readFileSync("../client/cypress/fixtures/admin-user.json", {
+        encoding: "utf-8",
+      })
+    );
+    if (!admin.username || !admin.password || !admin.role) {
+      throw "Invalid admin user file.";
+    }
+  } catch (e) {
+    console.error(e);
+    process.exit(1);
+  }
 
   console.log("Reading env");
+
+  dotenv.config({ path: __dirname + "/../src/config/.env" });
   const { ATLAS_URI, ATLAS_DB } = process.env;
   if (!ATLAS_URI || !ATLAS_DB) {
     console.log("Missing ATLAS_URI or ATLAS_DB environment variable");
     process.exit();
   }
+
   console.log("Connecting to db...");
   const client = new MongoClient(ATLAS_URI);
 
@@ -60,6 +78,7 @@ async function seedDB({ fakeCabinsCount = 500, fakeUsersCount = 500 } = {}) {
     await client.connect();
     console.log("Connected correctly to db");
 
+    console.log("Checking db config");
     const configCollection = client.db(ATLAS_DB).collection("config");
     const config = (await configCollection.find().toArray())[0];
     const allowAccessForTests = config?.allowAccessForTests;
@@ -80,12 +99,11 @@ async function seedDB({ fakeCabinsCount = 500, fakeUsersCount = 500 } = {}) {
       const password = await encryptPassword(rawPassword);
 
       // Create admin user
-      const admin: UserInterface = {
-        username: "admin",
-        password,
-        role: "admin",
-      };
-      users.push(admin);
+      users.push({
+        username: admin.username,
+        password: await encryptPassword(admin.password),
+        role: admin.role,
+      });
 
       console.log("Seeding users...");
       // Create users
