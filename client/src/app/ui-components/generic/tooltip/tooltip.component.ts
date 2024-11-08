@@ -8,6 +8,7 @@ import { Component, Input } from "@angular/core";
   template: `
     <div
       [attr.data-tip]="label"
+      data-testid="tooltip"
       class="tooltip w-full"
       [ngClass]="{ 'tooltip-open': forceOpen, 'tooltip-hidden': disabled }"
     >

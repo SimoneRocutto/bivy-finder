@@ -5,7 +5,6 @@ import {
   OnDestroy,
   OnInit,
   TemplateRef,
-  ViewChild,
 } from "@angular/core";
 import { PaginationComponent } from "../pagination/pagination.component";
 import { FormsModule } from "@angular/forms";
@@ -24,6 +23,7 @@ import { sortObjectsByProp } from "../../../helpers/misc";
         placeholder="Search"
         [(ngModel)]="filterString"
         (input)="filterItems()"
+        data-testid="table-search-input"
       />
       <i class="material-symbols-outlined">search</i>
     </label>
@@ -33,16 +33,18 @@ import { sortObjectsByProp } from "../../../helpers/misc";
       [pageSize]="pageSize"
       [isLoading]="isLoading"
       [extraPageButtons]="extraPageButtons"
-      (onPageChange)="setShownItems($event)"
+      (shownItemsChange)="setShownItems($event)"
     ></app-pagination>
     <div class="my-6 max-w-screen">
       <table class="table" [ngClass]="{ 'table-zebra-zebra': !isLoading }">
         <thead>
-          <tr class="flex flex-row">
+          <tr class="flex flex-row" data-testid="table-header-row">
             <th class="w-16" *ngIf="beforeCell"></th>
             <ng-container *ngFor="let col of columns">
               <th *ngIf="!col.hidden" class="flex-1">
-                <button (click)="sortItems(col.prop)">{{ col.name }}</button>
+                <button (click)="sortItems(col.prop)" data-testid="sort-button">
+                  {{ col.name }}
+                </button>
               </th>
             </ng-container>
             <th class="flex-1" *ngIf="afterCell"></th>
@@ -50,7 +52,11 @@ import { sortObjectsByProp } from "../../../helpers/misc";
         </thead>
         <tbody>
           <ng-container *ngIf="!isLoading; else skeleton">
-            <tr *ngFor="let item of shownItems" class="flex flex-row">
+            <tr
+              *ngFor="let item of shownItems"
+              class="flex flex-row"
+              data-testid="table-row"
+            >
               <ng-container
                 *ngTemplateOutlet="beforeCell; context: { $implicit: item }"
               ></ng-container>
@@ -64,6 +70,7 @@ import { sortObjectsByProp } from "../../../helpers/misc";
                     uppercase: col.style?.textTransform === 'uppercase',
                     lowercase: col.style?.textTransform === 'lowercase'
                   }"
+                  [attr.data-tablecellprop]="col.prop"
                 >
                   <ng-container *ngIf="col.transform; else defaultValue">{{
                     col.transform(item[col.prop])
@@ -81,6 +88,7 @@ import { sortObjectsByProp } from "../../../helpers/misc";
 
           <ng-template #skeleton>
             <tr
+              data-testid="table-row-skeleton"
               *ngFor="let item of [].constructor(pageSize)"
               class="w-full flex flex-row gap-4 my-6"
             >
@@ -101,7 +109,7 @@ import { sortObjectsByProp } from "../../../helpers/misc";
       [(pageNumber)]="pageNumber"
       [isLoading]="isLoading"
       [extraPageButtons]="extraPageButtons"
-      (onPageChange)="setShownItems($event)"
+      (shownItemsChange)="setShownItems($event)"
     ></app-pagination>
   `,
   styles: `.max-w-screen {
@@ -111,7 +119,9 @@ import { sortObjectsByProp } from "../../../helpers/misc";
 export class TableComponent<TableItem extends { [key: string]: any }>
   implements OnInit, OnDestroy
 {
-  @ViewChild(PaginationComponent) pagination!: PaginationComponent;
+  // TODO Performance - Refactor the HTML so that the two pagination components
+  // are not executing the same code every time items or page number change.
+  // For example, we could use a dedicated service.
   @Input() beforeCell: TemplateRef<any> | null = null;
   @Input() afterCell: TemplateRef<any> | null = null;
   @Input() pageSize = 50;
@@ -134,13 +144,6 @@ export class TableComponent<TableItem extends { [key: string]: any }>
   @Input() set items(value: TableItem[]) {
     this._items = value;
     this.filterItems(false);
-    // If items are less than before, pageNumber could be more than max
-    const sortProp = this.currentSortProp ?? this.defaultSortProp;
-    if (!sortProp) {
-      this.softRefreshPage(false, false);
-    } else {
-      this.sortItems(sortProp, true, false);
-    }
   }
 
   filteredItems: TableItem[] = [];
@@ -196,8 +199,12 @@ export class TableComponent<TableItem extends { [key: string]: any }>
         })
       );
     }
+    const sortProp = this.currentSortProp ?? this.defaultSortProp;
+    if (sortProp) {
+      this.sortItems(sortProp, true, false);
+    }
     if (refresh) {
-      this.softRefreshPage(false, true);
+      this.resetPage();
     }
   };
 
@@ -218,7 +225,9 @@ export class TableComponent<TableItem extends { [key: string]: any }>
     this.sortItemsSimple(prop, reverseSort);
     this.currentSortProp = prop;
     this.reverseSort = reverseSort;
-    this.softRefreshPage(false, resetPage);
+    if (resetPage) {
+      this.resetPage();
+    }
   };
 
   /**
@@ -230,31 +239,16 @@ export class TableComponent<TableItem extends { [key: string]: any }>
     switch (typeof item) {
       case "string":
         return item;
-      case "number" || "object":
+      case "number":
+      case "object":
         return item + "";
       default:
         return "";
     }
   };
 
-  /**
-   * Refreshes the current pagination page. "Soft" means
-   * that we are not refetching the list of items from the backend.
-   * @param sort - whether to sort the items
-   */
-  private softRefreshPage = (
-    sort: boolean = false,
-    resetPage: boolean = false
-  ) => {
-    setTimeout(() => {
-      if (sort) {
-        this.sortItemsSimple();
-      }
-      if (resetPage) {
-        this.pageNumber = 1;
-      }
-      this.pagination.setPage(this.pageNumber);
-    }, 0);
+  private resetPage = () => {
+    this.pageNumber = 1;
   };
 
   /**
@@ -272,7 +266,13 @@ export class TableComponent<TableItem extends { [key: string]: any }>
       const transform = this.columns.find(
         (col) => col.prop === prop
       )?.transform;
-      sortObjectsByProp(this.filteredItems, prop, reverse, transform);
+
+      this.filteredItems = sortObjectsByProp(
+        this.filteredItems,
+        prop,
+        reverse,
+        transform
+      );
     }
   };
 }

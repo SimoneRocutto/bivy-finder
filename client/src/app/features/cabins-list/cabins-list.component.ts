@@ -39,13 +39,18 @@ import { CabinsMapService } from "../cabins-map/cabins-map.service";
   template: `
     <div class="sm:min-w-96 overflow-x-auto pt-4 pb-16">
       <div *ngIf="userIsAdmin" class="flex justify-end gap-4 mb-4 mx-4">
-        <button class="btn btn-primary" (click)="openCreateModal()">
+        <button
+          class="btn btn-primary"
+          (click)="openCreateModal()"
+          data-testid="add-cabin-button"
+        >
           Add cabin
         </button>
         <button
           (click)="openBulkDeleteModal()"
           class="btn btn-error"
           [disabled]="selectedCabinsIds.size < 1"
+          data-testid="delete-bulk-button"
         >
           Delete bulk
         </button>
@@ -70,16 +75,24 @@ import { CabinsMapService } from "../cabins-map/cabins-map.service";
         <ng-template #afterCell let-cabin>
           <td after>
             <ng-container *ngIf="userIsAdmin">
-              <button (click)="openUpdateModal(cabin)">
+              <button
+                (click)="openUpdateModal(cabin)"
+                data-testid="edit-button"
+              >
                 <i class="material-symbols-outlined">edit</i></button
-              ><button (click)="openStartingSpotsModal(cabin)">
+              ><button
+                (click)="openStartingSpotsModal(cabin)"
+                data-testid="starting-spots-button"
+              >
                 <i class="material-symbols-outlined">hiking</i></button
               ><button (click)="openDeleteModal(cabin)">
-                <i class="material-symbols-outlined">delete</i>
+                <i class="material-symbols-outlined" data-testid="delete-button"
+                  >delete</i
+                >
               </button>
             </ng-container>
             <a [routerLink]="getCabinLink(cabin._id)">
-              <button>
+              <button data-testid="cabins-list-map-button">
                 <i class="material-symbols-outlined">map</i>
               </button>
             </a>
@@ -153,7 +166,7 @@ export class CabinsListComponent implements OnInit {
       {},
       { fullOnSmallScreen: true }
     );
-    newComponent.instance.onCreate
+    newComponent.content.instance.onCreate
       .pipe(
         concatMap((cabinId) => this.refreshAfterCreateOrUpdate(cabinId)),
         take(1)
@@ -171,7 +184,7 @@ export class CabinsListComponent implements OnInit {
       },
       { fullOnSmallScreen: true }
     );
-    newComponent.instance.onUpdate
+    newComponent.content.instance.onUpdate
       .pipe(
         concatMap(() => this.refreshAfterCreateOrUpdate(cabin._id, cabin)),
         take(1)
@@ -189,7 +202,7 @@ export class CabinsListComponent implements OnInit {
       },
       { fullOnSmallScreen: true }
     );
-    newComponent.instance.onUpdate
+    newComponent.content.instance.onUpdate
       .pipe(
         concatMap(() => this.refreshAfterCreateOrUpdate(cabin._id, cabin)),
         take(1)

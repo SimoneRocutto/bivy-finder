@@ -10,6 +10,7 @@ import { PaginationButtonComponent } from "../pagination-button/pagination-butto
       (onClick)="onClick.emit(buttonPageNumber)"
       [active]="buttonPageNumber === currentPageNumber"
       [buttonWidth]="buttonWidth"
+      [attr.data-testid]="'pagination-number-button-' + buttonPageNumber"
       >{{ buttonPageNumber }}</app-pagination-button
     >
   `,

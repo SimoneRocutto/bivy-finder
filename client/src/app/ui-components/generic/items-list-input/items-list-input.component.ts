@@ -20,7 +20,7 @@ import { TooltipComponent } from "../tooltip/tooltip.component";
           <i class="block text-lg material-symbols-outlined" *ngIf="isLink"
             >link</i
           >
-          <div>{{ item }}</div>
+          <div data-testid="items-list-input-item-label">{{ item }}</div>
         </div>
         <button type="button" class="btn btn-ghost" (click)="removeItem(i)">
           <i class="material-symbols-outlined">delete</i>

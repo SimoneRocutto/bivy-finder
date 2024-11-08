@@ -16,6 +16,7 @@ import {
       #modal
       class="modal"
       [ngClass]="{ 'w-screen h-dvh sm:modal': fullOnSmallScreen }"
+      data-testid="modal"
     >
       <div
         class="modal-box"

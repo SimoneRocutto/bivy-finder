@@ -11,6 +11,7 @@ import { Component, EventEmitter, Input, Output } from "@angular/core";
       [ngClass]="{ 'btn-active': active, 'btn-disabled': disabled }"
       [ngStyle]="{ width: (buttonWidth ?? defaultButtonWidth) + 'rem' }"
       (click)="onClick.emit()"
+      data-testid="pagination-button"
     >
       <ng-content></ng-content>
     </button>

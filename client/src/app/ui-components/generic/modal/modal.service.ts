@@ -18,9 +18,9 @@ import { Subscription, take } from "rxjs";
   providedIn: "root",
 })
 export class ModalService {
-  modalComponent!: ComponentRef<ModalComponent>;
+  private modalComponent!: ComponentRef<ModalComponent>;
 
-  closeOnRouteChange?: Subscription;
+  private closeOnRouteChange?: Subscription;
 
   constructor(
     private appRef: ApplicationRef,
@@ -29,18 +29,20 @@ export class ModalService {
   ) {}
 
   openConfirmModal(props: ConfirmModalProps) {
-    this.openModal(ConfirmModalContentComponent, props);
+    const modal = this.openModal(ConfirmModalContentComponent, props);
 
     document.body.appendChild(this.modalComponent.location.nativeElement);
     // Attach views to the changeDetection cycle
     this.appRef.attachView(this.modalComponent.hostView);
+
+    return modal;
   }
 
   openModal = <T>(
     component: Type<T>,
     inputProps: any = {},
     modalInputProps: any = {}
-  ) => {
+  ): { modal: ComponentRef<ModalComponent>; content: ComponentRef<T> } => {
     // create the desired component, the content of the modal box
     const newComponent: ComponentRef<T> = createComponent(component, {
       environmentInjector: this.injector,
@@ -69,7 +71,7 @@ export class ModalService {
     this.closeOnRouteChange = this.router.events.pipe(take(1)).subscribe(() => {
       this.modalComponent.destroy();
     });
-    return newComponent;
+    return { modal: this.modalComponent, content: newComponent };
   };
 
   close() {

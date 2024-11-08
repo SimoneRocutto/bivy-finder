@@ -8,7 +8,7 @@ import { ModalService } from "../../../ui-components/generic/modal/modal.service
   selector: "app-map-filters",
   standalone: true,
   imports: [CommonModule, FormsModule],
-  template: ` <div class="flex flex-col">
+  template: ` <div class="flex flex-col" data-testid="map-filters">
     <h3 class="font-lg font-bold mb-4">Filters</h3>
     <div class="flex flex-row gap-4 mb-6">
       <div>Only open cabins</div>
@@ -21,10 +21,20 @@ import { ModalService } from "../../../ui-components/generic/modal/modal.service
     <div class="flex flex-row self-end gap-4">
       <!-- todo: handle this outside this component. Ideally this form shouldn't know
         whether it's called from a modal or not. -->
-      <button type="button" class="btn btn-error" (click)="closeModal()">
+      <button
+        type="button"
+        class="btn btn-error"
+        (click)="closeModal()"
+        data-testid="map-filters-cancel-button"
+      >
         Cancel
       </button>
-      <button type="button" class="btn btn-primary" (click)="filterCabins()">
+      <button
+        type="button"
+        class="btn btn-primary"
+        (click)="filterCabins()"
+        data-testid="map-filters-submit-button"
+      >
         Submit
       </button>
     </div>

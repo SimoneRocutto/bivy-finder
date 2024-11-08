@@ -8,14 +8,7 @@ import {
   StartingSpot,
   StartingSpotFormGroup,
 } from "./../../../types/cabin.type";
-import {
-  AfterViewInit,
-  Component,
-  EventEmitter,
-  Input,
-  OnInit,
-  Output,
-} from "@angular/core";
+import { Component, EventEmitter, Input, OnInit, Output } from "@angular/core";
 import { TranslocoDirective } from "@jsverse/transloco";
 import {
   FormArray,
@@ -50,18 +43,30 @@ import { ErrorService } from "../../../services/error.service";
     <h3 class="text-lg font-semibold mb-4">Starting spots</h3>
     <!-- todo - move this below (now it doesn't work because of viewchild and ngfor) -->
     <ng-container *transloco="let t">
-      <form class="flex flex-col" *ngIf="spotForms" (ngSubmit)="submit()">
+      <form
+        class="flex flex-col"
+        *ngIf="spotForms"
+        (ngSubmit)="submit()"
+        data-testid="spots-form"
+      >
         <div class="flex flex-col gap-4 mb-6">
           <ng-container
             *ngFor="let spotForm of spotForms.controls; let i = index"
           >
-            <div class="collapse collapse-arrow bg-base-200">
+            <div
+              class="collapse collapse-arrow bg-base-200"
+              data-testid="spot-collapsable"
+            >
               <input type="checkbox" />
               <div class="collapse-title text-xl font-medium">
                 {{ i + 1 }}
               </div>
               <div class="collapse-content">
-                <form [formGroup]="spotForm" class="flex flex-col">
+                <form
+                  [formGroup]="spotForm"
+                  class="flex flex-col"
+                  data-testid="spot-form"
+                >
                   <div class="flex flex-col gap-4">
                     <div class="flex flex-row justify-between">
                       <div class="flex flex-row items-center gap-6">
@@ -79,6 +84,7 @@ import { ErrorService } from "../../../services/error.service";
                             [inputWidth]="40"
                             [labelAfterInput]="true"
                             [labelAsIs]="true"
+                            data-testid="spot-days"
                           ></app-form-input>
                           <app-form-input
                             label="h"
@@ -90,6 +96,7 @@ import { ErrorService } from "../../../services/error.service";
                             [inputWidth]="40"
                             [labelAfterInput]="true"
                             [labelAsIs]="true"
+                            data-testid="spot-hours"
                           ></app-form-input>
                           <app-form-input
                             label="m"
@@ -101,6 +108,7 @@ import { ErrorService } from "../../../services/error.service";
                             [inputWidth]="40"
                             [labelAfterInput]="true"
                             [labelAsIs]="true"
+                            data-testid="spot-minutes"
                           ></app-form-input>
                         </div>
                       </div>
@@ -120,6 +128,7 @@ import { ErrorService } from "../../../services/error.service";
                           (paste)="
                             fillCoordinates($event, spotForm.controls.latLng)
                           "
+                          data-testid="spot-latitude"
                         ></app-form-input>
                       </app-tooltip>
                       <app-form-input
@@ -130,6 +139,7 @@ import { ErrorService } from "../../../services/error.service";
                         [step]="latLngPrecision"
                         [min]="-180"
                         [max]="180"
+                        data-testid="spot-longitude"
                       ></app-form-input>
                       <app-form-input
                         label="altitude"
@@ -137,12 +147,14 @@ import { ErrorService } from "../../../services/error.service";
                         formControlName="altitude"
                         type="number"
                         [step]="latLngPrecision"
+                        data-testid="spot-altitude"
                       ></app-form-input>
                     </form>
                     <form
                       class="card w-full shadow-xl bg-yellow-600"
                       *ngIf="spotForm?.controls?.car"
                       formGroupName="car"
+                      data-testid="car-form"
                     >
                       <div class="flex flex-row">
                         <div class="card-body flex flex-col gap-4 pr-4">
@@ -164,6 +176,7 @@ import { ErrorService } from "../../../services/error.service";
                                 <select
                                   formControlName="currency"
                                   class="select select-bordered max-w-24"
+                                  data-testid="car-currency"
                                 >
                                   <option ngValue="EUR">€</option>
                                   <option ngValue="USD">$</option>
@@ -175,12 +188,14 @@ import { ErrorService } from "../../../services/error.service";
                                   [inputWidth]="40"
                                   label="Cost"
                                   [labelAsPlaceholder]="true"
+                                  data-testid="car-cost"
                                 ></app-form-input>
                                 <div class="text-gray-200 mx-2">/</div>
                               </div>
                               <select
                                 formControlName="costPer"
                                 class="select select-bordered max-w-xs"
+                                data-testid="car-cost-per"
                               >
                                 <option [ngValue]="null">Forever</option>
                                 <option ngValue="hour">Hour</option>
@@ -194,6 +209,7 @@ import { ErrorService } from "../../../services/error.service";
                             formControlName="description"
                             class="textarea textarea-bordered w-full"
                             placeholder="Description"
+                            data-testid="car-description"
                           ></textarea>
                         </div>
                         <div class="flex flex-col">
@@ -202,6 +218,7 @@ import { ErrorService } from "../../../services/error.service";
                             *ngIf="spotForm?.controls?.car"
                             class="btn flex-grow  bg-yellow-500 border-none rounded-l-none rounded-r-2xl"
                             (click)="removeCar(spotForm)"
+                            data-testid="remove-car-button"
                           >
                             <i class="material-symbols-outlined">delete</i>
                           </button>
@@ -213,6 +230,7 @@ import { ErrorService } from "../../../services/error.service";
                       *ngIf="!spotForm?.controls?.car"
                       class="btn btn-primary"
                       (click)="addCar(spotForm)"
+                      data-testid="add-car-button"
                     >
                       <div class="relative">
                         <i class="material-symbols-outlined">directions_car</i>
@@ -229,6 +247,7 @@ import { ErrorService } from "../../../services/error.service";
                       <form
                         class="card w-full shadow-xl bg-green-600"
                         [formGroup]="transportForm"
+                        data-testid="transport-form"
                       >
                         <div class="flex flex-row">
                           <div class="card-body pr-4 flex flex-col gap-4">
@@ -247,11 +266,13 @@ import { ErrorService } from "../../../services/error.service";
                                   label="Name"
                                   [labelAsPlaceholder]="true"
                                   [inputWidth]="40"
+                                  data-testid="transport-name"
                                 ></app-form-input>
                                 <div class="flex flex-col gap-y-2 xs:flex-row">
                                   <select
                                     formControlName="currency"
                                     class="select select-bordered max-w-24"
+                                    data-testid="transport-currency"
                                   >
                                     <option ngValue="EUR">€</option>
                                     <option ngValue="USD">$</option>
@@ -264,6 +285,7 @@ import { ErrorService } from "../../../services/error.service";
                                       [inputWidth]="40"
                                       label="Cost"
                                       [labelAsPlaceholder]="true"
+                                      data-testid="transport-cost"
                                     ></app-form-input>
                                   </div>
                                 </div>
@@ -273,6 +295,7 @@ import { ErrorService } from "../../../services/error.service";
                               formControlName="description"
                               class="textarea textarea-bordered w-full"
                               placeholder="Description"
+                              data-testid="transport-description"
                             ></textarea>
                           </div>
                           <div class="flex flex-col">
@@ -285,6 +308,7 @@ import { ErrorService } from "../../../services/error.service";
                                   j
                                 )
                               "
+                              data-testid="remove-public-transport-button"
                             >
                               <i class="material-symbols-outlined">delete</i>
                             </button>
@@ -296,6 +320,7 @@ import { ErrorService } from "../../../services/error.service";
                       type="button"
                       class="btn btn-primary"
                       (click)="addPublicTransport(spotForm)"
+                      data-testid="add-public-transport-button"
                     >
                       <div class="relative">
                         <i class="material-symbols-outlined">directions_bus</i>
@@ -306,6 +331,7 @@ import { ErrorService } from "../../../services/error.service";
                       formControlName="description"
                       class="textarea textarea-bordered grow"
                       placeholder="Description"
+                      data-testid="spot-description"
                     ></textarea>
                   </div>
                 </form>
@@ -315,6 +341,7 @@ import { ErrorService } from "../../../services/error.service";
                     type="button"
                     class="btn btn-error"
                     (click)="removeSpot(i)"
+                    data-testid="remove-spot-button"
                   >
                     <i class="material-symbols-outlined">delete</i>
                   </button>
@@ -322,7 +349,12 @@ import { ErrorService } from "../../../services/error.service";
               </div>
             </div>
           </ng-container>
-          <button type="button" class="btn btn-primary" (click)="addSpot()">
+          <button
+            type="button"
+            class="btn btn-primary"
+            (click)="addSpot()"
+            data-testid="add-spot-button"
+          >
             <div class="relative">
               <i class="material-symbols-outlined">hiking</i>
               <i class="material-symbols-outlined plus-icon">add</i>
@@ -335,6 +367,7 @@ import { ErrorService } from "../../../services/error.service";
             class="btn btn-error"
             (click)="closeModal()"
             [disabled]="isSubmitting"
+            data-testid="cancel-button"
           >
             Cancel
           </button>

@@ -9,10 +9,10 @@ import {
   Validators,
 } from "@angular/forms";
 import { AuthService } from "../../../services/auth.service";
-import { TranslocoDirective } from "@jsverse/transloco";
 import { catchError, finalize, tap } from "rxjs";
 import { ToastService } from "../../../ui-components/generic/toast-box/toast.service";
-import { ActivatedRoute, Router } from "@angular/router";
+import { Router } from "@angular/router";
+import { TranslocoPipe } from "@jsverse/transloco";
 
 @Component({
   selector: "app-user-sign-up",
@@ -21,57 +21,60 @@ import { ActivatedRoute, Router } from "@angular/router";
     CommonModule,
     FormInputComponent,
     ReactiveFormsModule,
-    TranslocoDirective,
+    TranslocoPipe,
   ],
   template: `
-    <ng-container *transloco="let t">
-      <form
+    <!--  Using Transloco pipe instead of directive because that was causing 
+      change detection issues with Cypress!  -->
+    <form
+      [formGroup]="signUpForm"
+      (ngSubmit)="onSignUpFormSubmit()"
+      class="flex flex-col grow max-w-72 gap-2 mt-4 mx-8"
+      autocomplete="off"
+    >
+      <app-form-input
+        iconName="person"
+        [label]="'auth.username' | transloco"
         [formGroup]="signUpForm"
-        (ngSubmit)="onSignUpFormSubmit()"
-        class="flex flex-col grow max-w-72 gap-2 mt-4 mx-8"
-        autocomplete="off"
+        [autocomplete]="false"
+        formControlName="username"
+        data-testid="sign-up-username"
+      ></app-form-input>
+      <app-form-input
+        iconName="key"
+        [label]="'auth.password' | transloco"
+        [formGroup]="signUpForm"
+        [autocomplete]="false"
+        type="password"
+        formControlName="password"
+        data-testid="sign-up-password"
+      ></app-form-input>
+      <app-form-input
+        iconName="key"
+        [label]="'auth.confirm_password' | transloco"
+        [formGroup]="signUpForm"
+        [autocomplete]="false"
+        type="password"
+        formControlName="confirmPassword"
+        data-testid="sign-up-confirm-password"
+      ></app-form-input>
+      <button
+        type="submit"
+        [disabled]="!signUpForm.valid || isSubmitting"
+        class="btn btn-primary"
       >
-        <app-form-input
-          iconName="person"
-          [label]="t('auth.username')"
-          [formGroup]="signUpForm"
-          [autocomplete]="false"
-          formControlName="username"
-        ></app-form-input>
-        <app-form-input
-          iconName="key"
-          [label]="t('auth.password')"
-          [formGroup]="signUpForm"
-          [autocomplete]="false"
-          type="password"
-          formControlName="password"
-        ></app-form-input>
-        <app-form-input
-          iconName="key"
-          [label]="t('auth.confirm_password')"
-          [formGroup]="signUpForm"
-          [autocomplete]="false"
-          type="password"
-          formControlName="confirmPassword"
-        ></app-form-input>
-        <button
-          type="submit"
-          [disabled]="!signUpForm.valid || isSubmitting"
-          class="btn btn-primary"
-        >
-          <div [ngClass]="{ invisible: isSubmitting }">
-            {{ t("common.submit") | titlecase }}
-          </div>
-          <span
-            *ngIf="isSubmitting"
-            class="loading loading-dots loading-md absolute"
-          ></span>
-        </button>
-        <div *ngIf="errorMessage" class="w-full text-error text-center">
-          {{ t(errorMessage) }}
+        <div [ngClass]="{ invisible: isSubmitting }">
+          {{ "common.submit" | transloco | titlecase }}
         </div>
-      </form>
-    </ng-container>
+        <span
+          *ngIf="isSubmitting"
+          class="loading loading-dots loading-md absolute"
+        ></span>
+      </button>
+      <div *ngIf="errorMessage" class="w-full text-error text-center">
+        {{ errorMessage | transloco }}
+      </div>
+    </form>
   `,
   styles: `:host {
     display: flex;
