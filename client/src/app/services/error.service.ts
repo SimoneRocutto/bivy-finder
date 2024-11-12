@@ -1,4 +1,5 @@
-import { ErrorResponseInterface } from "../../../../server/src/models/application/response";
+//TODO reimplement the ErrorResponseInterface interface without depending on backend code
+// import { ErrorResponseInterface } from "../../../../server/src/models/application/response";
 import { HttpErrorResponse, HttpResponse } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { of } from "rxjs";
@@ -36,7 +37,7 @@ export class ErrorService {
     // ! Be careful! Some http errors will not be sent by the server. For example,
     // the internet disconnected error. So you cannot be sure about the response
     // complying to ErrorResponseInterface.
-    const res: ErrorResponseInterface = error.error;
+    const res: any = error.error;
     if (createToast) {
       this.toastService.createToast(res.message, "error");
     }

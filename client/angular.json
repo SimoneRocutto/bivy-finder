@@ -57,13 +57,7 @@
               "ssr": false,
               "prerender": false,
               "extractLicenses": false,
-              "sourceMap": true,
-              "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.development.ts"
-                }
-              ]
+              "sourceMap": true
             },
             "production": {
               "ssr": false,
@@ -96,10 +90,11 @@
           "configurations": {
             "local": {
               "buildTarget": "client:build:local",
-              "proxyConfig": "./proxy.conf.json"
+              "proxyConfig": "./proxy.conf-local.json"
             },
             "development": {
-              "buildTarget": "client:build:development"
+              "buildTarget": "client:build:development",
+              "proxyConfig": "./proxy.conf-dev.json"
             },
             "production": {
               "buildTarget": "client:build:production"
