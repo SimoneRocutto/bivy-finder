@@ -4,8 +4,6 @@ WORKDIR /usr/src/server
 
 COPY . .
 
-# COPY src/config/.env.example src/config/.env
-
 RUN npm install
 
 # TODO build server! RUN npm run build

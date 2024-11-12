@@ -6,6 +6,8 @@ RUN npm install -g @angular/cli
 
 COPY . .
 
+RUN npm install
+
 EXPOSE 4200
 
 CMD ["npm", "run", "docker-dev"]
