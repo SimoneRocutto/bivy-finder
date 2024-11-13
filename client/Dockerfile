@@ -1,13 +1,29 @@
-FROM node:20 AS development
-
-ENV NODE_ENV=production
+FROM node:20.12-alpine AS base
 
 WORKDIR /usr/src/client
 
-COPY . .
+COPY package.json package-lock.json ./
 
 RUN npm install
 
-# TODO build client for production! RUN npm run build
+COPY . .
+
+FROM base AS development
+
+RUN npm install -g @angular/cli
 
 CMD ["sh", "-c", "npm start"]
+
+FROM base AS builder
+
+RUN npm run build
+
+FROM nginx AS production
+
+EXPOSE 80
+
+RUN rm /etc/nginx/conf.d/default.conf
+
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+COPY --from=builder /usr/src/client/dist/browser /usr/share/nginx/html

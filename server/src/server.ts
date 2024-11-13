@@ -35,7 +35,7 @@ export const {
   AWS_BUCKET_DIRECTORY,
   REDIS_URL,
   CLIENT_URL,
-  ENVIRONMENT,
+  NODE_ENV,
   DEBUG_SESSION,
 } = process.env;
 if (!ATLAS_URI || !ATLAS_DB) {
@@ -110,7 +110,7 @@ connectToDatabase(ATLAS_URI)
         saveUninitialized: false,
         cookie: {
           httpOnly: true,
-          secure: ENVIRONMENT === "production" ? true : false,
+          secure: NODE_ENV === "production" ? true : false,
           sameSite: "strict",
           maxAge: 1000 * 60 * 60 * 24 * 7,
         },

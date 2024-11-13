@@ -1,6 +1,7 @@
 networks:
   shared-network:
 services:
+
   redis:
     image: redis
     restart: always
@@ -8,6 +9,7 @@ services:
       - 6379:6379
     networks:
       - shared-network
+
   server-dev:
     container_name: mc_server_dev
     develop:
@@ -24,6 +26,7 @@ services:
     build:
       context: server
       dockerfile: Dockerfile
+      target: development
     ports:
       - 5200:5200
     networks:
@@ -33,6 +36,7 @@ services:
         condition: service_started
     profiles:
       - dev
+
   client-dev:
     container_name: mc_client_dev
     develop:
@@ -51,7 +55,8 @@ services:
     image: mc-client-dev:1.0.0
     build:
       context: client
-      dockerfile: DevDockerfile
+      dockerfile: Dockerfile
+      target: development
     ports:
       - 4200:4200
     networks:
@@ -61,6 +66,7 @@ services:
         condition: service_started
     profiles:
       - dev
+
   server-prod:
     container_name: mc_server_prod
     restart: unless-stopped
@@ -68,6 +74,7 @@ services:
     build:
       context: server
       dockerfile: Dockerfile
+      target: production
     ports:
       - 5200:5200
     networks:
@@ -76,18 +83,22 @@ services:
       - redis
     profiles:
       - prod
+
   client-prod:
     container_name: mc_client_prod
     restart: unless-stopped
     image: mc-client-prod:1.0.0
     build:
       context: client
-      dockerfile: client/Dockerfile
+      dockerfile: Dockerfile
+      target: production
     ports:
-      - 4200:4200
+      - 80:80
     networks:
       - shared-network
     depends_on:
       - server-prod
     profiles:
       - prod
+    environment:
+      - ENVIRONMENT=${ENVIRONMENT}

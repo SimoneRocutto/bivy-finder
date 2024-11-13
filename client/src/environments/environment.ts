@@ -5,4 +5,5 @@ const base = "http://localhost:4200";
 export const environment: Environment = {
   baseUrl: base,
   apiUrl: base + "/api",
+  production: false,
 };
