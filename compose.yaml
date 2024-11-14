@@ -103,4 +103,4 @@ services:
     profiles:
       - prod
     environment:
-      - ENVIRONMENT=${ENVIRONMENT}
+      - BUILD_ENVIRONMENT=${BUILD_ENVIRONMENT}

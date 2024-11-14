@@ -12,7 +12,7 @@ FROM base AS development
 
 RUN npm install -g @angular/cli
 
-CMD ["sh", "-c", "npm start"]
+CMD ["sh", "-c", "npm run docker-dev"]
 
 FROM base AS builder
 
