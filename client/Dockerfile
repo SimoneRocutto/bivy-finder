@@ -16,6 +16,8 @@ CMD ["sh", "-c", "npm start"]
 
 FROM base AS builder
 
+ARG BUILD_ENVIRONMENT
+
 RUN npm run build
 
 FROM nginx AS production

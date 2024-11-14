@@ -90,6 +90,8 @@ services:
     image: mc-client-prod:1.0.0
     build:
       context: client
+      args:
+        - BUILD_ENVIRONMENT=${BUILD_ENVIRONMENT}
       dockerfile: Dockerfile
       target: production
     ports:
